@@ -1,0 +1,140 @@
+---
+title: "Code for zoo data for **Female contraception and male castration increase lifespan across vertebrates**"
+subtitle: "**Supplmentary Material**"
+author: "**Michael Garratt, Malgorzata Lagisz, Johanna Stärk, Christine Neyt, Michael Stout, José V. V. Isola, Veronica Cowl, Nannette Driver-Ruiz, Ashley D. Franklin, Monica M. McDonald, Katelyn Mucha, David Powell, Rachel Thompson, Susan L. Walker, Jean-Michel Gaillard, Dalia A. Conde, Jean-François Lemaître, Fernando Colchero and Shinichi Nakagawa**"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "**Table of Contents**"
+    output-file: "zoo.html"
+    theme: simplex
+    embed-resources: true
+    code-fold: true
+    code-tools: true
+    number-sections: true
+    #bibliography: ./bib/ref.bib
+    fontsize: "12"
+    max-width: "10"
+    code-overflow: wrap
+crossref: 
+  fig-title: Figure     # (default is "Figure")
+  tbl-title: Table     # (default is "Table")
+  title-delim: —     # (default is ":")
+  fig-prefix: Fig.   # (default is "Figure")
+  tbl-prefix: Tab.    # (default is "Table")
+editor_options: 
+  chunk_output_type: console
+execute:
+  warning: false
+  message: false
+  tidy: true
+  #cache: true
+---
+
+## Setting up
+
+### Loading packages
+
+```{r}
+
+# loading
+pacman::p_load(tidyverse,
+               metafor,
+               pander,
+               stringr,
+               ape,
+               here,
+               kableExtra,
+               patchwork,
+               lme4,
+               readxl,
+               #metaAidR,
+               rotl,
+               orchaRd,
+               emmeans,
+               clubSandwich,
+               png,
+               grid,
+               here,
+               cowplot,
+               apextra,
+               ggimage,
+               ggstance,
+               ggtree
+)
+
+```
+
+### Loading data
+
+```{r}
+# main data
+dat0 <- read_csv(here("data", "zoo", "zoo.csv"), na = c("", "NA"))
+
+# phylogeny
+tree <- read.tree( here("data", "zoo", "tree_zoo.tre"))
+
+# taxonomy
+tax <- read.csv(here("data", "zoo", "vertlife_taxonomy_translation_table.csv"))
+
+dat0 %>% left_join(tax, by = c("species" = "zims.species")) -> dat_full
+
+# talking out species with no data (Pseudocheirus peregrinus = likely to be mistaks in data)
+dat_full %>% filter(species != "Chrysocyon brachyurus" &
+                    species != "Crocuta crocuta" &
+                    species != "Neofelis nebulosa" &
+                    species != "Panthera uncia" &
+                    species != "Pseudocheirus peregrinus") %>% 
+  mutate(phylogeny = gsub(" ", "_", vertlife.species)) -> dat
+
+
+# life span data 
+to_drop <-
+  tree$tip.label[which(!(tree$tip.label %in% unique(dat$phylogeny)))]
+
+tree <- drop.tip(tree, to_drop)
+length(tree$tip.label)
+
+tree <- as.ultrametric(tree)
+
+#tree <- compute.brlen(tree)
+cor_tree <- vcv(tree, corr = TRUE)
+
+length(dat$species)
+
+# fixing some names
+
+# TODO - do we need this??
+# # creating spp
+# dat$spp <- gsub(dat$species
+# 
+# dat$spp[dat$spp == "Aonyx cinereus"] <- "Aonyx cinerea"
+# dat$spp[dat$spp == "Bubalus bubalis"] <- "Bubalus arnee"
+# dat$spp[dat$spp == "Equus asinus"] <- "Equus_africanus"
+
+
+```
+
+### Custom functions
+
+We have 5 custom functions named : `cont_gen()`,`get_pred1()`, `get_pred2()`, `mr_results()`, and `all_models()`, all of which are used later (see below for their functionality) and the code is included here.
+
+```{r}
+# custom functions
+
+
+```
+
+### Preparing data set
+
+```{r}
+
+# 
+
+
+```
+
+
