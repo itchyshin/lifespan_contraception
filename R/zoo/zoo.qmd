@@ -799,15 +799,15 @@ dat_comb$contraception <- factor(dat_comb$category, levels = c("F immunological/
                                                            "F normal/M hormonal",
                                                            "F normal/M surgical",
                                                            "F normal/M normal"),
-                                                labels = c("F contraception/M contraception",
-                                                           "F contraception/M contraception",
-                                                           "F contraception/M contraception",
-                                                           "F contraception/M normal",
-                                                           "F contraception/M normal",  
-                                                           "F contraception/M normal",
-                                                           "F normal/M contraception",
-                                                           "F normal/M contraception",
-                                                           "F normal/M contraception",
+                                                labels = c("F contraceptive/M contraceptive",
+                                                           "F contraceptive/M contraceptive",
+                                                           "F contraceptive/M contraceptive",
+                                                           "F contraceptive/M normal",
+                                                           "F contraceptive/M normal",  
+                                                           "F contraceptive/M normal",
+                                                           "F normal/M contraceptive",
+                                                           "F normal/M contraceptive",
+                                                           "F normal/M contraceptive",
                                                            "F normal/M normal"),
                              
 )
@@ -880,7 +880,7 @@ kable(dat, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", posi
 ```
 
 
-## Processed data 1: contraception vs. normal
+## Processed data 1: contraceptive vs. normal
 
 ```{r}
 kable(dat_all, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
@@ -925,7 +925,7 @@ kable(dat_pre_post, "html", escape = FALSE, digits = 3) %>% kable_styling("strip
 :::
 
 
-# Analysis set 1: contraception vs. normal 
+# Analysis set 1: contraceptive vs. normal 
 
 ::: {.panel-tabset}
 
@@ -1118,9 +1118,10 @@ orchard_plot(mod_ppb, mod = "timing",
 
 ::: {.panel-tabset}
 
-## Figure: comparing contraception vs. normla
+## Figure: comparing contraception vs. normal
 
 ```{r}
+#| eval: false
 
 # manipulating tree
 tdat <- fortify(tree)
@@ -1286,9 +1287,9 @@ p2 <- ggplot(pdat_long,
         panel.grid.minor.x = element_blank(),
         legend.box.background = element_rect(colour = "black")) +
   #guides(colour = colour) +
-  theme(legend.position =  c(0.88, 0.1)) +
+  theme(legend.position =  c(0.88, 0.11)) +
   #labs(x = "lnRR (effect size)", y = "", ) +
-  xlab("Ratio: contraception/normal (%)") +
+  xlab("Ratio: contraceptive/normal (%)") +
   ylab("") 
 
 
@@ -1302,6 +1303,13 @@ main <- mod_results(mod_all, group = "species")
 sex_diff <- mod_results(mod_all1, mod = "sex", group = "species")
 
 combined <- submerge(sex_diff, main)
+
+# changing the name (intercept) to:
+
+combined$mod_table$name <- gsub("Intrcpt", "Overall", combined$mod_table$name)
+combined$mod_table$name <- factor(combined$mod_table$name)
+
+combined$data$moderator <- gsub("Intrcpt", "Overall", combined$data$moderator)
 
 combo <- orchard_plot(combined,
                       group = "species", 
@@ -1328,21 +1336,14 @@ plot_grid(p_phylo) / (combo + type_diff) +
 
 ```
 
+![](../figs/zoo/fig1.png)
 
 ## Figure: sex difference
 .
 ```{r}
+#| eval: false
 
-tdat <- fortify(tree)
-tdat2 <- subset(tdat, isTip)
-
-# this ordering matches the tree
-ordered_spp <- tdat2$label[order(tdat2$y, decreasing=TRUE)]
-
-#############################
-#  creating data to plot 
-#############################
-
+# setting up data for fig
 pdat <- dat %>% select(species, vertlife.species, order, 
                        Male_None_Mean, Female_None_Mean,
                        Male_Surgical_Mean,Female_Surgical_Mean, 
@@ -1387,22 +1388,22 @@ pdat_long <- pdat %>% pivot_longer(cols = c( rom_fimmu_mimmu, rom_fhorm_mhorm,ro
                                              rom_fnorm_mimmu, rom_fnorm_mhorm, rom_fnorm_msurg,
                                              rom_fnorm_mnorm))
 
-pdat_long %>% mutate(category = rep(c("F sterilized/M sterilized","F sterilized/M sterilized","F sterilized/M sterilized",
-                                      "F sterilized/M normal", "F sterilized/M normal", "F sterilized/M normal", 
-                                      "F normal/M sterilized", "F normal/M sterilized", "F normal/M sterilized",
+pdat_long %>% mutate(category = rep(c("F contraceptive/M contraceptive","F contraceptive/M contraceptive","F contraceptive/M contraceptive",
+                                      "F contraceptive/M normal", "F contraceptive/M normal", "F contraceptive/M normal", 
+                                      "F normal/M contraceptive", "F normal/M contraceptive", "F normal/M contraceptive",
                                       "F normal/M normal"), nrow(pdat))) -> pdat_long
 
 pdat_long %>% mutate(min_value = ifelse(is.na(value) == TRUE, NA, ifelse (value < 0, value, 0)), 
                      max_value = ifelse(is.na(value) == TRUE, NA, ifelse (value > 0, value, 0)),
                      sex_diff = ifelse(min_value == 0, "F live longer", "M live longer")) -> pdat_long
 
-pdat_long$category <- factor(pdat_long$category, levels = rev(c("F sterilized/M sterilized", 
-                                        "F sterilized/M normal", 
-                                        "F normal/M sterilized",
+pdat_long$category <- factor(pdat_long$category, levels = rev(c("F contraceptive/M contraceptive", 
+                                        "F contraceptive/M normal", 
+                                        "F normal/M contraceptive",
                                         "F normal/M normal")),
-                         labels = rev(c("F sterilized/M sterilized", 
-                                    "F sterilized/M normal", 
-                                    "F normal/M sterilized",
+                         labels = rev(c("F contraceptive/M contraceptive", 
+                                    "F contraceptive/M normal", 
+                                    "F normal/M contraceptive",
                                     "F normal/M normal")))
 
 
@@ -1452,7 +1453,7 @@ p0 <- p %<+% odat +
   guides(color="none") 
 
 # Image directory
-imgdir <- "phylopics/"
+imgdir <- "icons/zoo/"
 
 p1 <- ggdraw(p0) +
   
@@ -1504,18 +1505,14 @@ p2 <- ggplot(pdat_long,
   ) +
   xlim(-80, 80) + 
   scale_color_manual(values = c("#CC6677", "#88CCEE"), na.translate = F) +
-  #scale_colour_discrete(na.translate = F) +
-  #scale_color_manual(values = c("#CC6677", "#88CCEE")) +
-  #facet_wrap(sex~type, ncol = 6) +
-  #scale_color_manual(values = c("#FF9933", "#336699", NA), name = "") 
-  #scale_color_discrete(name = "Sex difference",
-  #                    labels = c("M live longer", "M live longer")) +
   theme_bw() +
-  theme(axis.text.y = element_blank(),
+  theme(panel.grid.major.y = element_blank(),
+        axis.text.y = element_blank(),
         axis.text.x = element_text(size = 7),
         axis.ticks  = element_blank(),
         strip.text = element_text(face = "bold"),
-        panel.grid.minor.x = element_blank()) +
+        panel.grid.minor.x = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
   #guides(colour = colour) +
   theme(legend.position =  c(0.9, 0.92)) +
   labs(colour = "Sex difference") +
@@ -1529,12 +1526,12 @@ p_phylo2 <- p1 + p2
 
 
 ###
-p_sexdiff <- orchard_plot(mod_comb, mod = "category",
-             xlab = "log response ratio (lnRR)", group = "vertlife.species", 
+p_sexdiff <- orchard_plot(mod_comb, mod = "contraception",
+             xlab = "log response ratio (lnRR)", group = "species", 
              g = FALSE, angle = 45)
 
-p_abs <- orchard_plot(mod_comb_a, mod = "category",
-             xlab = "absolute log response ratio (lnRR)", group = "vertlife.species", 
+p_abs <- orchard_plot(mod_comb_a, mod = "contraception",
+             xlab = "absolute log response ratio (lnRR)", group = "species", 
              g = FALSE, angle = 45)
 
 #res2
@@ -1546,13 +1543,23 @@ p_abs <- orchard_plot(mod_comb_a, mod = "category",
 ## Figure 4
 ###################
 
-library(cowplot)
-plot_grid(p_phylo2) / (p_sexdiff + p_abs) + 
+p_phylo2 / (p_sexdiff + p_abs) + 
   plot_annotation(tag_levels = 'A') + 
   plot_layout(heights = c(1.5,1.0))
 
 
 ```
 
+![](../figs/zoo/fig4.png)
 
 :::
+
+
+## R Session Informtion
+
+```{r}
+# pander for making it look nicer
+sessionInfo() %>% pander()
+```
+
+
