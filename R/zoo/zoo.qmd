@@ -44,6 +44,7 @@ execute:
 pacman::p_load(tidyverse,
                metafor,
                pander,
+               knitr,
                stringr,
                ape,
                here,
@@ -1339,7 +1340,6 @@ plot_grid(p_phylo) / (combo + type_diff) +
 ![](../figs/fig1.png)
 
 ## Figure: sex difference
-.
 ```{r}
 #| eval: false
 
@@ -1548,6 +1548,7 @@ p_phylo2 / (p_sexdiff + p_abs) +
   plot_layout(heights = c(1.5,1.0))
 
 ```
+
 ![](../figs/fig4.png)
 
 :::
