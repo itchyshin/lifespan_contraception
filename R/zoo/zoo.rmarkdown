@@ -34,9 +34,11 @@ execute:
   #cache: true
 ---
 
+
 # Setting up
 
 ## Loading packages
+
 
 ```{r}
 
@@ -68,7 +70,9 @@ pacman::p_load(tidyverse,
 
 ```
 
+
 ## Loading data
+
 
 ```{r}
 # main data
@@ -155,9 +159,11 @@ dat_post %>%
 
 ```
 
+
 ## Custom functions
 
 We have 7 custom functions named : `cont_gen()`,`get_pred1()`, `get_pred2()`, `mr_results()`, `all_models()`,`folded_mu`, and `folded_v`, all of which are used later and the code is included here.
+
 
 ```{r}
 # custom functions
@@ -347,9 +353,11 @@ folded_v <-function(mean, variance){
 
 ```
 
+
 ## Preparing data set (calulating effect sizes)
 
 ### Comparing contraception vs. normal
+
 
 ```{r}
 ##############################################
@@ -510,7 +518,9 @@ dat_all %>% mutate(sex_type = paste(sex, type, sep = "_")) -> dat_all
 ```
 
 
+
 ### Examining sex differences
+
 
 ```{R}
 ######################################
@@ -824,7 +834,9 @@ dat_comb <- dat_comb %>% mutate(
 ```
 
 
+
 ### Comparing before and after 2005
+
 
 ```{r}
 
@@ -867,11 +879,13 @@ dat_pre_post$timing <- rep(c("Pre-2005","Post-2005"),c(dim(dat_pre)[1], dim(dat_
 ```
 
 
+
 # Datasets
 
 ::: {.panel-tabset}
 
 ## Original dataset (used)
+
 
 ```{r}
 kable(dat, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
@@ -880,7 +894,9 @@ kable(dat, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", posi
 ```
 
 
+
 ## Processed data 1: contraceptive vs. normal
+
 
 ```{r}
 kable(dat_all, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
@@ -889,7 +905,9 @@ kable(dat_all, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", 
 ```
 
 
+
 ## Processed data 2: sex differences 
+
 
 ```{r}
 kable(dat_comb, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
@@ -897,7 +915,9 @@ kable(dat_comb, "html", escape = FALSE, digits = 3) %>% kable_styling("striped",
     height = "500px")
 ```
 
+
 ## Pre-2005
+
 
 ```{r}
 kable(dat_pre, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
@@ -906,7 +926,9 @@ kable(dat_pre, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", 
 ```
 
 
+
 ## Post-2005
+
 
 ```{r}
 kable(dat_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
@@ -914,13 +936,16 @@ kable(dat_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped",
     height = "500px")
 ```
 
+
 ## Processed data 3: pre- and post-2005
+
 
 ```{r}
 kable(dat_pre_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
   scroll_box(width = "100%", 
     height = "500px")
 ```
+
 
 :::
 
@@ -930,6 +955,7 @@ kable(dat_pre_post, "html", escape = FALSE, digits = 3) %>% kable_styling("strip
 ::: {.panel-tabset}
 
 ## Main meta-analysis
+
 
 ```{r}
 
@@ -953,7 +979,9 @@ orchard_plot(mod_all, xlab = "lnRR (all)", group = "species", g = FALSE)
 
 ```
 
+
 ## Meta-regression: sex 
+
 
 ```{r}
 mod_all1 <- rma.mv(yi, V = VCV,
@@ -983,7 +1011,9 @@ orchard_plot(mod_all1, mod = "sex",
              xlab = "lnRR (all)", group = "species", g = FALSE)
 ```
 
+
 ## Meta-regression: type
+
 
 ```{r}
 
@@ -1012,6 +1042,7 @@ orchard_plot(mod_all2, mod = "type",
 all_models(mod_all2, mod = "type")
 ```
 
+
 ::: 
 
 # Analysis set 2: sex difference
@@ -1019,6 +1050,7 @@ all_models(mod_all2, mod = "type")
 ::: {.panel-tabset}
 
 ## Different sex differences
+
 
 ```{r}
 # variance-covariance matrix for sampling error assuming 0.5 correlation
@@ -1046,7 +1078,9 @@ orchard_plot(mod_comb, mod = "contraception",
 all_models(mod_comb, mod = "contraception")  
 ```
 
+
 ## Different sex differences: absolute valies
+
 
 ```{r}
 # variance-covariance matrix for sampling error assuming 0.5 correlation
@@ -1075,10 +1109,12 @@ orchard_plot(mod_comb_a, mod = "contraception",
 all_models(mod_comb_a, mod = "contraception", type = "abs")
 ```
 
+
 ::: 
 
 
 # Sensitivity analysis: pre- and post-2005
+
 
 ```{r}
 # variance-covariance matrix for sampling error assuming 0.5 correlation
@@ -1114,11 +1150,13 @@ orchard_plot(mod_ppb, mod = "timing",
 
 
 
+
 # Figure gallery
 
 ::: {.panel-tabset}
 
 ## Figure: comparing contraception vs. normal
+
 
 ```{r}
 #| eval: false
@@ -1336,10 +1374,12 @@ plot_grid(p_phylo) / (combo + type_diff) +
 
 ```
 
+
 ![](../figs/fig1.png)
 
 ## Figure: sex difference
 .
+
 ```{r}
 #| eval: false
 
@@ -1548,6 +1588,7 @@ p_phylo2 / (p_sexdiff + p_abs) +
   plot_layout(heights = c(1.5,1.0))
 
 ```
+
 ![](../figs/fig4.png)
 
 :::
@@ -1555,9 +1596,9 @@ p_phylo2 / (p_sexdiff + p_abs) +
 
 ## R Session Informtion
 
+
 ```{r}
 # pander for making it look nicer
 sessionInfo() %>% pander()
 ```
-
 
