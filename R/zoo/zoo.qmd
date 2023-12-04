@@ -1337,7 +1337,7 @@ plot_grid(p_phylo) / (combo + type_diff) +
 
 ```
 
-![](../figs/fig1.png)
+![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/fig1.png)
 
 ## Figure: sex difference
 ```{r}
@@ -1549,7 +1549,7 @@ p_phylo2 / (p_sexdiff + p_abs) +
 
 ```
 
-![](../figs/fig4.png)
+![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/fig4.png)
 
 :::
 
