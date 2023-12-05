@@ -1,6 +1,6 @@
 ---
 title: "Code for zoo data for **Female contraception and male castration increase lifespan across vertebrates**"
-subtitle: "**Supplmentary Material**"
+subtitle: "**Supplmentary Information 1**"
 author: "**Michael Garratt, Malgorzata Lagisz, Johanna Stärk, Christine Neyt, Michael Stout, José V. V. Isola, Veronica Cowl, Nannette Driver-Ruiz, Ashley D. Franklin, Monica M. McDonald, Katelyn Mucha, David Powell, Rachel Thompson, Susan L. Walker, Jean-Michel Gaillard, Dalia A. Conde, Jean-François Lemaître, Fernando Colchero and Shinichi Nakagawa**"
 date: "`r Sys.Date()`"
 format:
@@ -1337,7 +1337,7 @@ plot_grid(p_phylo) / (combo + type_diff) +
 
 ```
 
-![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/fig1.png)
+![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/zoo/fig1.png)
 
 ## Figure: sex difference
 ```{r}
@@ -1549,12 +1549,12 @@ p_phylo2 / (p_sexdiff + p_abs) +
 
 ```
 
-![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/fig4.png)
+![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/zoo/fig4.png)
 
 :::
 
 
-## R Session Informtion
+# R Session Informtion
 
 ```{r}
 # pander for making it look nicer
