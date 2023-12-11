@@ -1,5 +1,5 @@
 ---
-title: "Code for zoo data for **Female contraception and male castration increase lifespan across vertebrates**"
+title: "Code for literature data for **Female contraception and male castration increase lifespan across vertebrates**"
 subtitle: "**Supplmentary Information 2**"
 author: "**Michael Garratt, Malgorzata Lagisz, Johanna Stärk, Christine Neyt, Michael Stout, José V. V. Isola, Veronica Cowl, Nannette Driver-Ruiz, Ashley D. Franklin, Monica M. McDonald, Katelyn Mucha, David Powell, Rachel Thompson, Susan L. Walker, Jean-Michel Gaillard, Dalia A. Conde, Jean-François Lemaître, Fernando Colchero and Shinichi Nakagawa**"
 date: "`r Sys.Date()`"
