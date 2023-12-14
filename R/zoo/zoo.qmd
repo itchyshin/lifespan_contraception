@@ -1,7 +1,7 @@
 ---
 title: "Code for zoo data for **Female contraception and male castration increase lifespan across vertebrates**"
 subtitle: "**Supplmentary Information 1**"
-author: "**Michael Garratt, Malgorzata Lagisz, Johanna Stärk, Christine Neyt, Michael Stout, José V. V. Isola, Veronica Cowl, Nannette Driver-Ruiz, Ashley D. Franklin, Monica M. McDonald, Katelyn Mucha, David Powell, Rachel Thompson, Susan L. Walker, Jean-Michel Gaillard, Dalia A. Conde, Jean-François Lemaître, Fernando Colchero and Shinichi Nakagawa**"
+author: "**Michael Garratt, Malgorzata Lagisz, Johanna Stärk, Christine Neyt, Michael Stout, José V. V. Isola, Veronica Cowl, Nannette Driver-Ruiz, Ashley D. Franklin, Monica M. McDonald, David Powell, Susan L. Walker, Jean-Michel Gaillard, Dalia A. Conde, Jean-François Lemaître, Fernando Colchero and Shinichi Nakagawa**"
 date: "`r Sys.Date()`"
 format:
   html:
@@ -800,15 +800,15 @@ dat_comb$contraception <- factor(dat_comb$category, levels = c("F immunological/
                                                            "F normal/M hormonal",
                                                            "F normal/M surgical",
                                                            "F normal/M normal"),
-                                                labels = c("F contraceptive/M contraceptive",
-                                                           "F contraceptive/M contraceptive",
-                                                           "F contraceptive/M contraceptive",
-                                                           "F contraceptive/M normal",
-                                                           "F contraceptive/M normal",  
-                                                           "F contraceptive/M normal",
-                                                           "F normal/M contraceptive",
-                                                           "F normal/M contraceptive",
-                                                           "F normal/M contraceptive",
+                                                labels = c("F contra./M contra.",
+                                                           "F contra./M contra.",
+                                                           "F contra./M contra.",
+                                                           "F contra./M normal",
+                                                           "F contra./M normal",  
+                                                           "F contra./M normal",
+                                                           "F normal/M contra.",
+                                                           "F normal/M contra.",
+                                                           "F normal/M contra.",
                                                            "F normal/M normal"),
                              
 )
@@ -1343,13 +1343,13 @@ plot_grid(p_phylo) / (combo + type_diff) +
 ```{r}
 #| eval: false
 
-# setting up data for fig
-pdat <- dat %>% select(species, vertlife.species, order, 
-                       Male_None_Mean, Female_None_Mean,
-                       Male_Surgical_Mean,Female_Surgical_Mean, 
-                       Male_Hormonal_Mean, Female_Hormonal_Mean, 
-                       Male_Immunological_Mean, Female_Immunological_Mean
-)
+# manipulating tree
+tdat <- fortify(tree)
+tdat2 <- subset(tdat, isTip)
+
+# this ordering matches the tree
+ordered_spp <- tdat2$label[order(tdat2$y, decreasing=TRUE)]
+
 
 pdat %>% mutate(rom_fimmu_mimmu = (Female_Immunological_Mean/Male_Immunological_Mean - 1)*100,
                 rom_fhorm_mhorm = (Female_Hormonal_Mean/Male_Hormonal_Mean - 1)*100,
@@ -1388,22 +1388,22 @@ pdat_long <- pdat %>% pivot_longer(cols = c( rom_fimmu_mimmu, rom_fhorm_mhorm,ro
                                              rom_fnorm_mimmu, rom_fnorm_mhorm, rom_fnorm_msurg,
                                              rom_fnorm_mnorm))
 
-pdat_long %>% mutate(category = rep(c("F contraceptive/M contraceptive","F contraceptive/M contraceptive","F contraceptive/M contraceptive",
-                                      "F contraceptive/M normal", "F contraceptive/M normal", "F contraceptive/M normal", 
-                                      "F normal/M contraceptive", "F normal/M contraceptive", "F normal/M contraceptive",
+pdat_long %>% mutate(category = rep(c("F contra./M contra.","F contra./M contra.","F contra./M contra.",
+                                      "F contra./M normal", "F contra./M normal", "F contra./M normal", 
+                                      "F normal/M contra.", "F normal/M contra.", "F normal/M contra.",
                                       "F normal/M normal"), nrow(pdat))) -> pdat_long
 
 pdat_long %>% mutate(min_value = ifelse(is.na(value) == TRUE, NA, ifelse (value < 0, value, 0)), 
                      max_value = ifelse(is.na(value) == TRUE, NA, ifelse (value > 0, value, 0)),
                      sex_diff = ifelse(min_value == 0, "F live longer", "M live longer")) -> pdat_long
 
-pdat_long$category <- factor(pdat_long$category, levels = rev(c("F contraceptive/M contraceptive", 
-                                        "F contraceptive/M normal", 
-                                        "F normal/M contraceptive",
+pdat_long$category <- factor(pdat_long$category, levels = rev(c("F contra./M contra.", 
+                                        "F contra./M normal", 
+                                        "F normal/M contra.",
                                         "F normal/M normal")),
-                         labels = rev(c("F contraceptive/M contraceptive", 
-                                    "F contraceptive/M normal", 
-                                    "F normal/M contraceptive",
+                         labels = rev(c("F contra./M contra.", 
+                                    "F contra./M normal", 
+                                    "F normal/M contra.",
                                     "F normal/M normal")))
 
 
