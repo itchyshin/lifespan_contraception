@@ -800,16 +800,16 @@ dat_comb$contraception <- factor(dat_comb$category, levels = c("F immunological/
                                                            "F normal/M hormonal",
                                                            "F normal/M surgical",
                                                            "F normal/M normal"),
-                                                labels = c("F contra./M contra.",
-                                                           "F contra./M contra.",
-                                                           "F contra./M contra.",
-                                                           "F contra./M normal",
-                                                           "F contra./M normal",  
-                                                           "F contra./M normal",
-                                                           "F normal/M contra.",
-                                                           "F normal/M contra.",
-                                                           "F normal/M contra.",
-                                                           "F normal/M normal"),
+                                                labels = c("F contraceptive/\nM contraceptive",
+                                                           "F contraceptive/\nM contraceptive",
+                                                           "F contraceptive/\nM contraceptive",
+                                                           "F contraceptive/\nM normal",
+                                                           "F contraceptive/\nM normal",  
+                                                           "F contraceptive/\nM normal",
+                                                           "F normal/\nM contraceptive",
+                                                           "F normal/\nM contraceptive",
+                                                           "F normal/\nM contraceptive",
+                                                           "F normal/\nM normal"),
                              
 )
 
@@ -1149,22 +1149,22 @@ pdat %>% mutate(lrr_surgical_m = (Male_Surgical_Mean/Male_None_Mean - 1)*100,
                 lrr_immunological_m = (Male_Immunological_Mean/Male_None_Mean - 1)*100,
                 lrr_immunological_f = (Female_Immunological_Mean/Female_None_Mean - 1)*100,
                 #) -> pdat
-                phylogeny = gsub(" ","_", vertlife.species)) -> pdat
+                phylogeny = gsub(" ","_", vertlife.species)) -> pdat2
 
 
 # matching the tree ordering and data ordering
-pos_order <- match(ordered_spp, pdat$phylogeny)
-pdat <- pdat[pos_order, ]
-pdat$ordering <- seq(1:nrow(pdat))
+pos_order <- match(ordered_spp, pdat2$phylogeny)
+pdat2 <- pdat2[pos_order, ]
+pdat2$ordering <- seq(1:nrow(pdat))
 #rownames(pdat) <- gsub(" ", "_", pdat$vertlife.species)
 
 # reformat data to long format
-pdat <- pdat %>% select(species, vertlife.species, order, phylogeny, ordering,
+pdat3 <- pdat2 %>% select(species, vertlife.species, order, phylogeny, ordering,
                         lrr_surgical_m, lrr_surgical_f,
                         lrr_hormonal_m, lrr_hormonal_f,
                         lrr_immunological_m, lrr_immunological_f)
 
-pdat_long <- pdat %>% pivot_longer(cols = c(lrr_surgical_m, lrr_surgical_f,
+pdat_long <- pdat3 %>% pivot_longer(cols = c(lrr_surgical_m, lrr_surgical_f,
                                             lrr_hormonal_m, lrr_hormonal_f,
                                             lrr_immunological_m, lrr_immunological_f))
 
@@ -1190,7 +1190,7 @@ ldat <- vector("list", 10)
 
 for (i in ord) {
 
-  tip <-  as.vector(as.data.frame(pdat[which(pdat$order == i), "phylogeny"]))
+  tip <-  as.vector(as.data.frame(pdat3[which(pdat3$order == i), "phylogeny"]))
   #tip <-  gsub(" ", "_", tip)
   if (length(tip) > 1) {
     tnode <- numeric(getMRCA(tree, tip = tip$phylogeny))
@@ -1217,7 +1217,7 @@ p <-
     color = "#454747"
   )
 
-pdat %>% select(phylogeny, order) -> odat
+pdat3 %>% select(phylogeny, order) -> odat
 
 p0 <- p %<+% odat + 
   geom_tippoint(aes(color= order), size = 0.5) + xlim_expand(c(0,170), panel = "Tree") + 
@@ -1363,19 +1363,19 @@ pdat %>% mutate(rom_fimmu_mimmu = (Female_Immunological_Mean/Male_Immunological_
                 rom_fnorm_mnorm = (Female_None_Mean/Male_None_Mean - 1)*100,
                 #) -> pdat
                 phylogeny = gsub(" ","_", species)) -> 
-           pdat
+           pdat2
 
 # matching the tree ordering and data ordering
-pos_order <- match(ordered_spp, pdat$phylogeny)
-pdat <- pdat[pos_order, ]
-pdat$ordering <- seq(1:nrow(pdat))
+pos_order <- match(ordered_spp, pdat2$phylogeny)
+pdat2 <- pdat2[pos_order, ]
+pdat2$ordering <- seq(1:nrow(pdat2))
 #pdat <- gsub(" ", "_", pdat$vertlife.species)
 
 # reformat data to long format
 # this ordering is incorrect - I think
-pdat$ordering <- seq(1:nrow(pdat))
+pdat2$ordering <- seq(1:nrow(pdat))
 
-pdat <- pdat %>% select(species, vertlife.species, order, phylogeny, ordering,
+pdat3 <- pdat2 %>% select(species, vertlife.species, order, phylogeny, ordering,
                         rom_fimmu_mimmu, rom_fhorm_mhorm,rom_fsurg_msurg,
                         rom_fimmu_mnorm, rom_fhorm_mnorm, rom_fsurg_mnorm,
                         rom_fnorm_mimmu, rom_fnorm_mhorm, rom_fnorm_msurg,
@@ -1383,28 +1383,28 @@ pdat <- pdat %>% select(species, vertlife.species, order, phylogeny, ordering,
 
 
 
-pdat_long <- pdat %>% pivot_longer(cols = c( rom_fimmu_mimmu, rom_fhorm_mhorm,rom_fsurg_msurg,
+pdat_long <- pdat3 %>% pivot_longer(cols = c( rom_fimmu_mimmu, rom_fhorm_mhorm,rom_fsurg_msurg,
                                              rom_fimmu_mnorm, rom_fhorm_mnorm, rom_fsurg_mnorm,
                                              rom_fnorm_mimmu, rom_fnorm_mhorm, rom_fnorm_msurg,
                                              rom_fnorm_mnorm))
 
-pdat_long %>% mutate(category = rep(c("F contra./M contra.","F contra./M contra.","F contra./M contra.",
-                                      "F contra./M normal", "F contra./M normal", "F contra./M normal", 
-                                      "F normal/M contra.", "F normal/M contra.", "F normal/M contra.",
-                                      "F normal/M normal"), nrow(pdat))) -> pdat_long
+pdat_long %>% mutate(category = rep(c("F contraceptive/\nM contraceptive","F contraceptive/\nM contraceptive","F contraceptive/\nM contraceptive",
+                                      "F contraceptive/\nM normal", "F contraceptive/\nM normal", "F contraceptive/\nM normal", 
+                                      "F normal/\nM contraceptive", "F normal/\nM contraceptive", "F normal/\nM contraceptive",
+                                      "F normal/\nM normal"), nrow(pdat))) -> pdat_long
 
 pdat_long %>% mutate(min_value = ifelse(is.na(value) == TRUE, NA, ifelse (value < 0, value, 0)), 
                      max_value = ifelse(is.na(value) == TRUE, NA, ifelse (value > 0, value, 0)),
                      sex_diff = ifelse(min_value == 0, "F live longer", "M live longer")) -> pdat_long
 
-pdat_long$category <- factor(pdat_long$category, levels = rev(c("F contra./M contra.", 
-                                        "F contra./M normal", 
-                                        "F normal/M contra.",
-                                        "F normal/M normal")),
-                         labels = rev(c("F contra./M contra.", 
-                                    "F contra./M normal", 
-                                    "F normal/M contra.",
-                                    "F normal/M normal")))
+pdat_long$category <- factor(pdat_long$category, levels = rev(c("F contraceptive/\nM contraceptive", 
+                                        "F contraceptive/\nM normal", 
+                                        "F normal/\nM contraceptive",
+                                        "F normal/\nM normal")),
+                         labels = rev(c("F contraceptive/\nM contraceptive", 
+                                    "F contraceptive/\nM normal", 
+                                    "F normal/\nM contraceptive",
+                                    "F normal/\nM normal")))
 
 
 # doing tree figure
@@ -1419,7 +1419,7 @@ ldat <- vector("list", 10)
 
 for (i in ord) {
   
-  tip <-  as.vector(as.data.frame(pdat[which(pdat$order == i), "phylogeny"]))
+  tip <-  as.vector(as.data.frame(pdat3[which(pdat3$order == i), "phylogeny"]))
   #tip <-  gsub(" ", "_", tip)
   if (length(tip) > 1) {
     tnode <- numeric(getMRCA(tree, tip = tip$phylogeny))
@@ -1446,7 +1446,7 @@ p <-
     color = "#454747"
   )
 
-pdat %>% select(phylogeny, order) -> odat
+pdat3 %>% select(phylogeny, order) -> odat
 
 p0 <- p %<+% odat + 
   geom_tippoint(aes(color= order), size = 0.5) + xlim_expand(c(0,170), panel = "Tree") + 
@@ -1512,9 +1512,10 @@ p2 <- ggplot(pdat_long,
         axis.ticks  = element_blank(),
         strip.text = element_text(face = "bold"),
         panel.grid.minor.x = element_blank(),
-        legend.box.background = element_rect(colour = "black")) +
+        #legend.box.background = element_rect(colour = "black")
+        ) +
   #guides(colour = colour) +
-  theme(legend.position =  c(0.9, 0.92)) +
+  theme(legend.position =  c(0.88, 0.92)) +
   labs(colour = "Sex difference") +
   xlab("Ratio: female/male (%)") +
   theme(legend.key.size = unit(0.25, 'cm')) + 
@@ -1528,11 +1529,11 @@ p_phylo2 <- p1 + p2
 ###
 p_sexdiff <- orchard_plot(mod_comb, mod = "contraception",
              xlab = "log response ratio (lnRR)", group = "species", 
-             g = FALSE, angle = 45)
+             g = FALSE, angle =0)
 
 p_abs <- orchard_plot(mod_comb_a, mod = "contraception",
              xlab = "absolute log response ratio (lnRR)", group = "species", 
-             g = FALSE, angle = 45)
+             g = FALSE, angle = 0)
 
 #res2
 
@@ -1543,7 +1544,7 @@ p_abs <- orchard_plot(mod_comb_a, mod = "contraception",
 ## Figure 4
 ###################
 
-p_phylo2 / (p_sexdiff + p_abs) + 
+plot_grid(p_phylo2) / (p_sexdiff + p_abs) + 
   plot_annotation(tag_levels = 'A') + 
   plot_layout(heights = c(1.5,1.0))
 
