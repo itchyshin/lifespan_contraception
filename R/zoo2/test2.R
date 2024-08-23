@@ -82,17 +82,45 @@ tree <- drop.tip(tree, to_drop)
 
 tree <- force.ultrametric(tree)
 
-# ***************************************************************
-#   *                          Note:                              *
-#   *    force.ultrametric does not include a formal method to    *
-#   *    ultrametricize a tree & should only be used to coerce    *
-#   *   a phylogeny that fails is.ultrametric due to rounding --  *
-#   *    not as a substitute for formal rate-smoothing methods.   *
-#   ***************************************************************
-
 #tree <- compute.brlen(tree)
 cor_tree <- vcv(tree, corr = TRUE)
 
+# meta-analysis plan
+# we can use both log relative reisk and log response ratio (raito of means)
 
+# function for raito of means
 
+lnrrp <- function(m1, m2, n1, n2) {
+  # arcsine transforamtion
+  asin_trans <- function(p) { asin(sqrt(p)) }
+  # SD for arcsine distribution (see Wiki - https://en.wikipedia.org/wiki/Arcsine_distribution)
+  var1 <- 1/8
+  var2 <- 1/8
+  # lnRR - with 2nd order correction
+  lnrr <- log(asin_trans(m1)/asin_trans(m2)) + 
+    0.5 * ((var1 / (n1 * asin_trans(m1)^2)) - (var2 / (n2 * asin_trans(m2)^2)))	
+  
+  var <- var1 / (n1 * asin_trans(m1)^2) + var1^2 / (2 * n1^2 * asin_trans(m1)^4)  + 
+    var2 / (n2 * asin_trans(m2)^2) + var2^2 / (2 * n2^2 * asin_trans(m2)^4) 
+  
+  invisible(data.frame(yi = lnrr , vi = var))
+}
+
+# function for relative risk
+
+lnrrisk <- function(p1, p2, n1, n2) {
+  e1 <- p1 * n1 # the nmber of dead in group 1
+  e2 <- p2 * n2 # the number of dead in group 2
+  
+  a1 <- (1-p1)*n1 # the number of alive in group 1
+  a2 <- (1-p2)*n2 # the number of alive in group 2
+  
+  # log relative risk
+  
+  lnrrisk <- log(p1/p2)
+  
+  vlnrrisk <- a1/(e1*(a1+e1)) + a2/(e2*(a2+e2))
+  
+  invisible(data.frame(yi2 = lnrrisk , vi2 = vlnrrisk))
+}
 
