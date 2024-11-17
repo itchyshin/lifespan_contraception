@@ -187,6 +187,8 @@ round(i2_ml(mod),2) # almost no phylogenetic effect
 orchard_plot(mod, xlab = "log response ratio (lnRR)", group = "Study")
 
 
+# measure 
+
 VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Measure,
              data = dat, rho = 0.5)
 
@@ -207,3 +209,32 @@ summary(mod1)
 # visualizing the result
 orchard_plot(mod1, mod = "Measure", 
              xlab = "log response ratio (lnRR)", group = "Study", angle = 45)
+
+# Measure x Sex
+
+dat$MesSex <- paste0(dat$Measure, "_", dat$Sex)
+
+VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = MesSex,
+             data = dat, rho = 0.5)
+
+mod2 <-  rma.mv(yi = yi, 
+               V = vi, 
+               mod = ~ MesSex - 1, 
+               random = list(~ 1|Strain, 
+                             ~ 1|Study, 
+                             ~ MesSex|Effect_ID), 
+               struct = "DIAG",
+               data = dat, 
+               test = "t",
+               sparse = TRUE,
+               control=list(optimizer="optim", optmethod="BFGS")
+)
+
+summary(mod2)
+
+# visualizing the result
+
+orchard_plot(mod2, mod = "MesSex", 
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 45)
+
+
