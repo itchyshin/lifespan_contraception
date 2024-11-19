@@ -162,13 +162,20 @@ dat$vi <- ifelse(effect_type == "other", lnrrm(dat$Experimental_value,
                                                dat$Sample_size_experimental, 
                                                dat$Sample_size_control)[[2]])
 
+# flipping directions
+
+dat$direction <- ifelse(dat$direction.of.improved.health == "Increased", 1, -1)
+
+dat$yi <- dat$yi * dat$direction
+
+
 # meta-analysis
 
 VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, #subgroup = Measure,
              data = dat, rho = 0.5)
 
 mod <-  rma.mv(yi = yi, 
-               V = vi, 
+               V = VCV, 
                #mod = ~ 1, 
                random = list(~1|Strain, 
                              ~ 1|Study, 
@@ -187,32 +194,87 @@ round(i2_ml(mod),2) # almost no phylogenetic effect
 orchard_plot(mod, xlab = "log response ratio (lnRR)", group = "Study")
 
 
-# measure 
+# male and female difference
 
-VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Measure,
+VCV1 <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Sex,
              data = dat, rho = 0.5)
 
 mod1 <-  rma.mv(yi = yi, 
-               V = vi, 
-               mod = ~ Measure - 1, 
+                V = VCV1, 
+                mod = ~ Sex - 1, 
+                random = list(~ 1|Strain, 
+                              ~ 1|Study, 
+                              ~ Sex|Effect_ID), 
+                struct = "DIAG",
+                data = dat, 
+                test = "t",
+                sparse = TRUE,
+                control=list(optimizer="optim", optmethod="BFGS")
+)
+summary(mod1) 
+
+
+mod1b <-  rma.mv(yi = yi, 
+                V = VCV1, 
+                mod = ~ Sex - 1, 
+                random = list(~ 1|Strain, 
+                              ~ 1|Study, 
+                              ~ 1|Effect_ID), 
+                #struct = "DIAG",
+                data = dat, 
+                test = "t",
+                sparse = TRUE,
+                control=list(optimizer="optim", optmethod="BFGS")
+)
+summary(mod1b) 
+
+# visualizing the result
+orchard_plot(mod1, mod = "Sex", 
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 45, cb = F) # colour = T)
+
+
+
+# measure 
+
+VCV2 <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Sub.measure,
+             data = dat, rho = 0.5)
+
+mod2 <-  rma.mv(yi = yi, 
+               V = VCV2, 
+               mod = ~ Sub.measure - 1, 
                random = list(~ 1|Strain, 
                              ~ 1|Study, 
-                             ~ Measure|Effect_ID), 
+                             ~ Sub.measure|Effect_ID), 
                struct = "DIAG",
                data = dat, 
                test = "t",
                sparse = TRUE,
                control=list(optimizer="optim", optmethod="BFGS")
 )
-summary(mod1) 
+summary(mod2) 
+
+mod2b <-  rma.mv(yi = yi, 
+                V = VCV2, 
+                mod = ~ Sub.measure - 1, 
+                random = list(~ 1|Strain, 
+                              ~ 1|Study, 
+                              ~ 1|Effect_ID), 
+                #struct = "DIAG",
+                data = dat, 
+                test = "t",
+                sparse = TRUE,
+                control=list(optimizer="optim", optmethod="BFGS")
+)
+summary(mod2b) 
+
 
 # visualizing the result
-orchard_plot(mod1, mod = "Measure", 
+orchard_plot(mod2, mod = "Sub.measure", 
              xlab = "log response ratio (lnRR)", group = "Study", angle = 45)
 
 # Measure x Sex
 
-dat$MesSex <- paste0(dat$Measure, "_", dat$Sex)
+dat$MesSex <- paste0(dat$Sub.measure, "_", dat$Sex)
 
 VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = MesSex,
              data = dat, rho = 0.5)
@@ -235,6 +297,6 @@ summary(mod2)
 # visualizing the result
 
 orchard_plot(mod2, mod = "MesSex", 
-             xlab = "log response ratio (lnRR)", group = "Study", angle = 45)
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 45, cb = F)
 
 

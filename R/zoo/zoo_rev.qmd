@@ -1,0 +1,1565 @@
+---
+title: "Code for zoo data for **Female contraception and male castration increase lifespan across vertebrates**"
+subtitle: "**Supplmentary Information 1**"
+author: "**Michael Garratt, Malgorzata Lagisz, Johanna Stärk, Christine Neyt, Michael Stout, José V. V. Isola, Veronica Cowl, Nannette Driver-Ruiz, Ashley D. Franklin, Monica M. McDonald, David Powell, Susan L. Walker, Jean-Michel Gaillard, Dalia A. Conde, Jean-François Lemaître, Fernando Colchero and Shinichi Nakagawa**"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "**Table of Contents**"
+    output-file: "zoo.html"
+    theme: simplex
+    embed-resources: true
+    code-fold: true
+    code-tools: true
+    number-sections: true
+    #bibliography: ./bib/ref.bib
+    fontsize: "12"
+    max-width: "10"
+    code-overflow: wrap
+crossref: 
+  fig-title: Figure     # (default is "Figure")
+  tbl-title: Table     # (default is "Table")
+  title-delim: —     # (default is ":")
+  fig-prefix: Fig.   # (default is "Figure")
+  tbl-prefix: Tab.    # (default is "Table")
+editor_options: 
+  chunk_output_type: console
+execute:
+  warning: false
+  message: false
+  tidy: true
+  #cache: true
+---
+
+# Setting up
+
+## Loading packages
+
+```{r}
+
+# loading
+pacman::p_load(tidyverse,
+               metafor,
+               pander,
+               knitr,
+               stringr,
+               ape,
+               here,
+               kableExtra,
+               patchwork,
+               lme4,
+               readxl,
+               #metaAidR,
+               rotl,
+               orchaRd,
+               emmeans,
+               clubSandwich,
+               png,
+               grid,
+               here,
+               cowplot,
+               apextra,
+               ggimage,
+               ggstance,
+               ggtree,
+)
+
+```
+
+## Loading data
+
+```{r}
+# main data
+dat0 <- read_csv(here("data", "zoo", "zoo.csv"), na = c("", "NA"))
+
+# phylogeny
+tree <- read.tree(here("data", "zoo", "tree_zoo.tre"))
+
+# taxonomy
+tax <- read.csv(here("data", "zoo", "vertlife_taxonomy_translation_table.csv"))
+
+dat0 %>% left_join(tax, by = c("species" = "zims.species")) -> dat_full
+
+# talking out species with no data (Pseudocheirus peregrinus = likely to be mistaks in data)
+dat_full %>% filter(species != "Chrysocyon brachyurus" &
+                    species != "Crocuta crocuta" &
+                    species != "Neofelis nebulosa" &
+                    species != "Panthera uncia" &
+                    species != "Pseudocheirus peregrinus") %>% 
+  mutate(phylogeny = gsub(" ", "_", vertlife.species)) -> dat
+
+# adding Cervus canadensis
+dat$vertlife.species[which(dat$species == "Cervus canadensis")] <-"Cervus canadensis"
+dat$phylogeny[which(dat$species == "Cervus canadensis")] <-"Cervus_canadensis"
+
+# fixing species name
+dat$species[dat$species == "Equus asinus"] <- "Equus_africanus"
+dat$species[dat$species == "Aonyx cinereus"] <- "Aonyx cinerea"
+dat$species[dat$species == "Bubalus bubalis"] <- "Bubalus arnee"
+
+
+# life span data 
+to_drop <-
+  tree$tip.label[which(!(tree$tip.label %in% unique(dat$phylogeny)))]
+
+tree <- drop.tip(tree, to_drop)
+
+# checking the number of spp
+#length(tree$tip.label)
+
+tree <- as.ultrametric(tree)
+
+#tree <- compute.brlen(tree)
+cor_tree <- vcv(tree, corr = TRUE)
+
+# length(unique(dat$species))
+# length(unique(dat$phylogeny))
+# 
+# match(unique(gsub(" ","_", dat$species)), unique(dat$phylogeny))
+# match(unique(dat$phylogeny), unique(gsub(" ","_", dat$species)))
+
+#write_csv(dat, here("data", "zoo", "original.csv"))
+
+# pre- and post-2005 data for sensitivity analysis
+dat_pre <-  read.csv(here("data", "zoo", "hormTabPre05.csv"))
+dat_post <-  read.csv(here("data", "zoo","hormTabPost05.csv"))
+
+dat_pre %>% left_join(tax, by = c("species" = "zims.species")) -> dat_pre
+dat_post %>% left_join(tax, by = c("species" = "zims.species")) -> dat_post
+
+dat_pre  %>% 
+  transmute(F_normal_m = LifeExpNocontMean,
+            F_normal_sd = sqrt(Nnocon)*LifeExpNocontSE,
+            F_normal_n = Nnocon,
+            F_hormonal_m = LifeExpHormMean,
+            F_hormonal_sd = sqrt(Nhorm)*LifeExpHormSE,
+            F_hormonal_n = Nhorm,
+            species = species,
+            #species_tree = vertlife.species,
+            phylogeny = gsub(" ", "_", vertlife.species)
+  ) -> dat_pre
+
+dat_post %>% 
+  transmute(F_normal_m = LifeExpNocontMean,
+          F_normal_sd = sqrt(Nnocon)*LifeExpNocontSE,
+          F_normal_n = Nnocon,
+          F_hormonal_m = LifeExpHormMean,
+          F_hormonal_sd = sqrt(Nhorm)*LifeExpHormSE,
+          F_hormonal_n = Nhorm,
+          species = species,
+          #species_tree = vertlife.species,
+          phylogeny = gsub(" ", "_", vertlife.species)
+) -> dat_post
+
+```
+
+## Custom functions
+
+We have 7 custom functions named : `cont_gen()`,`get_pred1()`, `get_pred2()`, `mr_results()`, `all_models()`,`folded_mu`, and `folded_v`, all of which are used later and the code is included here.
+
+```{r}
+# custom functions
+
+#' Title: Contrast name generator
+#'
+#' @param name: a vector of character strings
+cont_gen <- function(name) {
+  combination <- combn(name, 2)
+  name_dat <- t(combination)
+  names <- paste(name_dat[, 1], name_dat[, 2], sep = "-")
+  return(names)
+}
+
+#' @title get_pred1: intercept-less model
+#' @description Function to get CIs (confidence intervals) and PIs (prediction intervals) from rma objects (metafor)
+#' @param model: rma.mv object 
+#' @param mod: the name of a moderator 
+get_pred1 <- function (model, mod = " ") {
+  name <- firstup(as.character(stringr::str_replace(row.names(model$beta), mod, "")))
+  len <- length(name)
+  
+   if (len != 1) {
+        newdata <- diag(len)
+        pred <- metafor::predict.rma(model, 
+                                     newmods = newdata,
+                                     tau2.levels = 1:len)
+    }
+    else {
+        pred <- metafor::predict.rma(model)
+  }
+  estimate <- pred$pred
+  lowerCL <- pred$ci.lb
+  upperCL <- pred$ci.ub 
+  lowerPR <- pred$cr.lb
+  upperPR <- pred$cr.ub 
+  
+  table <- tibble(name = factor(name, levels = name, labels = name), estimate = estimate,
+                  lowerCL = lowerCL, upperCL = upperCL,
+                  pval = model$pval,
+                  lowerPR = lowerPR, upperPR = upperPR)
+}
+
+#' @title get_pred2: normal model
+#' @description Function to get CIs (confidence intervals) and PIs (prediction intervals) from rma objects (metafor)
+#' @param model: rma.mv object 
+#' @param mod: the name of a moderator 
+get_pred2 <- function (model, mod = " ") {
+  name <- as.factor(str_replace(row.names(model$beta), 
+                                paste0("relevel", "\\(", mod,", ref = name","\\)"),""))
+  len <- length(name)
+  
+  if(len != 1){
+  newdata <- diag(len)
+  pred <- predict.rma(model, intercept = FALSE, newmods = newdata[ ,-1])
+  }
+  else {
+    pred <- predict.rma(model)
+  }
+  estimate <- pred$pred
+  lowerCL <- pred$ci.lb
+  upperCL <- pred$ci.ub 
+  lowerPR <- pred$cr.lb
+  upperPR <- pred$cr.ub 
+  
+  table <- tibble(name = factor(name, levels = name, labels = name), estimate = estimate,
+                  lowerCL = lowerCL, upperCL = upperCL,
+                  pval = model$pval,
+                  lowerPR = lowerPR, upperPR = upperPR)
+}
+
+#' @title mr_results
+#' @description Function to put results of meta-regression and its contrasts
+#' @param res1: data frame 1
+#' @param res1: data frame 2
+mr_results <- function(res1, res2) {
+  restuls <-tibble(
+    `Fixed effect` = c(as.character(res1$name), cont_gen(res1$name)),
+    Estimate = c(res1$estimate, res2$estimate),
+    `Lower CI [0.025]` = c(res1$lowerCL, res2$lowerCL),
+    `Upper CI  [0.975]` = c(res1$upperCL, res2$upperCL),
+    `P value` = c(res1$pval, res2$pval),
+    `Lower PI [0.025]` = c(res1$lowerPR, res2$lowerPR),
+    `Upper PI  [0.975]` = c(res1$upperPR, res2$upperPR),
+  )
+}
+
+
+#' @title all_models
+#' @description Function to take all possible models and get their results
+#' @param model: intercept-less model
+#' @param mod: the name of a moderator 
+
+all_models <- function(model, mod = " ", type = "homo") {
+  
+  # getting the level names out
+  level_names <- levels(factor(model$data[[mod]]))
+  dat2 <- model$data
+  mod <- mod
+
+
+  run_rma1 <- function(name) {
+      VCV1 <- vcalc(vi = dat2$vi,
+             cluster = dat2$species,
+             rho = 0.5)
+      
+    rma.mv(yi, V = VCV1,
+                   mods = ~relevel(dat2[[mod]], ref = name),
+                     random = list(
+                       ~1|species,
+                       ~1|phylogeny,
+                       ~1|obs_id),
+                     R = list(phylogeny = cor_tree),
+                     data = dat2,
+                     control = list(optimizer = "Nelder-Mead"))
+   }
+
+    run_rma2 <- function(name) {
+    
+            VCVa <- vcalc(abs_vi, species, 
+                    rho = 0.5, data = dat2)
+               
+               rma.mv(abs_yi, V = VCVa,
+               mods = ~relevel(dat2[[mod]], ref = name),
+                     random = list(
+                       ~1|species,
+                       ~1|phylogeny,
+                       ~1|obs_id),
+                     R = list(phylogeny = cor_tree),
+                     data = dat2,
+                     control = list(optimizer = "Nelder-Mead"))
+   }
+
+# results of meta-regression including all contrast results; taking the last level out ([-length(level_names)])
+# this does not work for hetero model?
+if (type == "homo"){
+
+    model_all <- purrr::map(level_names[-length(level_names)], run_rma1)
+
+  } else {
+  model_all <- purrr::map(level_names[-length(level_names)], run_rma2)
+  }
+  
+  # getting estimates from intercept-less models (means for all the groups)
+  res1 <- get_pred1(model, mod = mod)
+  
+  # getting estiamtes from all contrast models
+  res2_pre <- purrr::map(model_all, ~ get_pred2(.x, mod = mod))
+  
+  # a list of the numbers to take out unnecessary contrasts
+  contra_list <- Map(seq, from=1, to=1:(length(level_names) - 1))
+  res2 <- purrr::map2_dfr(res2_pre, contra_list, ~.x[-(.y), ]) 
+  # creating a table
+  res_tab <- mr_results(res1, res2) %>% 
+  kable("html",  digits = 3) %>%
+  kable_styling("striped", position = "left") %>%
+  scroll_box(width = "100%")
+  
+  # results
+  res_tab
+
+}
+
+
+##########
+# functions for absolute values
+
+
+# folded mean
+folded_mu <-function(mean, variance){
+  mu <- mean
+  sigma <- sqrt(variance)
+  fold_mu <- sigma*sqrt(2/pi)*exp((-mu^2)/(2*sigma^2)) + mu*(1 - 2*pnorm(-mu/sigma))
+  fold_mu
+} 
+
+# folded variance
+folded_v <-function(mean, variance){
+  mu <- mean
+  sigma <- sqrt(variance)
+  fold_mu <- sigma*sqrt(2/pi)*exp((-mu^2)/(2*sigma^2)) + mu*(1 - 2*pnorm(-mu/sigma))
+  fold_se <- sqrt(mu^2 + sigma^2 - fold_mu^2)
+  # adding se to make bigger mean
+  fold_v <-fold_se^2
+  fold_v
+} 
+
+```
+
+## Preparing data set (calulating effect sizes)
+
+### Comparing contraception vs. normal
+
+```{r}
+##############################################
+# data sets comparing normal vs. contraception 
+##############################################
+
+# male surgical
+
+dat_m_surg <- dat %>% filter(is.na(Male_Surgical_Mean) == FALSE, is.na(Male_None_Mean) == FALSE) %>% 
+  mutate(M_control_m = Male_None_Mean,
+         M_control_sd = sqrt(Male.None)*Male_None_SE,
+         M_control_n = Male.None,
+         M_surgical_m = Male_Surgical_Mean,
+         M_surgical_sd = sqrt(Male.Surgical)*Male_Surgical_SE,
+         M_surgical_n = Male.Surgical,
+         sex = "male",
+         type = "surgical")
+
+dat_m_surg <- escalc("ROM", 
+              m1i = M_surgical_m,
+              m2i = M_control_m,
+              sd1i = M_surgical_sd,
+              sd2i = M_control_sd,
+              n1i = M_surgical_n,
+              n2i = M_control_n,
+              data = dat_m_surg,
+              )
+
+#  male hormonal
+dat_m_horm <- dat %>% filter(is.na(Male_Hormonal_Mean) == FALSE, is.na(Male_None_Mean) == FALSE) %>% 
+  mutate(M_control_m = Male_None_Mean,
+         M_control_sd = sqrt(Male.None)*Male_None_SE,
+         M_control_n = Male.None,
+         M_hormonal_m = Male_Hormonal_Mean,
+         M_hormonal_sd = sqrt(Male.Hormonal)*Male_Hormonal_SE,
+         M_hormonal_n = Male.Hormonal,
+         sex = "male",
+         type = "hormonal")
+
+dat_m_horm <- escalc("ROM", 
+                     m1i = M_hormonal_m,
+                     m2i = M_control_m,
+                     sd1i = M_hormonal_sd,
+                     sd2i = M_control_sd,
+                     n1i = M_hormonal_n,
+                     n2i = M_control_n,
+                     data = dat_m_horm,
+)
+
+# male immunological
+dat_m_immu <- dat %>% filter(is.na(Male_Immunological_Mean) == FALSE, 
+    is.na(Male_None_Mean) == FALSE) %>%
+  mutate(M_control_m = Male_None_Mean,
+         M_control_sd = sqrt(Male.None)*Male_None_SE,
+         M_control_n = Male.None,
+         M_immunol_m = Male_Immunological_Mean,
+         M_immunol_sd = sqrt(Male.Immunological)*Male_Immunological_SE,
+         M_immunol_n = Male.Immunological,
+         sex = "male",
+         type = "immunological")
+
+dat_m_immu <- escalc("ROM", 
+                     m1i = M_immunol_m,
+                     m2i = M_control_m,
+                     sd1i = M_immunol_sd,
+                     sd2i = M_control_sd,
+                     n1i = M_immunol_n,
+                     n2i = M_control_n,
+                     data = dat_m_immu,
+)
+
+
+# female hormonal data 
+
+dat_f_horm <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE, is.na(Female_None_Mean) == FALSE) %>% 
+  mutate(F_control_m = Female_None_Mean,
+         F_control_sd = sqrt(Female.None)*Female_None_SE,
+         F_control_n = Female.None,
+         F_hormonal_m = Female_Hormonal_Mean,
+         F_hormonal_sd = sqrt(Female.Hormonal)*Female_Hormonal_SE,
+         F_hormonal_n = Female.Hormonal,
+         sex = "female",
+         type = "hormonal")
+
+dat_f_horm <- escalc("ROM", 
+                     m1i = F_hormonal_m,
+                     m2i = F_control_m,
+                     sd1i = F_hormonal_sd,
+                     sd2i = F_control_sd,
+                     n1i = F_hormonal_n,
+                     n2i = F_control_n,
+                     data = dat_f_horm,
+)
+
+# female surgical data
+
+dat_f_surg<- dat %>% filter(is.na(Female_Surgical_Mean) == FALSE, is.na(Female_None_Mean) == FALSE) %>% 
+  mutate(F_control_m = Female_None_Mean,
+         F_control_sd = sqrt(Female.None)*Female_None_SE,
+         F_control_n = Female.None,
+         F_surgical_m = Female_Surgical_Mean,
+         F_surgical_sd = sqrt(Female.Surgical)*Female_Surgical_SE,
+         F_surgical_n = Female.Surgical,
+         sex = "female",
+         type = "surgical")
+
+
+dat_f_surg <- escalc("ROM", 
+                     m1i = F_surgical_m,
+                     m2i = F_control_m,
+                     sd1i = F_surgical_sd,
+                     sd2i = F_control_sd,
+                     n1i = F_surgical_n,
+                     n2i = F_control_n,
+                     data = dat_f_surg,
+)
+
+# female immunological
+dat_f_immu <- dat %>% filter(is.na(Female_Immunological_Mean) == FALSE, 
+    is.na(Female_None_Mean) == FALSE) %>%
+  mutate(F_control_m = Female_None_Mean,
+         F_control_sd = sqrt(Female.None)*Female_None_SE,
+         F_control_n = Female.None,
+         F_immunol_m = Female_Immunological_Mean,
+         F_immunol_sd = sqrt(Female.Immunological)*Female_Immunological_SE,
+         F_immunol_n = Female.Immunological,
+         sex = "female",
+         type = "immunological")
+
+dat_f_immu <- escalc("ROM", 
+                     m1i = F_immunol_m,
+                     m2i = F_control_m,
+                     sd1i = F_immunol_sd,
+                     sd2i = F_control_sd,
+                     n1i = F_immunol_n,
+                     n2i = F_control_n,
+                     data = dat_f_immu,
+)
+
+
+rbind(
+dat_m_horm[ , c(1, 53, 55, 62:65)], # 1
+dat_m_surg[ , c(1, 53, 55, 62:65)], # 2
+dat_f_horm[ , c(1, 53, 55, 62:65)], # 3 
+dat_f_surg[ , c(1, 53, 55, 62:65)], # 4
+dat_m_immu[ , c(1, 53, 55, 62:65)], # 5
+dat_f_immu[ , c(1, 53, 55, 62:65)] # 6
+) -> dat_all
+
+# observation id
+dat_all$obs_id <- factor(1:nrow(dat_all))
+
+# sex type combined
+dat_all %>% mutate(sex_type = paste(sex, type, sep = "_")) -> dat_all
+
+#write_csv(dat_all, here("data", "zoo", "effect1.csv"))
+
+```
+
+
+### Examining sex differences
+
+```{R}
+######################################
+# data sets looking at sex differences
+######################################
+
+# female normal vs. male surgical (1)
+
+dat_fm_ns <- dat %>% filter(is.na(Female_None_Mean) == FALSE, 
+                            is.na(Male_Surgical_Mean) == FALSE) %>% 
+  transmute(F_normal_m = Male_None_Mean,
+         F_normal_sd = sqrt(Female.None)*Female_None_SE,
+         F_normal_n = Female.None,
+         M_surgical_m = Male_Surgical_Mean,
+         M_surgical_sd = sqrt(Male.Surgical)*Male_Surgical_SE,
+         M_surgical_n = Male.Surgical,
+         species = species,
+         phylogeny = phylogeny,
+         category = "F normal/M surgical"
+         )
+
+dat_fm_ns <- escalc("ROM", 
+              m1i = F_normal_m,
+              m2i = M_surgical_m,
+              sd1i = F_normal_sd,
+              sd2i = M_surgical_sd,
+              n1i = F_normal_n,
+              n2i = M_surgical_n,
+              data = dat_fm_ns,
+              )
+
+# female hormonal vs. male normal (2)
+
+dat_fm_hn <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE, 
+                            is.na(Male_None_Mean) == FALSE) %>% 
+  transmute(F_hormonal_m = Female_Hormonal_Mean,
+         F_hormonal_sd = sqrt(Female.Hormonal*Female_Hormonal_SE),
+         F_hormonal_n = Female.Hormonal,
+         M_normal_m = Male_None_Mean,
+         M_normal_sd = sqrt(Male.None)*Male_None_SE,
+         M_normal_n = Male.None,
+         species = species,
+         phylogeny = phylogeny,
+         category = "F hormonal/M normal"
+         )
+
+dat_fm_hn <- escalc("ROM", 
+              m1i = F_hormonal_m,
+              m2i = M_normal_m,
+              sd1i = F_hormonal_sd,
+              sd2i = M_normal_sd,
+              n1i = F_hormonal_n,
+              n2i = M_normal_m,
+              data = dat_fm_hn,
+              )
+
+
+
+# female surgical vs. male normal (3)
+
+dat_fm_sn <- dat %>% filter(is.na(Female_Surgical_Mean) == FALSE,
+                            is.na(Male_None_Mean) == FALSE) %>%
+  transmute(F_surgical_m = Female_Surgical_Mean,
+         F_surgical_sd = sqrt(Female.Surgical*Female_Surgical_SE),
+         F_surgical_n = Female.Surgical,
+         M_normal_m = Male_None_Mean,
+         M_normal_sd = sqrt(Male.None)*Male_None_SE,
+         M_normal_n = Male.None,
+         species = species,
+         phylogeny = phylogeny,
+         category = "F hormonal/M normal"
+         )
+
+dat_fm_sn <- escalc("ROM", 
+              m1i = F_surgical_m,
+              m2i = M_normal_m,
+              sd1i = F_surgical_sd,
+              sd2i = M_normal_sd,
+              n1i = F_surgical_n,
+              n2i = M_normal_n,
+              data = dat_fm_sn,
+              )
+
+
+# female surgical vs. male surgical (4)
+
+dat_fm_ss <- dat %>% filter(is.na(Female_Surgical_Mean) == FALSE, 
+                            is.na(Male_Surgical_Mean) == FALSE) %>% 
+    transmute(F_surgical_m = Female_Surgical_Mean,
+                 F_surgical_sd = sqrt(Female.Surgical*Female_Surgical_SE),
+                 F_surgical_n = Female.Surgical,
+                 M_surgical_m = Male_Surgical_Mean,
+                 M_surgical_sd = sqrt(Male.Surgical)*Male_Surgical_SE,
+                 M_surgical_n = Male.Surgical,
+                 species = species,
+                 phylogeny = phylogeny,
+                 category = "F surgical/M surgical"
+                 )
+
+dat_fm_ss <- escalc("ROM", 
+                            m1i = F_surgical_m,
+                            m2i = M_surgical_m,
+                            sd1i = F_surgical_sd,
+                            sd2i = M_surgical_sd,
+                            n1i = F_surgical_n,
+                            n2i = M_surgical_n,
+                            data = dat_fm_ss,
+                            )
+
+# female normal vs. male normal (5)
+
+dat_fm_nn <- dat %>% filter(is.na(Female_None_Mean) == FALSE, 
+                                                        is.na(Male_None_Mean) == FALSE) %>% 
+    transmute(F_normal_m = Female_None_Mean,
+                 F_normal_sd = sqrt(Female.None*Female_None_SE),
+                 F_normal_n = Female.None,
+                 M_normal_m = Male_None_Mean,
+                 M_normal_sd = sqrt(Male.None*Male_None_SE),
+                 M_normal_n = Male.None,
+                 species = species,
+                 phylogeny = phylogeny,
+                 category = "F normal/M normal"
+                 )
+
+dat_fm_nn <- escalc("ROM", 
+                            m1i = F_normal_m,
+                            m2i = M_normal_m,
+                            sd1i = F_normal_sd,
+                            sd2i = M_normal_sd,
+                            n1i = F_normal_n,
+                            n2i = M_normal_n,
+                            data = dat_fm_nn,
+                            )
+
+# female normal vs. male hormonal (6)
+
+dat_fm_nh <- dat %>% filter(is.na(Female_None_Mean) == FALSE,
+                            is.na(Male_Hormonal_Mean) == FALSE) %>%
+  transmute(F_normal_m = Female_None_Mean,
+            F_normal_sd = sqrt(Female.None*Female_None_SE),
+            F_normal_n = Female.None,
+            M_hornomal_m = Male_Hormonal_Mean,
+            M_hornomal_sd = sqrt(Male.Hormonal)*Male_Hormonal_SE,
+            M_hornomal_n = Male.Hormonal,
+            species = species,
+            phylogeny = phylogeny,
+            category = "F normal/M hornomal"
+  )
+
+dat_fm_nh <- escalc("ROM", 
+                    m1i = F_normal_m,
+                    m2i = M_hornomal_m,
+                    sd1i = F_normal_sd,
+                    sd2i = M_hornomal_sd,
+                    n1i = F_normal_n,
+                    n2i = M_hornomal_n,
+                    data = dat_fm_nh,
+)
+
+# female normal vs. male immunological (7)
+
+dat_fm_ni <- dat %>% filter(is.na(Female_None_Mean) == FALSE,
+                            is.na(Male_Immunological_Mean) == FALSE) %>%
+  transmute(F_normal_m = Female_None_Mean,
+            F_normal_sd = sqrt(Female.None*Female_None_SE),
+            F_normal_n = Female.None,
+            M_immunological_m = Male_Immunological_Mean,
+            M_immunological_sd = sqrt(Male.Immunological)*Male_Immunological_SE,
+            M_immunological_n = Male.Immunological,
+            species = species,
+            phylogeny = phylogeny,
+            category = "F normal/M immunological"
+  )
+        
+dat_fm_ni <- escalc("ROM", 
+                    m1i = F_normal_m,
+                    m2i = M_immunological_m,
+                    sd1i = F_normal_sd,
+                    sd2i = M_immunological_sd,
+                    n1i = F_normal_n,
+                    n2i = M_immunological_n,
+                    data = dat_fm_ni,
+)
+
+# female immunological vs. male normal (8)
+
+dat_fm_in <- dat %>% filter(is.na(Female_Immunological_Mean) == FALSE,
+                            is.na(Male_None_Mean) == FALSE) %>%
+  transmute(F_immunological_m = Female_Immunological_Mean,
+            F_immunological_sd = sqrt(Female.Immunological*Female_Immunological_SE),
+            F_immunological_n = Female.Immunological,
+            M_normal_m = Male_None_Mean,
+            M_normal_sd = sqrt(Male.None)*Male_None_SE,
+            M_normal_n = Male.None,
+            species = species,
+            phylogeny = phylogeny,
+            category = "F immunological/M normal"
+  )
+
+dat_fm_in <- escalc("ROM", 
+                    m1i = F_immunological_m,
+                    m2i = M_normal_m,
+                    sd1i = F_immunological_sd,
+                    sd2i = M_normal_sd,
+                    n1i = F_immunological_n,
+                    n2i = M_normal_n,
+                    data = dat_fm_in,
+)
+
+
+# female hormonal vs. male hormonal (9)
+
+dat_fm_hh <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE,
+                            is.na(Male_Hormonal_Mean) == FALSE) %>%
+  transmute(F_hornomal_m = Female_Hormonal_Mean,
+            F_hornomal_sd = sqrt(Female.Hormonal*Female_Hormonal_SE),
+            F_hornomal_n = Female.Hormonal,
+            M_hornomal_m = Male_Hormonal_Mean,
+            M_hornomal_sd = sqrt(Male.Hormonal)*Male_Hormonal_SE,
+            M_hornomal_n = Male.Hormonal,
+            species = species,
+            phylogeny = phylogeny,
+            category = "F hornomal/M hornomal"
+  )
+     
+dat_fm_hh <- escalc("ROM", 
+                    m1i = F_hornomal_m,
+                    m2i = M_hornomal_m,
+                    sd1i = F_hornomal_sd,
+                    sd2i = M_hornomal_sd,
+                    n1i = F_hornomal_n,
+                    n2i = M_hornomal_n,
+                    data = dat_fm_hh,
+)
+
+
+# female immunological vs. male immunological (10)
+
+dat_fm_ii <- dat %>% filter(is.na(Female_Immunological_Mean) == FALSE,
+                    is.na(Male_Immunological_Mean) == FALSE) %>%
+  transmute(F_immunological_m = Female_Immunological_Mean,
+            F_immunological_sd = sqrt(Female.Immunological*Female_Immunological_SE),
+            F_immunological_n = Female.None,
+            M_immunological_m = Male_Immunological_Mean,
+            M_immunological_sd = sqrt(Male.Immunological)*Male_Immunological_SE,
+            M_immunological_n = Male.Immunological,
+            species = species,
+            phylogeny = phylogeny,
+            category = "F immunological/M immunological"
+  )
+
+dat_fm_ii <- escalc("ROM", 
+                    m1i = F_immunological_m,
+                    m2i = M_immunological_m,
+                    sd1i = F_immunological_sd,
+                    sd2i = M_immunological_sd,
+                    n1i = F_immunological_n,
+                    n2i = M_immunological_n,
+                    data = dat_fm_ii,
+)
+
+rbind(
+  dat_fm_ns[ , 7:11], # 1
+  dat_fm_hn[ , 7:11], # 2 
+  dat_fm_sn[ , 7:11], # 3
+  dat_fm_ss[ , 7:11], # 4
+  dat_fm_nn[ , 7:11], # 5
+  dat_fm_nh[ , 7:11], # 6
+  dat_fm_ni[ , 7:11], # 7
+  dat_fm_in[ , 7:11], # 8
+  dat_fm_hh[ , 7:11], # 9
+  dat_fm_ii[ , 7:11]  # 10
+) -> dat_comb
+
+
+dat_comb$obs_id <- factor(1:nrow(dat_comb))
+
+# adding category
+dat_comb$contraception <- factor(dat_comb$category, levels = c("F immunological/M immunological",
+                                                           "F hornomal/M hornomal",
+                                                           "F surgical/M surgical",
+                                                           "F immunological/M normal",
+                                                           "F hormonal/M normal",  
+                                                           "F surgical/M normal",
+                                                           "F normal/M immunological",
+                                                           "F normal/M hormonal",
+                                                           "F normal/M surgical",
+                                                           "F normal/M normal"),
+                                                labels = c("F contraceptive/\nM contraceptive",
+                                                           "F contraceptive/\nM contraceptive",
+                                                           "F contraceptive/\nM contraceptive",
+                                                           "F contraceptive/\nM normal",
+                                                           "F contraceptive/\nM normal",  
+                                                           "F contraceptive/\nM normal",
+                                                           "F normal/\nM contraceptive",
+                                                           "F normal/\nM contraceptive",
+                                                           "F normal/\nM contraceptive",
+                                                           "F normal/\nM normal"),
+                             
+)
+
+# absolute values
+dat_comb <- dat_comb %>% mutate(
+  abs_yi = abs(yi), # we use this one (conservative)
+  abs_yi2 = folded_mu(yi, vi), # alternative way
+  abs_vi = folded_v(yi, vi))
+
+
+#write_csv(dat_comb, here("data", "zoo", "effect2.csv"))
+
+```
+
+
+### Comparing before and after 2005
+
+```{r}
+
+# getting effect size
+
+dat_pre <- escalc("ROM", 
+                    m2i = F_normal_m,
+                    m1i = F_hormonal_m,
+                    sd2i = F_normal_sd,
+                    sd1i = F_hormonal_sd,
+                    n2i = F_normal_n,
+                    n1i = F_hormonal_n,
+                    data = dat_pre,
+)
+
+dat_post <- escalc("ROM", 
+                  m2i = F_normal_m,
+                  m1i = F_hormonal_m,
+                  sd2i = F_normal_sd,
+                  sd1i = F_hormonal_sd,
+                  n2i = F_normal_n,
+                  n1i = F_hormonal_n,
+                  data = dat_post,
+)
+
+# combining
+rbind(
+  dat_pre[ , 7:10], # 1
+  dat_post[ , 7:10]# 2 
+) -> dat_pre_post
+
+# 54 effect sizes and 
+# unique(dat_pre_post$species 
+
+dat_pre_post$obs_id <- factor(1:nrow(dat_pre_post))
+
+# adding category
+dat_pre_post$timing <- rep(c("Pre-2005","Post-2005"),c(dim(dat_pre)[1], dim(dat_post)[1]))
+
+```
+
+
+# Datasets
+
+::: {.panel-tabset}
+
+## Original dataset (used)
+
+```{r}
+kable(dat, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
+  scroll_box(width = "100%", 
+    height = "500px")
+```
+
+
+## Processed data 1: contraceptive vs. normal
+
+```{r}
+kable(dat_all, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
+  scroll_box(width = "100%", 
+    height = "500px")
+```
+
+
+## Processed data 2: sex differences 
+
+```{r}
+kable(dat_comb, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
+  scroll_box(width = "100%", 
+    height = "500px")
+```
+
+## Pre-2005
+
+```{r}
+kable(dat_pre, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
+  scroll_box(width = "100%", 
+    height = "500px")
+```
+
+
+## Post-2005
+
+```{r}
+kable(dat_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
+  scroll_box(width = "100%", 
+    height = "500px")
+```
+
+## Processed data 3: pre- and post-2005
+
+```{r}
+kable(dat_pre_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
+  scroll_box(width = "100%", 
+    height = "500px")
+```
+
+:::
+
+
+# Analysis set 1: contraceptive vs. normal 
+
+::: {.panel-tabset}
+
+## Main meta-analysis
+
+```{r}
+
+# variance-covariance matrix for sampling error assuming 0.5 correlation
+VCV <- vcalc(vi, species, rho = 0.5, data = dat_all)
+
+
+mod_all <- rma.mv(yi, V = VCV,
+                     random = list(
+                       ~1|species,
+                       ~1|phylogeny,
+                       ~1|obs_id),
+                     R = list(phylogeny = cor_tree),
+                     data = dat_all)
+summary(mod_all)
+round(i2_ml(mod_all), 2)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_all, xlab = "lnRR (all)", group = "species", g = FALSE)
+
+```
+
+## Meta-regression: sex 
+
+```{r}
+mod_all1 <- rma.mv(yi, V = VCV,
+                   mod = ~ sex,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny,
+                    ~1|obs_id),
+                  R = list(phylogeny = cor_tree),
+                  data = dat_all)
+summary(mod_all1)
+
+
+mod_all1b <- rma.mv(yi, V = VCV,
+                   mod = ~ sex - 1,
+                   random = list(
+                     ~1|species,
+                     ~1|phylogeny,
+                     ~1|obs_id),
+                   R = list(phylogeny = cor_tree),
+                   data = dat_all)
+summary(mod_all1b)
+
+round(r2_ml(mod_all1), 2)
+
+orchard_plot(mod_all1, mod = "sex",
+             xlab = "lnRR (all)", group = "species", g = FALSE)
+```
+
+## Meta-regression: type
+
+```{r}
+
+dat_all$type <- factor(dat_all$type, 
+                   levels = rev(c("surgical", "hormonal", "immunological")))
+
+mod_all2 <- rma.mv(yi, V = VCV,
+                 mod = ~ type -1,
+                 random = list(
+                   ~1|species,
+                   ~1|phylogeny,
+                   ~1|obs_id),
+                 R = list(phylogeny = cor_tree),
+                 data = dat_all)
+
+summary(mod_all2)
+
+# R^2 - hardly any
+round(r2_ml(mod_all2)*100, 2)
+
+orchard_plot(mod_all2, mod = "type",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
+
+
+# result table
+all_models(mod_all2, mod = "type")
+```
+
+::: 
+
+# Analysis set 2: sex difference
+
+::: {.panel-tabset}
+
+## Different sex differences
+
+```{r}
+# variance-covariance matrix for sampling error assuming 0.5 correlation
+VCV <- vcalc(vi, species, rho = 0.5, data = dat_comb)
+
+mod_comb <- rma.mv(yi, V = VCV,
+                   mods = ~contraception - 1,
+                   random = list(
+                     ~1|species,
+                     ~1|phylogeny,
+                     ~1|obs_id),
+                   R = list(phylogeny = cor_tree),
+                   data = dat_comb,
+                   control = list(optimizer = "Nelder-Mead"))
+summary(mod_comb)
+
+round(r2_ml(mod_comb)*100, 2)
+
+#robust(mod_comb, cluster = species)  
+
+orchard_plot(mod_comb, mod = "contraception",
+             xlab = "log response ratio (lnRR)", group = "species", 
+             g = FALSE, angle = 45)
+
+all_models(mod_comb, mod = "contraception")  
+```
+
+## Different sex differences: absolute valies
+
+```{r}
+# variance-covariance matrix for sampling error assuming 0.5 correlation
+VCVa <- vcalc(abs_vi, species, rho = 0.5, data = dat_comb)
+
+mod_comb_a <- rma.mv(abs_yi, V = VCVa,
+                     mods = ~contraception - 1,
+                     random = list(
+                       ~1|species,
+                       ~1|phylogeny,
+                       ~1|obs_id),
+                     R = list(phylogeny = cor_tree),
+                     data = dat_comb,
+                     control = list(optimizer = "Nelder-Mead"))
+summary(mod_comb_a)
+
+round(r2_ml(mod_comb_a)*100, 2)
+
+#robust(mod_comb_a, cluster = species)  
+
+orchard_plot(mod_comb_a, mod = "contraception",
+             xlab = "absolute log response ratio (lnRR)", group = "species", 
+             g = FALSE, angle = 45)
+
+
+all_models(mod_comb_a, mod = "contraception", type = "abs")
+```
+
+::: 
+
+
+# Sensitivity analysis: pre- and post-2005
+
+```{r}
+# variance-covariance matrix for sampling error assuming 0.5 correlation
+VCV <- vcalc(vi, species, rho = 0.5, data = dat_pre_post)
+
+# 
+mod_pp <- rma.mv(yi, V = VCV,
+                   mod = ~ timing,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny,
+                    ~1|obs_id),
+                  R = list(phylogeny = cor_tree),
+                  data = dat_pre_post)
+summary(mod_pp)
+
+
+mod_ppb <- rma.mv(yi, V = VCV,
+                   mod = ~ timing - 1,
+                   random = list(
+                     ~1|species,
+                     ~1|phylogeny,
+                     ~1|obs_id),
+                   R = list(phylogeny = cor_tree),
+                   data = dat_pre_post)
+summary(mod_ppb)
+
+round(r2_ml(mod_pp), 2)
+
+orchard_plot(mod_ppb, mod = "timing",
+             xlab = "lnRR (all)", group = "species", g = FALSE)
+```
+
+
+
+# Figure gallery
+
+::: {.panel-tabset}
+
+## Figure: comparing contraception vs. normal
+
+```{r}
+#| eval: false
+
+# manipulating tree
+tdat <- fortify(tree)
+tdat2 <- subset(tdat, isTip)
+
+# this ordering matches the tree
+ordered_spp <- tdat2$label[order(tdat2$y, decreasing=TRUE)]
+
+#############################
+#  creating data to plot 
+#############################
+
+pdat <- dat %>% select(species, vertlife.species, order, 
+                       Male_None_Mean, Female_None_Mean,
+                       Male_Surgical_Mean,Female_Surgical_Mean, 
+                       Male_Hormonal_Mean, Female_Hormonal_Mean, 
+                       Male_Immunological_Mean, Female_Immunological_Mean
+                       )
+
+pdat %>% mutate(lrr_surgical_m = (Male_Surgical_Mean/Male_None_Mean - 1)*100,
+                lrr_surgical_f = (Female_Surgical_Mean/Female_None_Mean - 1)*100,
+                lrr_hormonal_m = (Male_Hormonal_Mean/Male_None_Mean - 1)*100,
+                lrr_hormonal_f = (Female_Hormonal_Mean/Female_None_Mean - 1)*100,
+                lrr_immunological_m = (Male_Immunological_Mean/Male_None_Mean - 1)*100,
+                lrr_immunological_f = (Female_Immunological_Mean/Female_None_Mean - 1)*100,
+                #) -> pdat
+                phylogeny = gsub(" ","_", vertlife.species)) -> pdat2
+
+
+# matching the tree ordering and data ordering
+pos_order <- match(ordered_spp, pdat2$phylogeny)
+pdat2 <- pdat2[pos_order, ]
+pdat2$ordering <- seq(1:nrow(pdat))
+#rownames(pdat) <- gsub(" ", "_", pdat$vertlife.species)
+
+# reformat data to long format
+pdat3 <- pdat2 %>% select(species, vertlife.species, order, phylogeny, ordering,
+                        lrr_surgical_m, lrr_surgical_f,
+                        lrr_hormonal_m, lrr_hormonal_f,
+                        lrr_immunological_m, lrr_immunological_f)
+
+pdat_long <- pdat3 %>% pivot_longer(cols = c(lrr_surgical_m, lrr_surgical_f,
+                                            lrr_hormonal_m, lrr_hormonal_f,
+                                            lrr_immunological_m, lrr_immunological_f))
+
+pdat_long %>% mutate(sex = rep(c("male", "female"), nrow(pdat_long)/2),
+                      type = rep(c("surgical", "surgical", 
+                                   "hormonal", "hormonal", 
+                                   "immunological", "immunological"), nrow(pdat_long)/6)) -> pdat_long
+
+pdat_long %>% mutate(min_value = ifelse(is.na(value) == TRUE, NA, ifelse (value < 0, value, 0)), 
+                     max_value = ifelse(is.na(value) == TRUE, NA, ifelse (value > 0, value, 0))) -> pdat_long
+
+pdat_long$type <- factor(pdat_long$type, levels = c("surgical", "hormonal", "immunological"),
+                         labels = c("Surgical", "Hormonal", "Immunological"))
+
+
+# # use getMRCA() to obtain common ancestor nodes to position the order silhouttes
+tree.tibble <- tidytree::as_tibble(tree)
+ord <- unique(tax$order)
+
+dford <- data.frame(order = ord, node = NA)
+
+ldat <- vector("list", 10)
+
+for (i in ord) {
+
+  tip <-  as.vector(as.data.frame(pdat3[which(pdat3$order == i), "phylogeny"]))
+  #tip <-  gsub(" ", "_", tip)
+  if (length(tip) > 1) {
+    tnode <- numeric(getMRCA(tree, tip = tip$phylogeny))
+
+  } else 
+    if (length(tip) == 1) {
+   tnode <-
+     match(tip$phylogeny, tree.tibble$label)
+  }
+  
+  dford[[2]][dford[[1]] == i] <- tnode
+
+}
+
+
+#tree <- as.ultrametric(tree)
+
+p <-
+  ggtree(
+    tree,
+    layout = "rectangular",
+    ladderize = TRUE,
+    size = 0.3,
+    color = "#454747"
+  )
+
+pdat3 %>% select(phylogeny, order) -> odat
+
+p0 <- p %<+% odat + 
+  geom_tippoint(aes(color= order), size = 0.5) + xlim_expand(c(0,170), panel = "Tree") + 
+  guides(color="none") 
+
+
+# Add order silhouettes
+# (takes a while to display)
+
+# Image directory
+imgdir <- "icons/zoo/"
+
+p1 <- ggdraw(p0) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Artiodactyla_PhyloPic.8b567be8.An-Ignorant-Atheist.Antilopinae.png"
+    ), y = 0.36, x = 0.46, scale = 0.08) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Perissodactlyla_PhyloPic.071ee517.David-Orr.Equus-ferus-caballus.png"
+    ), y = 0.19, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Carnivora_PhyloPic.34e482b4.An-Ignorant-Atheist.Panthera.png"
+    ), y = 0.08, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Chrioptera_PhyloPic.e7da460a.Margot-Michaud.Chiroptera_Eptesicus_Eptesicus-fuscus_Vespertilio-Noctilio_Vespertilionidae_Vespertilioniformes_Vespertilioninae_Vespertilionoidea.png"
+    ), y = -0.03, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Primates_PhyloPic.071db0d0.Margot-Michaud.Papio_Papio-anubis.png"
+    ), y = -0.20, x = 0.46, scale = 0.07) +
+
+  draw_image(paste0(
+      imgdir,
+      "Rodentia_PhyloPic.570c7d9e.Alexandra-van-der-Geer.Rattus_Rattus-exulans.png"
+    ), y = -0.37, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "PhyloPic.b62bab6e.An-Ignorant-Atheist.Macropus-Macropus.png"
+    ), y = -0.45, x = 0.46, scale = 0.08)
+  
+
+p2 <- ggplot(pdat_long,  
+             aes(x = value, reorder(vertlife.species, -ordering))) +
+  ggplot2::geom_errorbarh(aes(xmin = min_value, xmax = max_value, colour = sex), 
+                 height = 0, show.legend = TRUE, size = 1, 
+                 alpha = 0.8, position =position_dodge(width = 0.75)) +
+  #geom_segment(linewidth = 1, alpha = 0.8, position =position_dodge(width = 0.95)) +
+  facet_wrap(~type, ncol = 3, #scales = "free_x"
+             ) +
+  #facet_wrap(sex~type, ncol = 6) +
+  #scale_color_manual(values = c("#FF9933", "#336699", NA), name = "") +
+  scale_color_manual(values = c("#CC6677", "#88CCEE")) +
+  theme_bw() +
+  theme(panel.grid.major.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 7),
+        axis.ticks  = element_blank(),
+        strip.text = element_text(face = "bold"),
+        panel.grid.minor.x = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
+  #guides(colour = colour) +
+  theme(legend.position =  c(0.88, 0.11)) +
+  #labs(x = "lnRR (effect size)", y = "", ) +
+  xlab("Ratio: contraceptive/normal (%)") +
+  ylab("") 
+
+
+p_phylo <- p1 + p2
+
+#p_phylo
+
+# orchard plot
+
+main <- mod_results(mod_all, group = "species")
+sex_diff <- mod_results(mod_all1, mod = "sex", group = "species")
+
+combined <- submerge(sex_diff, main)
+
+# changing the name (intercept) to:
+
+combined$mod_table$name <- gsub("Intrcpt", "Overall", combined$mod_table$name)
+combined$mod_table$name <- factor(combined$mod_table$name)
+
+combined$data$moderator <- gsub("Intrcpt", "Overall", combined$data$moderator)
+
+combo <- orchard_plot(combined,
+                      group = "species", 
+                      xlab = "log response ratio (lnRR)") +
+  scale_colour_manual(values = rev(c("#999999", "#88CCEE", "#CC6677"))) +
+  scale_fill_manual(values = rev(c("#999999", "#88CCEE", "#CC6677")))
+
+#combo
+
+
+type_diff <- orchard_plot(mod_all2, mod = "type",
+             xlab = "log response ratio (lnRR)", group = "species", g = FALSE, angle = 90)+
+  scale_colour_manual(values = rev(c("#117733",  "#332288", "#DDCC77"))) +
+  scale_fill_manual(values = rev(c("#117733",  "#332288", "#DDCC77")))
+
+#type_diff
+# "#117733",  "#332288", "#DDCC77" "#AA4499"
+
+# combining all
+
+plot_grid(p_phylo) / (combo + type_diff) + 
+  plot_annotation(tag_levels = 'A') + 
+  plot_layout(heights = c(1.5,0.8))
+
+```
+
+![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/zoo/fig1.png)
+
+## Figure: sex difference
+```{r}
+#| eval: false
+
+# manipulating tree
+tdat <- fortify(tree)
+tdat2 <- subset(tdat, isTip)
+
+# this ordering matches the tree
+ordered_spp <- tdat2$label[order(tdat2$y, decreasing=TRUE)]
+
+
+pdat %>% mutate(rom_fimmu_mimmu = (Female_Immunological_Mean/Male_Immunological_Mean - 1)*100,
+                rom_fhorm_mhorm = (Female_Hormonal_Mean/Male_Hormonal_Mean - 1)*100,
+                rom_fsurg_msurg = (Female_Surgical_Mean/Male_Surgical_Mean - 1)*100,
+                rom_fimmu_mnorm = (Female_Immunological_Mean/Male_None_Mean - 1)*100,
+                rom_fhorm_mnorm = (Female_Hormonal_Mean/Male_None_Mean - 1)*100,
+                rom_fsurg_mnorm = (Female_Surgical_Mean/Male_None_Mean - 1)*100,
+                rom_fnorm_mimmu = (Female_None_Mean/Male_Immunological_Mean - 1)*100,
+                rom_fnorm_mhorm = (Female_None_Mean/Male_Hormonal_Mean - 1)*100,
+                rom_fnorm_msurg = (Female_None_Mean/Male_Surgical_Mean - 1)*100,
+                rom_fnorm_mnorm = (Female_None_Mean/Male_None_Mean - 1)*100,
+                #) -> pdat
+                phylogeny = gsub(" ","_", species)) -> 
+           pdat2
+
+# matching the tree ordering and data ordering
+pos_order <- match(ordered_spp, pdat2$phylogeny)
+pdat2 <- pdat2[pos_order, ]
+pdat2$ordering <- seq(1:nrow(pdat2))
+#pdat <- gsub(" ", "_", pdat$vertlife.species)
+
+# reformat data to long format
+# this ordering is incorrect - I think
+pdat2$ordering <- seq(1:nrow(pdat))
+
+pdat3 <- pdat2 %>% select(species, vertlife.species, order, phylogeny, ordering,
+                        rom_fimmu_mimmu, rom_fhorm_mhorm,rom_fsurg_msurg,
+                        rom_fimmu_mnorm, rom_fhorm_mnorm, rom_fsurg_mnorm,
+                        rom_fnorm_mimmu, rom_fnorm_mhorm, rom_fnorm_msurg,
+                        rom_fnorm_mnorm)
+
+
+
+pdat_long <- pdat3 %>% pivot_longer(cols = c( rom_fimmu_mimmu, rom_fhorm_mhorm,rom_fsurg_msurg,
+                                             rom_fimmu_mnorm, rom_fhorm_mnorm, rom_fsurg_mnorm,
+                                             rom_fnorm_mimmu, rom_fnorm_mhorm, rom_fnorm_msurg,
+                                             rom_fnorm_mnorm))
+
+pdat_long %>% mutate(category = rep(c("F contraceptive/\nM contraceptive","F contraceptive/\nM contraceptive","F contraceptive/\nM contraceptive",
+                                      "F contraceptive/\nM normal", "F contraceptive/\nM normal", "F contraceptive/\nM normal", 
+                                      "F normal/\nM contraceptive", "F normal/\nM contraceptive", "F normal/\nM contraceptive",
+                                      "F normal/\nM normal"), nrow(pdat))) -> pdat_long
+
+pdat_long %>% mutate(min_value = ifelse(is.na(value) == TRUE, NA, ifelse (value < 0, value, 0)), 
+                     max_value = ifelse(is.na(value) == TRUE, NA, ifelse (value > 0, value, 0)),
+                     sex_diff = ifelse(min_value == 0, "F live longer", "M live longer")) -> pdat_long
+
+pdat_long$category <- factor(pdat_long$category, levels = rev(c("F contraceptive/\nM contraceptive", 
+                                        "F contraceptive/\nM normal", 
+                                        "F normal/\nM contraceptive",
+                                        "F normal/\nM normal")),
+                         labels = rev(c("F contraceptive/\nM contraceptive", 
+                                    "F contraceptive/\nM normal", 
+                                    "F normal/\nM contraceptive",
+                                    "F normal/\nM normal")))
+
+
+# doing tree figure
+
+# # use getMRCA() to obtain common ancestor nodes to position the order silhouttes
+tree.tibble <- tidytree::as_tibble(tree)
+ord <- unique(tax$order)
+
+dford <- data.frame(order = ord, node = NA)
+
+ldat <- vector("list", 10)
+
+for (i in ord) {
+  
+  tip <-  as.vector(as.data.frame(pdat3[which(pdat3$order == i), "phylogeny"]))
+  #tip <-  gsub(" ", "_", tip)
+  if (length(tip) > 1) {
+    tnode <- numeric(getMRCA(tree, tip = tip$phylogeny))
+    
+  } else 
+    if (length(tip) == 1) {
+      tnode <-
+        match(tip$phylogeny, tree.tibble$label)
+    }
+  
+  dford[[2]][dford[[1]] == i] <- tnode
+  
+}
+
+
+tree <- as.ultrametric(tree)
+
+p <-
+  ggtree(
+    tree,
+    layout = "rectangular",
+    ladderize = TRUE,
+    size = 0.3,
+    color = "#454747"
+  )
+
+pdat3 %>% select(phylogeny, order) -> odat
+
+p0 <- p %<+% odat + 
+  geom_tippoint(aes(color= order), size = 0.5) + xlim_expand(c(0,170), panel = "Tree") + 
+  guides(color="none") 
+
+# Image directory
+imgdir <- "icons/zoo/"
+
+p1 <- ggdraw(p0) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Artiodactyla_PhyloPic.8b567be8.An-Ignorant-Atheist.Antilopinae.png"
+    ), y = 0.36, x = 0.46, scale = 0.08) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Perissodactlyla_PhyloPic.071ee517.David-Orr.Equus-ferus-caballus.png"
+    ), y = 0.19, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Carnivora_PhyloPic.34e482b4.An-Ignorant-Atheist.Panthera.png"
+    ), y = 0.08, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Chrioptera_PhyloPic.e7da460a.Margot-Michaud.Chiroptera_Eptesicus_Eptesicus-fuscus_Vespertilio-Noctilio_Vespertilionidae_Vespertilioniformes_Vespertilioninae_Vespertilionoidea.png"
+    ), y = -0.03, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "Primates_PhyloPic.071db0d0.Margot-Michaud.Papio_Papio-anubis.png"
+    ), y = -0.20, x = 0.46, scale = 0.07) +
+
+  draw_image(paste0(
+      imgdir,
+      "Rodentia_PhyloPic.570c7d9e.Alexandra-van-der-Geer.Rattus_Rattus-exulans.png"
+    ), y = -0.37, x = 0.46, scale = 0.07) +
+  
+  draw_image(paste0(
+      imgdir,
+      "PhyloPic.b62bab6e.An-Ignorant-Atheist.Macropus-Macropus.png"
+    ), y = -0.45, x = 0.46, scale = 0.08)
+  
+
+
+p2 <- ggplot(pdat_long,  
+             aes(x = value, reorder(vertlife.species, -ordering))) +
+  ggplot2::geom_errorbarh(aes(xmin = min_value, xmax = max_value, colour = sex_diff), 
+                          height = 0, show.legend = TRUE, size = 1, 
+                          alpha = 0.8 #, position =position_dodge(width = 0.75) 
+                          ) +
+  #geom_segment(linewidth = 1, alpha = 0.8, position =position_dodge(width = 0.95)) +
+  facet_wrap(~ category, ncol = 4, #scales = "free_x"
+  ) +
+  xlim(-80, 80) + 
+  scale_color_manual(values = c("#CC6677", "#88CCEE"), na.translate = F) +
+  theme_bw() +
+  theme(panel.grid.major.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 7),
+        axis.ticks  = element_blank(),
+        strip.text = element_text(face = "bold"),
+        panel.grid.minor.x = element_blank(),
+        #legend.box.background = element_rect(colour = "black")
+        ) +
+  #guides(colour = colour) +
+  theme(legend.position =  c(0.88, 0.92)) +
+  labs(colour = "Sex difference") +
+  xlab("Ratio: female/male (%)") +
+  theme(legend.key.size = unit(0.25, 'cm')) + 
+  ylab("") 
+
+p2
+
+p_phylo2 <- p1 + p2
+
+
+###
+p_sexdiff <- orchard_plot(mod_comb, mod = "contraception",
+             xlab = "log response ratio (lnRR)", group = "species", 
+             g = FALSE, angle =0)
+
+p_abs <- orchard_plot(mod_comb_a, mod = "contraception",
+             xlab = "absolute log response ratio (lnRR)", group = "species", 
+             g = FALSE, angle = 0)
+
+#res2
+
+# putting figs together
+
+
+###################
+## Figure 4
+###################
+
+plot_grid(p_phylo2) / (p_sexdiff + p_abs) + 
+  plot_annotation(tag_levels = 'A') + 
+  plot_layout(heights = c(1.5,1.0))
+
+```
+
+![](/Users/z3437171/Library/CloudStorage/Dropbox/Github Local/lifespan_contraception/figs/zoo/fig4.png)
+
+:::
+
+
+# R Session Informtion
+
+```{r}
+# pander for making it look nicer
+sessionInfo() %>% pander()
+```
+
+
