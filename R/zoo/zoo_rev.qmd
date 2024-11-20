@@ -482,21 +482,24 @@ dat_all %>% mutate(sex_type = paste(sex, type, sep = "_")) -> dat_all
 
 dat$sex_type <- paste(dat$Sex, dat$Type, sep = "_")
 
- dat %>% filter(sex_type != "Male_Hormonal")  -> test
+ dat %>% filter(sex_type != "Male_Hormonal")  -> dat_m_surg
+
+# which species to include                            
+include <- summary(as.factor(dat_m_surg$Species), maxsum = 1000) > 1 
+
+spp_include <- names(which(include == TRUE))
+
+# use species included in spp_include
+
+dat_m_surg %>% filter(Species %in% spp_include) -> dat_m_surg
+
+# we want to get species which has both Female and Male
+
+dat_m_surg %>% group_by(Species) %>% # count male and female per spp
+  
                             
-                            
-                            
-                            is.na(Male_Surgical_Mean) == FALSE) %>% 
-  transmute(F_normal_m = Female_None_Mean,
-         F_normal_sd = sqrt(Female.None)*Female_None_SE,
-         F_normal_n = Female.None,
-         M_surgical_m = Male_Surgical_Mean,
-         M_surgical_sd = sqrt(Male.Surgical)*Male_Surgical_SE,
-         M_surgical_n = Male.Surgical,
-         species = Species,
-         phylogeny = phylogeny,
-         category = "F normal/M surgical"
-         )
+
+#         category = "F normal/M surgical"
 
 dat_fm_ns <- escalc("ROM", 
               m1i = F_normal_m,
