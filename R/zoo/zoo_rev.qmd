@@ -40,6 +40,9 @@ execute:
 
 ```{r}
 
+# install.packages("remotes")
+# remotes::install_github("cmfield/apextra")
+
 # loading
 pacman::p_load(tidyverse,
                metafor,
@@ -64,7 +67,7 @@ pacman::p_load(tidyverse,
                apextra,
                ggimage,
                ggstance,
-               ggtree,
+               ggtree
 )
 
 ```
@@ -73,7 +76,7 @@ pacman::p_load(tidyverse,
 
 ```{r}
 # main data
-dat0 <- read_csv(here("data", "zoo", "zoo.csv"), na = c("", "NA"))
+dat0 <- read_csv(here("data", "zoo", "zoo_rev.csv"), na = c("", "NA"))
 
 # phylogeny
 tree <- read.tree(here("data", "zoo", "tree_zoo.tre"))
@@ -81,24 +84,24 @@ tree <- read.tree(here("data", "zoo", "tree_zoo.tre"))
 # taxonomy
 tax <- read.csv(here("data", "zoo", "vertlife_taxonomy_translation_table.csv"))
 
-dat0 %>% left_join(tax, by = c("species" = "zims.species")) -> dat_full
+dat0 %>% left_join(tax, by = c("Species" = "zims.species")) -> dat_full
 
 # talking out species with no data (Pseudocheirus peregrinus = likely to be mistaks in data)
-dat_full %>% filter(species != "Chrysocyon brachyurus" &
-                    species != "Crocuta crocuta" &
-                    species != "Neofelis nebulosa" &
-                    species != "Panthera uncia" &
-                    species != "Pseudocheirus peregrinus") %>% 
+dat_full %>% filter(Species != "Chrysocyon brachyurus" &
+                    Species != "Crocuta crocuta" &
+                    Species != "Neofelis nebulosa" &
+                    Species != "Panthera uncia" &
+                    Species != "Pseudocheirus peregrinus") %>% 
   mutate(phylogeny = gsub(" ", "_", vertlife.species)) -> dat
 
 # adding Cervus canadensis
-dat$vertlife.species[which(dat$species == "Cervus canadensis")] <-"Cervus canadensis"
-dat$phylogeny[which(dat$species == "Cervus canadensis")] <-"Cervus_canadensis"
+dat$vertlife.species[which(dat$Species == "Cervus canadensis")] <-"Cervus canadensis"
+dat$phylogeny[which(dat$Species == "Cervus canadensis")] <-"Cervus_canadensis"
 
 # fixing species name
-dat$species[dat$species == "Equus asinus"] <- "Equus_africanus"
-dat$species[dat$species == "Aonyx cinereus"] <- "Aonyx cinerea"
-dat$species[dat$species == "Bubalus bubalis"] <- "Bubalus arnee"
+dat$Species[dat$Species == "Equus asinus"] <- "Equus_africanus"
+dat$Species[dat$Species == "Aonyx cinereus"] <- "Aonyx cinerea"
+dat$Species[dat$Species == "Bubalus bubalis"] <- "Bubalus arnee"
 
 
 # life span data 
@@ -122,37 +125,37 @@ cor_tree <- vcv(tree, corr = TRUE)
 # match(unique(dat$phylogeny), unique(gsub(" ","_", dat$species)))
 
 #write_csv(dat, here("data", "zoo", "original.csv"))
-
-# pre- and post-2005 data for sensitivity analysis
-dat_pre <-  read.csv(here("data", "zoo", "hormTabPre05.csv"))
-dat_post <-  read.csv(here("data", "zoo","hormTabPost05.csv"))
-
-dat_pre %>% left_join(tax, by = c("species" = "zims.species")) -> dat_pre
-dat_post %>% left_join(tax, by = c("species" = "zims.species")) -> dat_post
-
-dat_pre  %>% 
-  transmute(F_normal_m = LifeExpNocontMean,
-            F_normal_sd = sqrt(Nnocon)*LifeExpNocontSE,
-            F_normal_n = Nnocon,
-            F_hormonal_m = LifeExpHormMean,
-            F_hormonal_sd = sqrt(Nhorm)*LifeExpHormSE,
-            F_hormonal_n = Nhorm,
-            species = species,
-            #species_tree = vertlife.species,
-            phylogeny = gsub(" ", "_", vertlife.species)
-  ) -> dat_pre
-
-dat_post %>% 
-  transmute(F_normal_m = LifeExpNocontMean,
-          F_normal_sd = sqrt(Nnocon)*LifeExpNocontSE,
-          F_normal_n = Nnocon,
-          F_hormonal_m = LifeExpHormMean,
-          F_hormonal_sd = sqrt(Nhorm)*LifeExpHormSE,
-          F_hormonal_n = Nhorm,
-          species = species,
-          #species_tree = vertlife.species,
-          phylogeny = gsub(" ", "_", vertlife.species)
-) -> dat_post
+# 
+# # pre- and post-2005 data for sensitivity analysis
+# dat_pre <-  read.csv(here("data", "zoo", "hormTabPre05.csv"))
+# dat_post <-  read.csv(here("data", "zoo","hormTabPost05.csv"))
+# 
+# dat_pre %>% left_join(tax, by = c("species" = "zims.species")) -> dat_pre
+# dat_post %>% left_join(tax, by = c("species" = "zims.species")) -> dat_post
+# 
+# dat_pre  %>% 
+#   transmute(F_normal_m = LifeExpNocontMean,
+#             F_normal_sd = sqrt(Nnocon)*LifeExpNocontSE,
+#             F_normal_n = Nnocon,
+#             F_hormonal_m = LifeExpHormMean,
+#             F_hormonal_sd = sqrt(Nhorm)*LifeExpHormSE,
+#             F_hormonal_n = Nhorm,
+#             species = species,
+#             #species_tree = vertlife.species,
+#             phylogeny = gsub(" ", "_", vertlife.species)
+#   ) -> dat_pre
+# 
+# dat_post %>% 
+#   transmute(F_normal_m = LifeExpNocontMean,
+#           F_normal_sd = sqrt(Nnocon)*LifeExpNocontSE,
+#           F_normal_n = Nnocon,
+#           F_hormonal_m = LifeExpHormMean,
+#           F_hormonal_sd = sqrt(Nhorm)*LifeExpHormSE,
+#           F_hormonal_n = Nhorm,
+#           species = species,
+#           #species_tree = vertlife.species,
+#           phylogeny = gsub(" ", "_", vertlife.species)
+# ) -> dat_post
 
 ```
 
@@ -359,146 +362,103 @@ folded_v <-function(mean, variance){
 
 # male surgical
 
-dat_m_surg <- dat %>% filter(is.na(Male_Surgical_Mean) == FALSE, is.na(Male_None_Mean) == FALSE) %>% 
-  mutate(M_control_m = Male_None_Mean,
-         M_control_sd = sqrt(Male.None)*Male_None_SE,
-         M_control_n = Male.None,
-         M_surgical_m = Male_Surgical_Mean,
-         M_surgical_sd = sqrt(Male.Surgical)*Male_Surgical_SE,
-         M_surgical_n = Male.Surgical,
+dat_m_surg <- dat %>% filter(Sex == "Male", Type == "Surgical") %>%
+  mutate(NoContra_m = LifeExpNoContra,
+         NoContra_sd = sqrt(NnoContra)*SEnoContra,
+         NoContra_n = NnoContra,
+         Contra_m = LifeExpContra,
+         Contra_sd = sqrt(Ncontra)*SEcontra,
+         Contra_n = Ncontra,
          sex = "male",
          type = "surgical")
 
+
 dat_m_surg <- escalc("ROM", 
-              m1i = M_surgical_m,
-              m2i = M_control_m,
-              sd1i = M_surgical_sd,
-              sd2i = M_control_sd,
-              n1i = M_surgical_n,
-              n2i = M_control_n,
-              data = dat_m_surg,
-              )
+              m1i = Contra_m,
+              m2i = NoContra_m,
+              sd1i = Contra_sd,
+              sd2i = NoContra_sd,
+              n1i = Contra_n,
+              n2i = NoContra_n,
+              data = dat_m_surg
+)
 
 #  male hormonal
-dat_m_horm <- dat %>% filter(is.na(Male_Hormonal_Mean) == FALSE, is.na(Male_None_Mean) == FALSE) %>% 
-  mutate(M_control_m = Male_None_Mean,
-         M_control_sd = sqrt(Male.None)*Male_None_SE,
-         M_control_n = Male.None,
-         M_hormonal_m = Male_Hormonal_Mean,
-         M_hormonal_sd = sqrt(Male.Hormonal)*Male_Hormonal_SE,
-         M_hormonal_n = Male.Hormonal,
+dat_m_horm <- dat %>% filter(Sex == "Male", Type == "Hormonal") %>% 
+  mutate(NoContra_m = LifeExpNoContra,
+         NoContra_sd = sqrt(NnoContra)*SEnoContra,
+         NoContra_n = NnoContra,
+         Contra_m = LifeExpContra,
+         Contra_sd = sqrt(Ncontra)*SEcontra,
+         Contra_n = Ncontra,
          sex = "male",
          type = "hormonal")
 
 dat_m_horm <- escalc("ROM", 
-                     m1i = M_hormonal_m,
-                     m2i = M_control_m,
-                     sd1i = M_hormonal_sd,
-                     sd2i = M_control_sd,
-                     n1i = M_hormonal_n,
-                     n2i = M_control_n,
-                     data = dat_m_horm,
-)
-
-# male immunological
-dat_m_immu <- dat %>% filter(is.na(Male_Immunological_Mean) == FALSE, 
-    is.na(Male_None_Mean) == FALSE) %>%
-  mutate(M_control_m = Male_None_Mean,
-         M_control_sd = sqrt(Male.None)*Male_None_SE,
-         M_control_n = Male.None,
-         M_immunol_m = Male_Immunological_Mean,
-         M_immunol_sd = sqrt(Male.Immunological)*Male_Immunological_SE,
-         M_immunol_n = Male.Immunological,
-         sex = "male",
-         type = "immunological")
-
-dat_m_immu <- escalc("ROM", 
-                     m1i = M_immunol_m,
-                     m2i = M_control_m,
-                     sd1i = M_immunol_sd,
-                     sd2i = M_control_sd,
-                     n1i = M_immunol_n,
-                     n2i = M_control_n,
-                     data = dat_m_immu,
-)
+                     m1i = Contra_m,
+                     m2i = NoContra_m,
+                     sd1i = Contra_sd,
+                     sd2i = NoContra_sd,
+                     n1i = Contra_n,
+                     n2i = NoContra_n,
+                     data = dat_m_horm
+                     )
 
 
 # female hormonal data 
 
-dat_f_horm <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE, is.na(Female_None_Mean) == FALSE) %>% 
-  mutate(F_control_m = Female_None_Mean,
-         F_control_sd = sqrt(Female.None)*Female_None_SE,
-         F_control_n = Female.None,
-         F_hormonal_m = Female_Hormonal_Mean,
-         F_hormonal_sd = sqrt(Female.Hormonal)*Female_Hormonal_SE,
-         F_hormonal_n = Female.Hormonal,
+dat_f_horm <- dat %>% filter(Sex == "Female", Type == "Surgical") %>% 
+  mutate(NoContra_m = LifeExpNoContra,
+         NoContra_sd = sqrt(NnoContra)*SEnoContra,
+         NoContra_n = NnoContra,
+         Contra_m = LifeExpContra,
+         Contra_sd = sqrt(Ncontra)*SEcontra,
+         Contra_n = Ncontra,
          sex = "female",
-         type = "hormonal")
+         type = "surgical")
 
 dat_f_horm <- escalc("ROM", 
-                     m1i = F_hormonal_m,
-                     m2i = F_control_m,
-                     sd1i = F_hormonal_sd,
-                     sd2i = F_control_sd,
-                     n1i = F_hormonal_n,
-                     n2i = F_control_n,
-                     data = dat_f_horm,
+                     m1i = Contra_m,
+                     m2i = NoContra_m,
+                     sd1i = Contra_sd,
+                     sd2i = NoContra_sd,
+                     n1i = Contra_n,
+                     n2i = NoContra_n,
+                     data = dat_f_horm
 )
 
 # female surgical data
 
-dat_f_surg<- dat %>% filter(is.na(Female_Surgical_Mean) == FALSE, is.na(Female_None_Mean) == FALSE) %>% 
-  mutate(F_control_m = Female_None_Mean,
-         F_control_sd = sqrt(Female.None)*Female_None_SE,
-         F_control_n = Female.None,
-         F_surgical_m = Female_Surgical_Mean,
-         F_surgical_sd = sqrt(Female.Surgical)*Female_Surgical_SE,
-         F_surgical_n = Female.Surgical,
+dat_f_surg<- dat %>% filter(Sex == "Female", Type == "Hormonal") %>% 
+  mutate(NoContra_m = LifeExpNoContra,
+         NoContra_sd = sqrt(NnoContra)*SEnoContra,
+         NoContra_n = NnoContra,
+         Contra_m = LifeExpContra,
+         Contra_sd = sqrt(Ncontra)*SEcontra,
+         Contra_n = Ncontra,
          sex = "female",
          type = "surgical")
 
 
 dat_f_surg <- escalc("ROM", 
-                     m1i = F_surgical_m,
-                     m2i = F_control_m,
-                     sd1i = F_surgical_sd,
-                     sd2i = F_control_sd,
-                     n1i = F_surgical_n,
-                     n2i = F_control_n,
-                     data = dat_f_surg,
-)
-
-# female immunological
-dat_f_immu <- dat %>% filter(is.na(Female_Immunological_Mean) == FALSE, 
-    is.na(Female_None_Mean) == FALSE) %>%
-  mutate(F_control_m = Female_None_Mean,
-         F_control_sd = sqrt(Female.None)*Female_None_SE,
-         F_control_n = Female.None,
-         F_immunol_m = Female_Immunological_Mean,
-         F_immunol_sd = sqrt(Female.Immunological)*Female_Immunological_SE,
-         F_immunol_n = Female.Immunological,
-         sex = "female",
-         type = "immunological")
-
-dat_f_immu <- escalc("ROM", 
-                     m1i = F_immunol_m,
-                     m2i = F_control_m,
-                     sd1i = F_immunol_sd,
-                     sd2i = F_control_sd,
-                     n1i = F_immunol_n,
-                     n2i = F_control_n,
-                     data = dat_f_immu,
+                     m1i = Contra_m,
+                     m2i = NoContra_m,
+                     sd1i = Contra_sd,
+                     sd2i = NoContra_sd,
+                     n1i = Contra_n,
+                     n2i = NoContra_n,
+                     data = dat_f_surg
 )
 
 
-rbind(
-dat_m_horm[ , c(1, 53, 55, 62:65)], # 1
-dat_m_surg[ , c(1, 53, 55, 62:65)], # 2
-dat_f_horm[ , c(1, 53, 55, 62:65)], # 3 
-dat_f_surg[ , c(1, 53, 55, 62:65)], # 4
-dat_m_immu[ , c(1, 53, 55, 62:65)], # 5
-dat_f_immu[ , c(1, 53, 55, 62:65)] # 6
+bind_rows(
+dat_m_horm[ , c(1,18:28)], # 1
+dat_m_surg[ , c(1,18:28)], # 2
+dat_f_horm[ , c(1,18:28)], # 3 
+dat_f_surg[ , c(1,18:28)], # 4
 ) -> dat_all
+
+dat_all$species <- dat_all$Species %>% as.factor()
 
 # observation id
 dat_all$obs_id <- factor(1:nrow(dat_all))
@@ -520,15 +480,20 @@ dat_all %>% mutate(sex_type = paste(sex, type, sep = "_")) -> dat_all
 
 # female normal vs. male surgical (1)
 
-dat_fm_ns <- dat %>% filter(is.na(Female_None_Mean) == FALSE, 
+dat$sex_type <- paste(dat$Sex, dat$Type, sep = "_")
+
+ dat %>% filter(sex_type != "Male_Hormonal")  -> test
+                            
+                            
+                            
                             is.na(Male_Surgical_Mean) == FALSE) %>% 
-  transmute(F_normal_m = Male_None_Mean,
+  transmute(F_normal_m = Female_None_Mean,
          F_normal_sd = sqrt(Female.None)*Female_None_SE,
          F_normal_n = Female.None,
          M_surgical_m = Male_Surgical_Mean,
          M_surgical_sd = sqrt(Male.Surgical)*Male_Surgical_SE,
          M_surgical_n = Male.Surgical,
-         species = species,
+         species = Species,
          phylogeny = phylogeny,
          category = "F normal/M surgical"
          )
@@ -825,49 +790,6 @@ dat_comb <- dat_comb %>% mutate(
 ```
 
 
-### Comparing before and after 2005
-
-```{r}
-
-# getting effect size
-
-dat_pre <- escalc("ROM", 
-                    m2i = F_normal_m,
-                    m1i = F_hormonal_m,
-                    sd2i = F_normal_sd,
-                    sd1i = F_hormonal_sd,
-                    n2i = F_normal_n,
-                    n1i = F_hormonal_n,
-                    data = dat_pre,
-)
-
-dat_post <- escalc("ROM", 
-                  m2i = F_normal_m,
-                  m1i = F_hormonal_m,
-                  sd2i = F_normal_sd,
-                  sd1i = F_hormonal_sd,
-                  n2i = F_normal_n,
-                  n1i = F_hormonal_n,
-                  data = dat_post,
-)
-
-# combining
-rbind(
-  dat_pre[ , 7:10], # 1
-  dat_post[ , 7:10]# 2 
-) -> dat_pre_post
-
-# 54 effect sizes and 
-# unique(dat_pre_post$species 
-
-dat_pre_post$obs_id <- factor(1:nrow(dat_pre_post))
-
-# adding category
-dat_pre_post$timing <- rep(c("Pre-2005","Post-2005"),c(dim(dat_pre)[1], dim(dat_post)[1]))
-
-```
-
-
 # Datasets
 
 ::: {.panel-tabset}
@@ -898,30 +820,6 @@ kable(dat_comb, "html", escape = FALSE, digits = 3) %>% kable_styling("striped",
     height = "500px")
 ```
 
-## Pre-2005
-
-```{r}
-kable(dat_pre, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
-  scroll_box(width = "100%", 
-    height = "500px")
-```
-
-
-## Post-2005
-
-```{r}
-kable(dat_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
-  scroll_box(width = "100%", 
-    height = "500px")
-```
-
-## Processed data 3: pre- and post-2005
-
-```{r}
-kable(dat_pre_post, "html", escape = FALSE, digits = 3) %>% kable_styling("striped", position = "left", full_width = TRUE) %>% 
-  scroll_box(width = "100%", 
-    height = "500px")
-```
 
 :::
 
