@@ -118,6 +118,12 @@ tree <- as.ultrametric(tree)
 #tree <- compute.brlen(tree)
 cor_tree <- vcv(tree, corr = TRUE)
 
+
+missing <- which(is.na(dat$phylogeny))
+
+dat$Species[missing]
+
+
 # length(unique(dat$species))
 # length(unique(dat$phylogeny))
 # 
@@ -437,7 +443,7 @@ dat_f_surg<- dat %>% filter(Sex == "Female", Type == "Hormonal") %>%
          Contra_sd = sqrt(Ncontra)*SEcontra,
          Contra_n = Ncontra,
          sex = "female",
-         type = "surgical")
+         type = "hormonal")
 
 
 dat_f_surg <- escalc("ROM", 
@@ -452,10 +458,10 @@ dat_f_surg <- escalc("ROM",
 
 
 bind_rows(
-dat_m_horm[ , c(1,18:28)], # 1
-dat_m_surg[ , c(1,18:28)], # 2
-dat_f_horm[ , c(1,18:28)], # 3 
-dat_f_surg[ , c(1,18:28)], # 4
+dat_m_horm[ , c(1,18:29)], # 1
+dat_m_surg[ , c(1,18:29)], # 2
+dat_f_horm[ , c(1,18:29)], # 3 
+dat_f_surg[ , c(1,18:29)], # 4
 ) -> dat_all
 
 dat_all$species <- dat_all$Species %>% as.factor()
@@ -493,11 +499,20 @@ spp_include <- names(which(include == TRUE))
 
 dat_m_surg %>% filter(Species %in% spp_include) -> dat_m_surg
 
-# we want to get species which has both Female and Male
 
-dat_m_surg %>% group_by(Species) %>% # count male and female per spp
-  
-                            
+# Get species which have both Male and Female
+dat_m_surg %>%
+  group_by(Species) %>%
+  filter(any(Sex == "Male") & any(Sex == "Female")) %>%
+  ungroup() -> dat_m_surg
+
+# Leave only one female entry per species
+dat_m_surg %>%
+  group_by(Species) %>%
+  filter(!(Sex == "Female" & duplicated(Species))) %>%
+  ungroup() -> dat_m_surg
+
+summary(as.factor(dat_m_surg$Species))
 
 #         category = "F normal/M surgical"
 
@@ -836,15 +851,16 @@ kable(dat_comb, "html", escape = FALSE, digits = 3) %>% kable_styling("striped",
 ```{r}
 
 # variance-covariance matrix for sampling error assuming 0.5 correlation
-VCV <- vcalc(vi, species, rho = 0.5, data = dat_all)
+VCV <- vcalc(vi, cluster = species, obs = obs_id,
+             rho = 0.5, data = dat_all)
 
 
 mod_all <- rma.mv(yi, V = VCV,
                      random = list(
                        ~1|species,
-                       ~1|phylogeny,
+                       #~1|phylogeny,
                        ~1|obs_id),
-                     R = list(phylogeny = cor_tree),
+                     #R = list(phylogeny = cor_tree),
                      data = dat_all)
 summary(mod_all)
 round(i2_ml(mod_all), 2)
@@ -862,9 +878,9 @@ mod_all1 <- rma.mv(yi, V = VCV,
                    mod = ~ sex,
                   random = list(
                     ~1|species,
-                    ~1|phylogeny,
+                    #~1|phylogeny,
                     ~1|obs_id),
-                  R = list(phylogeny = cor_tree),
+                  #R = list(phylogeny = cor_tree),
                   data = dat_all)
 summary(mod_all1)
 
@@ -873,9 +889,9 @@ mod_all1b <- rma.mv(yi, V = VCV,
                    mod = ~ sex - 1,
                    random = list(
                      ~1|species,
-                     ~1|phylogeny,
+                     #~1|phylogeny,
                      ~1|obs_id),
-                   R = list(phylogeny = cor_tree),
+                   #R = list(phylogeny = cor_tree),
                    data = dat_all)
 summary(mod_all1b)
 
@@ -890,15 +906,15 @@ orchard_plot(mod_all1, mod = "sex",
 ```{r}
 
 dat_all$type <- factor(dat_all$type, 
-                   levels = rev(c("surgical", "hormonal", "immunological")))
+                   levels = rev(c("surgical", "hormonal")))
 
 mod_all2 <- rma.mv(yi, V = VCV,
                  mod = ~ type -1,
                  random = list(
                    ~1|species,
-                   ~1|phylogeny,
+                   #~1|phylogeny,
                    ~1|obs_id),
-                 R = list(phylogeny = cor_tree),
+                 #R = list(phylogeny = cor_tree),
                  data = dat_all)
 
 summary(mod_all2)
