@@ -43,6 +43,10 @@ execute:
 # install.packages("remotes")
 # remotes::install_github("cmfield/apextra")
 
+# cleaning
+
+rm(list = ls())
+
 # loading
 pacman::p_load(tidyverse,
                metafor,
@@ -76,29 +80,37 @@ pacman::p_load(tidyverse,
 
 ```{r}
 # main data
-dat0 <- read_csv(here("data", "zoo", "zoo_rev.csv"), na = c("", "NA"))
+dat0 <- read_csv(here("data", "zoo", "zoo_rev2.csv"), na = c("", "NA"))
 
 # phylogeny
-tree <- read.tree(here("data", "zoo", "tree_zoo.tre"))
+# read RData
+#dford 
+
+load(here("Rdata", "zoo", "maxCredTreeMammals.RData"))
+
+tree <- maxCred #read.tree(here("data", "zoo", "tree_zoo.tre"))
 
 # taxonomy
-tax <- read.csv(here("data", "zoo", "vertlife_taxonomy_translation_table.csv"))
+tax <- read.csv(here("data", "zoo", "species_merge_list.csv"))
 
-dat0 %>% left_join(tax, by = c("Species" = "zims.species")) -> dat_full
+dat0 %>% left_join(tax, by = c("Species" = "ZIMSSpecies")) -> dat_full
 
 # talking out species with no data (Pseudocheirus peregrinus = likely to be mistaks in data)
-dat_full %>% filter(Species != "Chrysocyon brachyurus" &
-                    Species != "Crocuta crocuta" &
-                    Species != "Neofelis nebulosa" &
-                    Species != "Panthera uncia" &
-                    Species != "Pseudocheirus peregrinus") %>% 
-  mutate(phylogeny = gsub(" ", "_", vertlife.species)) -> dat
+# dat_full %>% filter(Species != "Chrysocyon brachyurus" &
+#                     Species != "Crocuta crocuta" &
+#                     Species != "Neofelis nebulosa" &
+#                     Species != "Panthera uncia" &
+#                     Species != "Pseudocheirus peregrinus") %>% 
+#   mutate(phylogeny = gsub(" ", "_", vertlife.species)) -> dat
+
+dat_full %>% 
+  mutate(phylogeny = gsub(" ", "_", vertlife.treename)) -> dat
 
 # adding Cervus canadensis
-dat$vertlife.species[which(dat$Species == "Cervus canadensis")] <-"Cervus canadensis"
-dat$phylogeny[which(dat$Species == "Cervus canadensis")] <-"Cervus_canadensis"
+# dat$vertlife.species[which(dat$Species == "Cervus canadensis")] <-"Cervus canadensis"
+# dat$phylogeny[which(dat$Species == "Cervus canadensis")] <-"Cervus_canadensis"
 
-# fixing species name
+# fixing species names
 dat$Species[dat$Species == "Equus asinus"] <- "Equus_africanus"
 dat$Species[dat$Species == "Aonyx cinereus"] <- "Aonyx cinerea"
 dat$Species[dat$Species == "Bubalus bubalis"] <- "Bubalus arnee"
