@@ -580,11 +580,13 @@ dat_f_horm %>%
   ungroup() -> dat_f_horm
 
 # Leave only one male entry per species
-dat_f_horm %>%
-  group_by(Species) %>%
-  filter(!(Sex == "Male" & duplicated(Species))) %>%
-  ungroup() -> dat_f_horm
+dat_f_horm_male <- dat_f_horm %>%
+  filter(Sex == "Male") %>%
+  distinct(Species, .keep_all = TRUE)
 
+# Combine with all female entries
+dat_f_horm <- dat_f_horm_male %>%
+  bind_rows(dat_f_horm %>% filter(Sex == "Female"))
 
 # filtering Male
 
@@ -735,10 +737,13 @@ dat_nn %>%
 
 # Leave only one male entry per species
 
-dat_nn %>% 
-  group_by(Species) %>%
-  filter(!(Sex == "Male" & duplicated(Species))) %>% 
-  ungroup() -> dat_nn
+dat_nn_male <- dat_nn %>%
+  filter(Sex == "Male") %>%
+  distinct(Species, .keep_all = TRUE)
+
+# Combine with all female entries
+dat_nn <- dat_nn_male %>%
+  bind_rows(dat_nn %>% filter(Sex == "Female")) 
 
 # filtering Male
 
@@ -769,33 +774,65 @@ dat_fm_nn <- escalc("ROM",
 dat_fm_nn <- dat_fm_nn %>% mutate(category = "F normal/M normal")
 
 # female normal vs. male hormonal (6)
+############
 
-dat_fm_nh <- dat %>% filter(is.na(Female_None_Mean) == FALSE,
-                            is.na(Male_Hormonal_Mean) == FALSE) %>%
-  transmute(F_normal_m = Female_None_Mean,
-            F_normal_sd = sqrt(Female.None*Female_None_SE),
-            F_normal_n = Female.None,
-            M_hornomal_m = Male_Hormonal_Mean,
-            M_hornomal_sd = sqrt(Male.Hormonal)*Male_Hormonal_SE,
-            M_hornomal_n = Male.Hormonal,
-            species = species,
-            phylogeny = phylogeny,
-            category = "F normal/M hornomal"
-  )
+dat %>% filter(sex_type == "Male_Surgical") -> dat_m_horm
+
+# which species to include
+include <- summary(as.factor(dat_m_horm$Species), maxsum = 1000) > 1
+
+spp_include <- names(which(include == TRUE))
+
+# use species included in spp_include
+
+dat_m_horm %>% filter(Species %in% spp_include) -> dat_m_horm
+
+# Get species
+
+dat_m_horm %>%
+  group_by(Species) %>% 
+  filter(any(Sex == "Male") & any(Sex == "Female")) %>%
+  ungroup() -> dat_m_horm
+
+# Leave only one female per species
+
+dat_m_horm %>%
+  group_by(Species) %>% 
+  filter(!(Sex == "Female" & duplicated(Species))) %>%
+  ungroup() -> dat_m_horm
+
+# filter male
+
+dat_m_horm %>% filter(Sex = "Male") %>% 
+  transmute(M_hormonal_m = LifeExpContra,
+            M_hormonal_sd = sqrt(Ncontra)*SEcontra,
+            M_hormonal_n = Ncontra
+            ) -> dat_m_horm_m
+
+# filter female
+
+dat_m_horm %>% filter(Sex = "Female") %>% 
+  transmute(F_normal_m = LifeExpNoContra,
+            F_normal_sd = sqrt(NnoContra)*SEnoContra,
+            F_normal_n = NnoContra
+            ) -> dat_m_horm_f
+
 
 dat_fm_nh <- escalc("ROM", 
-                    m1i = F_normal_m,
-                    m2i = M_hornomal_m,
-                    sd1i = F_normal_sd,
-                    sd2i = M_hornomal_sd,
-                    n1i = F_normal_n,
-                    n2i = M_hornomal_n,
-                    data = dat_fm_nh,
-)
+              m1i = dat_m_horm_f$F_normal_m,
+              m2i = dat_m_horm_m$M_hormonal_m,
+              sd1i = dat_m_horm_f$F_normal_sd,
+              sd2i = dat_m_horm_m$M_hormonal_sd,
+              n1i = dat_m_horm_f$F_normal_n,
+              n2i = dat_m_horm_m$M_hormonal_n,
+              data = dat_m_horm
+              )
 
+dat_fm_nh <- dat_fm_nh %>% mutate(category = "F normal/M hormonal")
 
 
 # female hormonal vs. male hormonal (9)
+############
 
 dat_fm_hh <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE,
                             is.na(Male_Hormonal_Mean) == FALSE) %>%
