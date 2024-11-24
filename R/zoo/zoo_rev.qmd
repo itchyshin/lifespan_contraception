@@ -678,6 +678,8 @@ dat_fm_sn <- dat_fm_sn %>% mutate(category = "F surgical/M normal")
 # female surgical vs. male surgical (4)
 ############
 
+# problem
+
 dat %>% filter(sex_type == "Female_Surgical"| sex_type == "Male_Surgical")  -> dat_fm_ss
 
 # filtering Male
@@ -834,29 +836,37 @@ dat_fm_nh <- dat_fm_nh %>% mutate(category = "F normal/M hormonal")
 # female hormonal vs. male hormonal (9)
 ############
 
-dat_fm_hh <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE,
-                            is.na(Male_Hormonal_Mean) == FALSE) %>%
-  transmute(F_hornomal_m = Female_Hormonal_Mean,
-            F_hornomal_sd = sqrt(Female.Hormonal*Female_Hormonal_SE),
-            F_hornomal_n = Female.Hormonal,
-            M_hornomal_m = Male_Hormonal_Mean,
-            M_hornomal_sd = sqrt(Male.Hormonal)*Male_Hormonal_SE,
-            M_hornomal_n = Male.Hormonal,
-            species = species,
-            phylogeny = phylogeny,
-            category = "F hornomal/M hornomal"
-  )
-     
-dat_fm_hh <- escalc("ROM", 
-                    m1i = F_hornomal_m,
-                    m2i = M_hornomal_m,
-                    sd1i = F_hornomal_sd,
-                    sd2i = M_hornomal_sd,
-                    n1i = F_hornomal_n,
-                    n2i = M_hornomal_n,
-                    data = dat_fm_hh,
-)
+dat %>% filter(sex_type == "Female_Hormonal"| sex_type == "Male_Hormonal")  -> dat_fm_hh
 
+# filtering Male
+
+dat_fm_hh %>% filter(Sex == "Male") %>% 
+  transmute(M_hormonal_m = LifeExpContra,
+            M_hormonal_sd = sqrt(Ncontra)*SEcontra,
+            M_hormonal_n = Ncontra
+            ) -> dat_fm_hh_m
+
+# filtering Female
+
+dat_fm_hh %>% filter(Sex == "Female") %>% 
+  transmute(F_hormonal_m = LifeExpContra,
+            F_hormonal_sd = sqrt(Ncontra)*SEcontra,
+            F_hormonal_n = Ncontra
+            ) -> dat_fm_hh_f
+
+
+dat_fm_hh <- escalc("ROM", 
+              m1i = dat_fm_hh_f$F_hormonal_m,
+              m2i = dat_fm_hh_m$M_hormonal_m,
+              sd1i = dat_fm_hh_f$F_hormonal_sd,
+              sd2i = dat_fm_hh_m$M_hormonal_sd,
+              n1i = dat_fm_hh_f$F_hormonal_n,
+              n2i = dat_fm_hh_m$M_hormonal_n,
+              data = dat_fm_hh
+              )
+
+dat_fm_hh <- dat_fm_hh %>% mutate(category = "F hormonal/M hormonal")
+        
 # putting all togther
 
 rbind(
