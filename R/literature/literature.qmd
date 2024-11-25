@@ -1033,7 +1033,7 @@ summary(mod_rem1)
 r2_ml(mod_rem1)
 
 # orchard plot
-p2 <- orchard_plot(mod_rem, mod = "Sex_Gonads", 
+p2 <- dat_m_surgard_plot(mod_rem, mod = "Sex_Gonads", 
                    xlab = "log response ratio (lnRR)", 
                    group = "Study", cb = F,
                    angle = 0) 
