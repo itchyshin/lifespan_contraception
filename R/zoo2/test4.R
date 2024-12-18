@@ -1,3 +1,5 @@
+# extra-analysis
+
 # make pre- and post purbety
 
 
@@ -31,7 +33,7 @@ pacman::p_load(tidyverse,
 )
 
 
-dat0 <- read_csv(here("data", "zoo", "timing_male.csv"), na = c("", "NA"))
+dat0 <- read.csv(here("data", "zoo", "extra.csv"), na = c("", "NA"))
 
 # phylogeny
 # read RData
@@ -57,13 +59,21 @@ dat0 %>% left_join(tax, by = c("Species" = "ZIMSSpecies")) -> dat_full
 dat_full %>% 
   mutate(phylogeny = gsub(" ", "_", vertlife.treename)) -> dat
 
+# take out NA which at Species column
+
+dat <- dat[!is.na(dat$Species),]
+
+# take out or filter out Macaca leonina (Species)
+
+dat <- dat[dat$Species != "Macaca leonina", ]
+
 # adding Cervus canadensis
 # dat$vertlife.species[which(dat$Species == "Cervus canadensis")] <-"Cervus canadensis"
 # dat$phylogeny[which(dat$Species == "Cervus canadensis")] <-"Cervus_canadensis"
 
 # fixing species names
 #dat$Species[dat$Species == "Equus asinus"] <- "Equus_africanus"
-dat$Species[dat$Species == "Aonyx cinereus"] <- "Aonyx cinerea"
+#dat$Species[dat$Species == "Aonyx cinereus"] <- "Aonyx cinerea"
 #dat$Species[dat$Species == "Bubalus bubalis"] <- "Bubalus arnee"
 
 
@@ -89,31 +99,57 @@ dat$Species[missing]
 # creating effect size 
 
 dat <- escalc("ROM", 
-                    m2i = LifeExpContraAft,
-                    m1i = LifeExpContraBef,
-                    sd2i = SEcontraAft*sqrt(NContraAft),
-                    sd1i = SEcontraBef*sqrt(NContraBef), 
-                    n2i = NContraAft,
-                    n1i = NContraBef,
-                    data = dat,
+              m1i = LifeExpContra,
+              m2i = LifeExpNoContra,
+              sd1i = SEcontra*sqrt(Ncontra),
+              sd2i = SEnoContra*sqrt(NnoContra), 
+              n1i = Ncontra,
+              n2i = NnoContra,
+              data = dat,
 )
 
-dat$species <- factor(dat$Species)
+#dat$species <- factor(dat$Species)
 
 # meta-analysis
 
 # variance-covariance matrix for sampling error assuming 0.5 correlation
 
-mod_pp <- rma.mv(yi, V = vi,
-                  random = list(
-                    ~1|species,
-                    ~1|phylogeny),
-                  R = list(phylogeny = cor_tree),
-                  data = dat)
-summary(mod_pp)
-round(i2_ml(mod_pp), 2)
+mod_extra <- rma.mv(yi, V = vi,
+                 random = list(
+                   ~1|species,
+                   ~1|phylogeny),
+                 R = list(phylogeny = cor_tree),
+                 data = dat)
+summary(mod_extra)
+round(i2_ml(mod_extra), 2)
 
 #robust(mod_all, cluster = species)  
 
-orchard_plot(mod_pp, xlab = "lnRR (all)", group = "species", g = FALSE)
+orchard_plot(mod_extra, xlab = "lnRR (all)", group = "species", g = FALSE)
 
+# fitting 2 moderators
+mod_extra1 <- rma.mv(yi, V = vi,
+                    mod = ~ Group.living - 1,
+                    random = list(
+                      ~1|species,
+                      ~1|phylogeny),
+                    R = list(phylogeny = cor_tree),
+                    data = dat)
+summary(mod_extra1)
+
+orchard_plot(mod_extra1, xlab = "lnRR (all)", mod = "Group.living", group = "species", g = FALSE)
+
+
+dat$lnbodymass <- log(dat$Bodymass)
+dat$lntestemass <-log(dat$Testesmass)
+
+mod_extra2 <- rma.mv(yi, V = vi,
+                     mod = ~  lntestemass + lnbodymass,
+                     random = list(
+                       ~1|species,
+                       ~1|phylogeny),
+                     R = list(phylogeny = cor_tree),
+                     data = dat)
+summary(mod_extra2)
+
+bubble_plot(mod_extra2, xlab = "log(Teste mass)", mod = "lntestemass", group = "species", g = FALSE)
