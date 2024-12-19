@@ -117,3 +117,20 @@ round(i2_ml(mod_pp), 2)
 
 orchard_plot(mod_pp, xlab = "lnRR (all)", group = "species", g = FALSE)
 
+# data set excluding primates
+
+dat %>% filter(Primate == "No") -> dat_short
+
+
+mod_pp2 <- rma.mv(yi, V = vi,
+                 random = list(
+                   ~1|species,
+                   ~1|phylogeny),
+                 R = list(phylogeny = cor_tree),
+                 data = dat_short)
+summary(mod_pp2)
+round(i2_ml(mod_pp2), 2)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_pp2, xlab = "lnRR (all)", group = "species", g = FALSE)
