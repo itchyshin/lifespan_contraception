@@ -31,6 +31,7 @@ pacman::p_load(tidyverse,
 )
 
 
+#dat0 <- read_csv(here("data", "zoo", "timing_male.csv"), na = c("", "NA"))
 dat0 <- read_csv(here("data", "zoo", "timing_male.csv"), na = c("", "NA"))
 
 # phylogeny
