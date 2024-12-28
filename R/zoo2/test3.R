@@ -1,5 +1,5 @@
 # make pre- and post purbety
-
+# data updated and matches with the fig 
 
 rm(list = ls())
 
@@ -32,7 +32,8 @@ pacman::p_load(tidyverse,
 
 
 #dat0 <- read_csv(here("data", "zoo", "timing_male.csv"), na = c("", "NA"))
-dat0 <- read_csv(here("data", "zoo", "timing_male.csv"), na = c("", "NA"))
+dat0 <- read_csv(here("data", "zoo", "resultsBaSTAbefAftMatur.csv"), na = c("", "NA"))
+
 
 # phylogeny
 # read RData

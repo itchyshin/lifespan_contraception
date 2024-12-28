@@ -196,26 +196,25 @@ orchard_plot(mod, xlab = "log response ratio (lnRR)", group = "Study")
 
 # male and female difference
 
-VCV1 <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Sex,
-             data = dat, rho = 0.5)
+# VCV1 <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Sex, data = dat, rho = 0.5)
+# 
+# mod1b <-  rma.mv(yi = yi, 
+#                 V = VCV1, 
+#                 mod = ~ Sex - 1, 
+#                 random = list(~ 1|Strain, 
+#                               ~ 1|Study, 
+#                               ~ Sex|Effect_ID), 
+#                 struct = "DIAG",
+#                 data = dat, 
+#                 test = "t",
+#                 sparse = TRUE,
+#                 control=list(optimizer="optim", optmethod="BFGS")
+# )
+# summary(mod1b) 
+
 
 mod1 <-  rma.mv(yi = yi, 
-                V = VCV1, 
-                mod = ~ Sex - 1, 
-                random = list(~ 1|Strain, 
-                              ~ 1|Study, 
-                              ~ Sex|Effect_ID), 
-                struct = "DIAG",
-                data = dat, 
-                test = "t",
-                sparse = TRUE,
-                control=list(optimizer="optim", optmethod="BFGS")
-)
-summary(mod1) 
-
-
-mod1b <-  rma.mv(yi = yi, 
-                V = VCV1, 
+                V = VCV, 
                 mod = ~ Sex - 1, 
                 random = list(~ 1|Strain, 
                               ~ 1|Study, 
@@ -226,34 +225,75 @@ mod1b <-  rma.mv(yi = yi,
                 sparse = TRUE,
                 control=list(optimizer="optim", optmethod="BFGS")
 )
-summary(mod1b) 
+summary(mod1) 
 
 # visualizing the result
 orchard_plot(mod1, mod = "Sex", 
              xlab = "log response ratio (lnRR)", group = "Study", angle = 45, cb = F) # colour = T)
 
 
+# attr(lm_result, "class") <- NULL
+
+# orchard plot
+
+main <- mod_results(mod, group = "Study")
+attr(main, "class") <- NULL
+main$mod_table$name <- gsub("Intrcpt", "Overall", main$mod_table$name)
+main$mod_table$name <- factor(main$mod_table$name)
+main$data$moderator <- gsub("Intrcpt", "Overall", main$data$moderator)
+
+class(main) <- c("orchard", "data.frame")
+
+p_overall <- orchard_plot(main, xlab = "log response ratio (lnRR)", angle = 0, group = "Study") + ylim(-2.2,2)
+
+
+sex_diff <- mod_results(mod1, mod = "Sex", group = "Study")
+
+
+p_sex_diff <-orchard_plot(sex_diff, mod = "Sex", 
+                          xlab = "log response ratio (lnRR)", group = "Study", angle = 0, cb = F) + ylim(-2.2,2)
+
+combined <- submerge(sex_diff, main)
+
+# changing the name (intercept) to:
+# TODO - this should be done in the orchard_plot function
+combined$mod_table$name <- gsub("Intrcpt", "Overall", combined$mod_table$name)
+combined$mod_table$name <- factor(combined$mod_table$name)
+
+combined$data$moderator <- gsub("Intrcpt", "Overall", combined$data$moderator)
+
+
+orchard_plot(combined,
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 0, cb = F) + 
+  scale_colour_manual(values = rev(c("#999999", "#88CCEE", "#CC6677"))) +
+  scale_fill_manual(values = rev(c("#999999", "#88CCEE", "#CC6677")))
+
+
+
+
+# mod1 better
+#anova(mod1, mod1b)
 
 # measure 
 
-VCV2 <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Sub.measure,
-             data = dat, rho = 0.5)
+#VCV2 <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = Sub.measure,
+#            data = dat, rho = 0.5)
+
+# mod2b <-  rma.mv(yi = yi, 
+#                V = VCV2, 
+#                mod = ~ Sub.measure - 1, 
+#                random = list(~ 1|Strain, 
+#                              ~ 1|Study, 
+#                              ~ Sub.measure|Effect_ID), 
+#                struct = "DIAG",
+#                data = dat, 
+#                test = "t",
+#                sparse = TRUE,
+#                control=list(optimizer="optim", optmethod="BFGS")
+# )
+# summary(mod2) 
 
 mod2 <-  rma.mv(yi = yi, 
-               V = VCV2, 
-               mod = ~ Sub.measure - 1, 
-               random = list(~ 1|Strain, 
-                             ~ 1|Study, 
-                             ~ Sub.measure|Effect_ID), 
-               struct = "DIAG",
-               data = dat, 
-               test = "t",
-               sparse = TRUE,
-               control=list(optimizer="optim", optmethod="BFGS")
-)
-summary(mod2) 
-
-mod2b <-  rma.mv(yi = yi, 
                 V = VCV2, 
                 mod = ~ Sub.measure - 1, 
                 random = list(~ 1|Strain, 
@@ -265,38 +305,116 @@ mod2b <-  rma.mv(yi = yi,
                 sparse = TRUE,
                 control=list(optimizer="optim", optmethod="BFGS")
 )
-summary(mod2b) 
+summary(mod2) 
 
 
 # visualizing the result
 orchard_plot(mod2, mod = "Sub.measure", 
              xlab = "log response ratio (lnRR)", group = "Study", angle = 45)
 
+
+
 # Measure x Sex
+# need to clearn up Sub.measure
+
+dat$Sub.measure <- factor(dat$Sub.measure, levels = levels(dat$Sub.measure),
+                          labels = c("Cardiac\nfunction/\npathology", "Cardiac size", "Cognition", "Frailty",
+                                     "Immune\nfunction", "Metabolism", "Muscle size", "Non-tumor\npathology",
+                                     "Sensory\nfunction", "Strength/\nbalance", "Tumor\nmammory", "Tumor\nnonmammory",
+                                     "Voluntary\nactivity"))
+
 
 dat$MesSex <- paste0(dat$Sub.measure, "_", dat$Sex)
 
-VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = MesSex,
-             data = dat, rho = 0.5)
+#VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = MesSex,
+#             data = dat, rho = 0.5)
 
-mod2 <-  rma.mv(yi = yi, 
-               V = vi, 
-               mod = ~ MesSex - 1, 
-               random = list(~ 1|Strain, 
-                             ~ 1|Study, 
-                             ~ MesSex|Effect_ID), 
-               struct = "DIAG",
-               data = dat, 
-               test = "t",
-               sparse = TRUE,
-               control=list(optimizer="optim", optmethod="BFGS")
+# mod3b <-  rma.mv(yi = yi, 
+#                V = vi, 
+#                mod = ~ MesSex - 1, 
+#                random = list(~ 1|Strain, 
+#                              ~ 1|Study, 
+#                              ~ MesSex|Effect_ID), 
+#                struct = "DIAG",
+#                data = dat, 
+#                test = "t",
+#                sparse = TRUE,
+#                control=list(optimizer="optim", optmethod="BFGS")
+# )
+# 
+# summary(mod3b)
+
+
+mod3 <-  rma.mv(yi = yi, 
+                 V = vi, 
+                 mod = ~ MesSex - 1, 
+                 random = list(~ 1|Strain, 
+                               ~ 1|Study, 
+                               ~ 1|Effect_ID), 
+                 #struct = "DIAG",
+                 data = dat, 
+                 test = "t",
+                 sparse = TRUE,
+                 control=list(optimizer="optim", optmethod="BFGS")
 )
 
-summary(mod2)
+summary(mod3)
+
 
 # visualizing the result
 
-orchard_plot(mod2, mod = "MesSex", 
-             xlab = "log response ratio (lnRR)", group = "Study", angle = 45, cb = F)
+orchard_plot(mod3, mod = "MesSex", 
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 0, cb = F)
 
 
+# taking out 
+
+
+
+# some experiments 
+
+res3 <- mod_results(mod3, mod = "MesSex", group = "Study")
+
+mod_table_m <- res3$mod_table[c(2,4,6, 7, 10, 12, 14, 16, 18, 21, 23), ]
+mod_table_f <- res3$mod_table[c(1,3,5, 8, 9, 11, 13, 15, 17, 19, 20, 22), ]
+
+data_m <- res3$data[ !is.na(match(res3$data$moderator, mod_table_m$name)), ]
+data_f <- res3$data[ !is.na(match(res3$data$moderator, mod_table_f$name)), ]
+  
+res3_male <- list(mod_table = mod_table_m, data = data_m)
+res3_female <- list(mod_table = mod_table_f, data = data_f)
+
+# changing names
+# male
+res3_male$mod_table$name <- gsub("_Male", "", res3_male$mod_table$name)
+res3_male$mod_table$name <- factor(res3_male$mod_table$name)
+
+res3_male$data$moderator <- gsub("_Male", "", res3_male$data$moderator)
+
+# female
+res3_female$mod_table$name <- gsub("_Female", "", res3_female$mod_table$name)
+res3_female$mod_table$name <- factor(res3_female$mod_table$name)
+
+res3_female$data$moderator <- gsub("_Female", "", res3_female$data$moderator)
+
+class(res3_male) <- c("orchard", "data.frame")
+class(res3_female) <- c("orchard", "data.frame")
+
+
+
+
+
+p_male <- orchard_plot(res3_male, mod = "MesSex", 
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 0, cb = F) + labs(title = "Male") + ylim(-2.2,2)
+
+
+# p_male <- p_male + plot_annotation(title = "Male",
+#                          theme = theme(plot.title = element_text(size = 20)))
+
+p_female <- orchard_plot(res3_female, mod = "MesSex", 
+             xlab = "log response ratio (lnRR)", group = "Study", angle = 0, cb = F) + labs(title = "Female") + ylim(-2.2,2)
+
+# p_female <- p_female + plot_annotation(title = "Female",
+#                          theme = theme(plot.title = element_text(size = 20)))
+
+p_overall + p_sex_diff + p_female + p_male +  plot_layout(widths = c(2, 2), heights = c(1,2.5)) 

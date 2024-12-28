@@ -1,4 +1,7 @@
 # cause of death
+
+# including all methods of castrations (remember)
+
 # test
 
 # loading packages
@@ -107,7 +110,7 @@ dat <- dat %>% filter(!is.na(Phylogeny))
 dat$Effect_ID <- factor(1:nrow(dat))
 
 
-# creating a varaible combining Sex and Type
+# creating a variable combining Sex and Type
 dat$Sex_Type <- as.factor(paste0(dat$Sex, "_", dat$Type))
 
 
@@ -179,7 +182,9 @@ dat$Sex_Type <- as.factor(paste0(dat$Sex, "_", dat$Type))
 # calcuating 2 x effect sizes by applying 2 functions above to dat
 
 
+#########
 # Trauma
+#########
 
 # Low
 dat_trauma <- escalc(measure = "RD", 
@@ -213,7 +218,7 @@ dat_trauma %>% filter(Contra_Trauma_N > 0) -> dat_trauma
 
 # create a long format of the data  using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_trauma <- dat_trauma %>% select(Effect_ID, Species, Phylogeny, Sex_Type,
+dat_long_trauma <- dat_trauma %>% select(Effect_ID, Species, Phylogeny, Sex_Type, Sex,
                            yi_trauma_low, vi_trauma_low, 
                            yi_trauma_med, vi_trauma_med, 
                            yi_trauma_upp, vi_trauma_upp) %>% 
@@ -259,6 +264,7 @@ mod_trauma <- rma.mv(yi = yi, V = VCV,
 
 summary(mod_trauma)
 
+
 # meta-regression
 
 mod_trauma_reg <- rma.mv(yi = yi, V = VCV, 
@@ -271,7 +277,7 @@ mod_trauma_reg <- rma.mv(yi = yi, V = VCV,
                          data = dat_long_trauma,
                          method="REML", 
                          control=list(optimizer="optim", optmethod= "Nelder-Mead"),
-                         mods = ~type - 1,
+                         mods = ~ type - 1,
                          sparse=TRUE
 )
 
@@ -279,45 +285,72 @@ summary(mod_trauma_reg)
 
 
 p_trauma <- orchard_plot(mod_trauma_reg, mod = "type",
-    xlab = "log risk ratio (Trauma)", group = "Species") + ylim(-0.7, 0.7)
+    xlab = "log risk difference (Trauma)", group = "Species") + ylim(-0.7, 0.7)
 
 
 p_trauma
 
+# sex_type 
 
-# checking Sex_Type effect
+dat_long_trauma$sex_type <-  as.factor(paste0(dat_long_trauma$Sex, "_", dat_long_trauma$type))
 
-# filter out Male_Hormonal
-dat_long_trauma %>% filter(Sex_Type != "Male_Hormonal") -> dat_long_trauma2
-
-# VCV2
-
-VCV2 <- vcalc(dat_long_trauma2$vi, 
-              cluster = dat_long_trauma2$Effect_ID, 
-              obs = dat_long_trauma2$Effect_ID2, 
-              data = dat_long_trauma2, rho = 0.5)
-
-mod_trauma_reg2 <- rma.mv(yi = yi, V = VCV2, 
+mod_trauma_reg2 <- rma.mv(yi = yi, V = VCV, 
                          random = list(
                            ~1|Species,
                            ~1|Phylogeny,
                            ~1|Effect_ID2), 
+                         #struct = "DIAG",
                          R = list(Phylogeny = cor_tree), 
-                         data = dat_long_trauma2,
+                         data = dat_long_trauma,
                          method="REML", 
                          control=list(optimizer="optim", optmethod= "Nelder-Mead"),
-                         mods = ~Sex_Type - 1,
+                         mods = ~ sex_type - 1,
                          sparse=TRUE
 )
 
-p_trauma2 <- orchard_plot(mod_trauma_reg2, mod = "Sex_Type",
-    xlab = "log risk ratio (Trauma)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+summary(mod_trauma_reg2)
+
+
+p_trauma2 <- orchard_plot(mod_trauma_reg2, mod = "sex_type",
+                         xlab = "log risk difference \n(Trauma)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+
 
 p_trauma2
 
 
-# Infectious Disease
+# # checking Sex_Type effect
+# 
+# # filter out Male_Hormonal
+# dat_long_trauma %>% filter(Sex_Type != "Male_Hormonal") -> dat_long_trauma2
+# 
+# # VCV2
+# 
+# VCV2 <- vcalc(dat_long_trauma2$vi, 
+#               cluster = dat_long_trauma2$Effect_ID, 
+#               obs = dat_long_trauma2$Effect_ID2, 
+#               data = dat_long_trauma2, rho = 0.5)
+# 
+# mod_trauma_reg2 <- rma.mv(yi = yi, V = VCV2, 
+#                          random = list(
+#                            ~1|Species,
+#                            ~1|Phylogeny,
+#                            ~1|Effect_ID2), 
+#                          R = list(Phylogeny = cor_tree), 
+#                          data = dat_long_trauma2,
+#                          method="REML", 
+#                          control=list(optimizer="optim", optmethod= "Nelder-Mead"),
+#                          mods = ~Sex_Type - 1,
+#                          sparse=TRUE
+# )
+# 
+# p_trauma2 <- orchard_plot(mod_trauma_reg2, mod = "Sex_Type",
+#     xlab = "log risk difference (Trauma)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+# 
+# p_trauma2
 
+####################
+# Infectious Disease
+####################
 # Low
 
 dat_infectious <- escalc(measure = "RD", 
@@ -353,7 +386,7 @@ dat_infectious %>% filter(Contra_InfectDisease_N > 0) -> dat_infectious
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_infectious <- dat_infectious %>% select(Effect_ID, Species, Phylogeny, Sex_Type,
+dat_long_infectious <- dat_infectious %>% select(Effect_ID, Species, Phylogeny, Sex_Type, Sex,
                            yi_infectious_low, vi_infectious_low, 
                            yi_infectious_med, vi_infectious_med, 
                            yi_infectious_upp, vi_infectious_upp) %>% 
@@ -418,35 +451,65 @@ mod_infectious_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_infectious_reg)
 
 p_infectious <- orchard_plot(mod_infectious_reg, mod = "type",
-    xlab = "log risk ratio (Infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "log risk difference (Infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
 
 p_infectious
 
-# checking Sex_Type effect
+# sex_type 
+
+dat_long_infectious$sex_type <-  as.factor(paste0(dat_long_infectious$Sex, "_", dat_long_infectious$type))
 
 mod_infectious_reg2 <- rma.mv(yi = yi, V = VCV, 
-                             random = list(
-                               ~1|Species,
-                               ~1|Phylogeny,
-                               ~1|Effect_ID2), 
-                             R = list(Phylogeny = cor_tree), 
-                             data = dat_long_infectious,
-                             method="REML", 
-                             control=list(optimizer="optim", optmethod="Nelder-Mead"),
-                             mods = ~Sex_Type - 1,
-                             test = "t",
-                             sparse=TRUE
+                          random = list(
+                            ~1|Species,
+                            ~1|Phylogeny,
+                            ~1|Effect_ID2), 
+                          #struct = "DIAG",
+                          R = list(Phylogeny = cor_tree), 
+                          data = dat_long_infectious,
+                          method="REML", 
+                          control=list(optimizer="optim", optmethod= "Nelder-Mead"),
+                          mods = ~ sex_type - 1,
+                          sparse=TRUE
 )
 
 summary(mod_infectious_reg2)
 
-p_infectious2 <- orchard_plot(mod_infectious_reg2, mod = "Sex_Type",
-                              xlab = "log risk ratio (Infectious Diesase)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+
+p_infectious2 <- orchard_plot(mod_infectious_reg2, mod = "sex_type",
+                          xlab = "log risk difference \n(Infectious Disease)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+
 
 p_infectious2
-    
 
+
+# # checking Sex_Type effect
+# 
+# mod_infectious_reg2 <- rma.mv(yi = yi, V = VCV, 
+#                              random = list(
+#                                ~1|Species,
+#                                ~1|Phylogeny,
+#                                ~1|Effect_ID2), 
+#                              R = list(Phylogeny = cor_tree), 
+#                              data = dat_long_infectious,
+#                              method="REML", 
+#                              control=list(optimizer="optim", optmethod="Nelder-Mead"),
+#                              mods = ~Sex_Type - 1,
+#                              test = "t",
+#                              sparse=TRUE
+# )
+# 
+# summary(mod_infectious_reg2)
+# 
+# p_infectious2 <- orchard_plot(mod_infectious_reg2, mod = "Sex_Type",
+#                               xlab = "log risk difference (Infectious Diesase)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+# 
+# p_infectious2
+#     
+
+########################
 # Non-infectious Disease
+########################
 
 # Low
 
@@ -482,7 +545,7 @@ dat_noninfectious %>% filter(Contra_NonInfectDisease_N > 0) -> dat_noninfectious
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_noninfectious <- dat_noninfectious %>% select(Effect_ID, Species, Phylogeny, Sex_Type,
+dat_long_noninfectious <- dat_noninfectious %>% select(Effect_ID, Species, Phylogeny, Sex_Type, Sex,
                            yi_noninfectious_low, vi_noninfectious_low, 
                            yi_noninfectious_med, vi_noninfectious_med, 
                            yi_noninfectious_upp, vi_noninfectious_upp) %>% 
@@ -546,47 +609,76 @@ mod_noninfectious_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_noninfectious_reg)
 
 p_noninfectious <- orchard_plot(mod_noninfectious_reg, mod = "type",
-    xlab = "log risk ratio (Non-infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "log risk difference (Non-infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
 
 p_noninfectious
 
-# Sex_Type effect
 
-# filter out Male_Hormonal
+# sex_type 
 
-dat_long_noninfectious %>% filter(Sex_Type != "Male_Hormonal") -> dat_long_noninfectious2
+dat_long_noninfectious$sex_type <-  as.factor(paste0(dat_long_noninfectious$Sex, "_", dat_long_noninfectious$type))
 
-# VCV2
-
-VCV2 <- vcalc(dat_long_noninfectious2$vi, 
-            cluster = dat_long_noninfectious2$Effect_ID, 
-            obs = dat_long_noninfectious2$Effect_ID2, 
-            data = dat_long_noninfectious2, rho = 0.5)
-
-
-mod_noninfectious_reg2 <- rma.mv(yi = yi, V = VCV2, 
-                               random = list(
-                                 ~1|Species,
-                                 ~1|Phylogeny,
-                                 ~1|Effect_ID2), 
-                               R = list(Phylogeny = cor_tree), 
-                               data = dat_long_noninfectious2,
-                               method="REML", 
-                               control=list(optimizer="optim", optmethod="Nelder-Mead"),
-                               mods = ~Sex_Type - 1,
-                               test = "t",
-                               sparse=TRUE
+mod_noninfectious_reg2 <- rma.mv(yi = yi, V = VCV, 
+                              random = list(
+                                ~1|Species,
+                                ~1|Phylogeny,
+                                ~1|Effect_ID2), 
+                              #struct = "DIAG",
+                              R = list(Phylogeny = cor_tree), 
+                              data = dat_long_noninfectious,
+                              method="REML", 
+                              control=list(optimizer="optim", optmethod= "Nelder-Mead"),
+                              mods = ~ sex_type - 1,
+                              sparse=TRUE
 )
 
 summary(mod_noninfectious_reg2)
 
-p_noninfectious2 <- orchard_plot(mod_noninfectious_reg2, mod = "Sex_Type",
-    xlab = "log risk ratio (Non-infectious Disease)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+
+p_noninfectious2 <- orchard_plot(mod_noninfectious_reg2, mod = "sex_type",
+                              xlab = "log risk difference \n(None-infectious Disease)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+
 
 p_noninfectious2
 
+# # Sex_Type effect
+# 
+# # filter out Male_Hormonal
+# 
+# dat_long_noninfectious %>% filter(Sex_Type != "Male_Hormonal") -> dat_long_noninfectious2
+# 
+# # VCV2
+# 
+# VCV2 <- vcalc(dat_long_noninfectious2$vi, 
+#             cluster = dat_long_noninfectious2$Effect_ID, 
+#             obs = dat_long_noninfectious2$Effect_ID2, 
+#             data = dat_long_noninfectious2, rho = 0.5)
+# 
+# 
+# mod_noninfectious_reg2 <- rma.mv(yi = yi, V = VCV2, 
+#                                random = list(
+#                                  ~1|Species,
+#                                  ~1|Phylogeny,
+#                                  ~1|Effect_ID2), 
+#                                R = list(Phylogeny = cor_tree), 
+#                                data = dat_long_noninfectious2,
+#                                method="REML", 
+#                                control=list(optimizer="optim", optmethod="Nelder-Mead"),
+#                                mods = ~Sex_Type - 1,
+#                                test = "t",
+#                                sparse=TRUE
+# )
+# 
+# summary(mod_noninfectious_reg2)
+# 
+# p_noninfectious2 <- orchard_plot(mod_noninfectious_reg2, mod = "Sex_Type",
+#     xlab = "log risk difference (Non-infectious Disease)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+# 
+# p_noninfectious2
 
+###################
 # Chronic Disease
+###################
 
 # Low
 
@@ -622,7 +714,7 @@ dat_chronic %>% filter(Contra_ChronDisease_N > 0) -> dat_chronic
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_chronic <- dat_chronic %>% select(Effect_ID, Species, Phylogeny, Sex_Type,
+dat_long_chronic <- dat_chronic %>% select(Effect_ID, Species, Phylogeny, Sex_Type,Sex,
                            yi_chronic_low, vi_chronic_low, 
                            yi_chronic_med, vi_chronic_med, 
                            yi_chronic_upp, vi_chronic_upp) %>% 
@@ -687,42 +779,70 @@ mod_chronic_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_chronic_reg)
 
 p_chronic <- orchard_plot(mod_chronic_reg, mod = "type",
-    xlab = "log risk ratio (Chronic Disease)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "log risk difference (Chronic Disease)", group = "Species") + ylim(-0.85, 0.7)
 
 p_chronic
 
-# Sex_Type effect
+# sex_type 
 
-# filter out Male_Hormonal
+dat_long_chronic$sex_type <-  as.factor(paste0(dat_long_chronic$Sex, "_", dat_long_chronic$type))
 
-dat_long_chronic2 <- dat_long_chronic %>% filter(Sex_Type != "Male_Hormonal") 
-
-# VCV2
-VCV2 <- vcalc(dat_long_chronic2$vi, 
-             cluster = dat_long_chronic2$Effect_ID, 
-             obs = dat_long_chronic2$Effect_ID2, 
-             data = dat_long_chronic2, rho = 0.5)
-
-mod_chronic_reg2 <- rma.mv(yi = yi, V = VCV2, 
-                         random = list(
-                           ~1|Species,
-                           ~1|Phylogeny,
-                           ~1|Effect_ID2), 
-                         R = list(Phylogeny = cor_tree), 
-                         data = dat_long_chronic2,
-                         method="REML", 
-                         control=list(optimizer="optim", optmethod="Nelder-Mead"),
-                         mods = ~Sex_Type - 1,
-                         test = "t",
-                         sparse=TRUE
+mod_chronic_reg2 <- rma.mv(yi = yi, V = VCV, 
+                                 random = list(
+                                   ~1|Species,
+                                   ~1|Phylogeny,
+                                   ~1|Effect_ID2), 
+                                 #struct = "DIAG",
+                                 R = list(Phylogeny = cor_tree), 
+                                 data = dat_long_chronic,
+                                 method="REML", 
+                                 control=list(optimizer="optim", optmethod= "Nelder-Mead"),
+                                 mods = ~ sex_type - 1,
+                                 sparse=TRUE
 )
 
 summary(mod_chronic_reg2)
 
-p_chronic2 <- orchard_plot(mod_chronic_reg2, mod = "Sex_Type",
-    xlab = "log risk ratio (Chronic Disease)", group = "Species" ,angle = 45) + ylim(-0.85, 0.7)
+
+p_chronic2 <- orchard_plot(mod_chronic_reg2, mod = "sex_type",
+                                 xlab = "log risk difference \n(Chronic Disease)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+
 
 p_chronic2
+
+
+# # Sex_Type effect
+# 
+# # filter out Male_Hormonal
+# 
+# dat_long_chronic2 <- dat_long_chronic %>% filter(Sex_Type != "Male_Hormonal") 
+# 
+# # VCV2
+# VCV2 <- vcalc(dat_long_chronic2$vi, 
+#              cluster = dat_long_chronic2$Effect_ID, 
+#              obs = dat_long_chronic2$Effect_ID2, 
+#              data = dat_long_chronic2, rho = 0.5)
+# 
+# mod_chronic_reg2 <- rma.mv(yi = yi, V = VCV2, 
+#                          random = list(
+#                            ~1|Species,
+#                            ~1|Phylogeny,
+#                            ~1|Effect_ID2), 
+#                          R = list(Phylogeny = cor_tree), 
+#                          data = dat_long_chronic2,
+#                          method="REML", 
+#                          control=list(optimizer="optim", optmethod="Nelder-Mead"),
+#                          mods = ~Sex_Type - 1,
+#                          test = "t",
+#                          sparse=TRUE
+# )
+# 
+# summary(mod_chronic_reg2)
+# 
+# p_chronic2 <- orchard_plot(mod_chronic_reg2, mod = "Sex_Type",
+#     xlab = "log risk difference (Chronic Disease)", group = "Species" ,angle = 45) + ylim(-0.85, 0.7)
+# 
+# p_chronic2
 
 # Death at birth
 
@@ -761,7 +881,7 @@ dat_deathAtBirth %>% filter(Contra_deathAtBirth_N > 0) -> dat_deathAtBirth
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_deathAtBirth <- dat_deathAtBirth %>% select(Effect_ID, Species, Phylogeny, Sex_Type,
+dat_long_deathAtBirth <- dat_deathAtBirth %>% select(Effect_ID, Species, Phylogeny, Sex_Type,Sex,
                            yi_deathAtBirth_low, vi_deathAtBirth_low, 
                            yi_deathAtBirth_med, vi_deathAtBirth_med, 
                            yi_deathAtBirth_upp, vi_deathAtBirth_upp) %>% 
@@ -825,9 +945,52 @@ mod_deathAtBirth_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_deathAtBirth_reg)
 
 p_deathAtBirth <- orchard_plot(mod_deathAtBirth_reg, mod = "type",
-    xlab = "log risk ratio (Death at Birth)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "log risk difference (Death at Birth)", group = "Species") + ylim(-0.85, 0.7)
 
 p_deathAtBirth
+
+# sex_type 
+
+dat_long_deathAtBirth$sex_type <-  as.factor(paste0(dat_long_deathAtBirth$Sex, "_", dat_long_deathAtBirth$type))
+
+mod_deathAtBirth_reg2 <- rma.mv(yi = yi, V = VCV, 
+                           random = list(
+                             ~1|Species,
+                             ~1|Phylogeny,
+                             ~1|Effect_ID2), 
+                           #struct = "DIAG",
+                           R = list(Phylogeny = cor_tree), 
+                           data = dat_long_deathAtBirth,
+                           method="REML", 
+                           control=list(optimizer="optim", optmethod= "Nelder-Mead"),
+                           mods = ~ sex_type - 1,
+                           sparse=TRUE
+)
+
+summary(mod_deathAtBirth_reg2)
+
+# 
+# # adding Male_Lower  etc
+# 
+# results_deathAtBirth <- mod_results(mod_deathAtBirth_reg2, group = "Species", mod = "sex_type")
+# 
+# results_deathAtBirth$mod_table <- as.factor(c("Female_Lower", "Female_Median", "Female_Upper", "Male_Lower", "Male_Median", "Male_Upper"))
+# 
+# temp_dat <- data.frame(name = as.factor(c("Male_Lower", "Male_Median", "Male_Upper")),
+#                        estimate = NA,
+#                        lowerCL = NA,
+#                        upperCL = NA,
+#                        lowerPR = NA,
+#                        upperPR = NA)
+# 
+# results_deathAtBirth$mod_table <- rbind(results_deathAtBirth$mod_table, temp_dat)
+
+
+p_deathAtBirth2 <- orchard_plot(mod_deathAtBirth_reg2, mod = "sex_type",
+                           xlab = "log risk difference \n(Death at birth)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+
+
+p_deathAtBirth2
 
 # # Sex_Type effect
 # 
@@ -848,12 +1011,13 @@ p_deathAtBirth
 # summary(mod_deathAtBirth_reg2)
 # 
 # p_deathAtBirth2 <- orchard_plot(mod_deathAtBirth_reg2, mod = "Sex_Type",
-#     xlab = "log risk ratio (Death at Birth)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+#     xlab = "log risk difference (Death at Birth)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
 # 
 # p_deathAtBirth2
 
-
+########
 # Other
+########
 
 # Low
 
@@ -889,7 +1053,7 @@ dat_other %>% filter(Contra_Other_N > 0) -> dat_other
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_other <- dat_other %>% select(Effect_ID, Species, Phylogeny, Sex_Type,
+dat_long_other <- dat_other %>% select(Effect_ID, Species, Phylogeny, Sex_Type,Sex,
                            yi_other_low, vi_other_low, 
                            yi_other_med, vi_other_med, 
                            yi_other_upp, vi_other_upp) %>% 
@@ -953,44 +1117,71 @@ mod_other_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_other_reg)
 
 p_other <- orchard_plot(mod_other_reg, mod = "type",
-    xlab = "log risk ratio (Other)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "log risk difference (Other)", group = "Species") + ylim(-0.85, 0.7)
 
 p_other
 
-# Sex_Type effect
+# sex_type 
 
-# filter out Male_Hormonal
+dat_long_other$sex_type <-  as.factor(paste0(dat_long_other$Sex, "_", dat_long_other$type))
 
-dat_long_other2 <- dat_long_other %>% 
-  filter(Sex_Type != "Male_Hormonal")
-
-# VCV2
-
-VCV2 <- vcalc(dat_long_other2$vi, 
-             cluster = dat_long_other2$Effect_ID, 
-             obs = dat_long_other2$Effect_ID2, 
-             data = dat_long_other2, rho = 0.5)
-
-mod_other_reg2 <- rma.mv(yi = yi, V = VCV2, 
-                         random = list(
-                           ~1|Species,
-                           ~1|Phylogeny,
-                           ~1|Effect_ID2), 
-                         R = list(Phylogeny = cor_tree), 
-                         data = dat_long_other2,
-                         method="REML", 
-                         control=list(optimizer="optim", optmethod="Nelder-Mead"),
-                         mods = ~Sex_Type - 1,
-                         test = "t",
-                         sparse=TRUE
-                         )
+mod_other_reg2 <- rma.mv(yi = yi, V = VCV, 
+                           random = list(
+                             ~1|Species,
+                             ~1|Phylogeny,
+                             ~1|Effect_ID2), 
+                           #struct = "DIAG",
+                           R = list(Phylogeny = cor_tree), 
+                           data = dat_long_other,
+                           method="REML", 
+                           control=list(optimizer="optim", optmethod= "Nelder-Mead"),
+                           mods = ~ sex_type - 1,
+                           sparse=TRUE
+)
 
 summary(mod_other_reg2)
 
-p_other2 <- orchard_plot(mod_other_reg2, mod = "Sex_Type", 
-    xlab = "log risk ratio (Other)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+
+p_other2 <- orchard_plot(mod_other_reg2, mod = "sex_type",
+                           xlab = "log risk difference \n(Other causes)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+
 
 p_other2
+
+# # Sex_Type effect
+# 
+# # filter out Male_Hormonal
+# 
+# dat_long_other2 <- dat_long_other %>% 
+#   filter(Sex_Type != "Male_Hormonal")
+# 
+# # VCV2
+# 
+# VCV2 <- vcalc(dat_long_other2$vi, 
+#              cluster = dat_long_other2$Effect_ID, 
+#              obs = dat_long_other2$Effect_ID2, 
+#              data = dat_long_other2, rho = 0.5)
+# 
+# mod_other_reg2 <- rma.mv(yi = yi, V = VCV2, 
+#                          random = list(
+#                            ~1|Species,
+#                            ~1|Phylogeny,
+#                            ~1|Effect_ID2), 
+#                          R = list(Phylogeny = cor_tree), 
+#                          data = dat_long_other2,
+#                          method="REML", 
+#                          control=list(optimizer="optim", optmethod="Nelder-Mead"),
+#                          mods = ~Sex_Type - 1,
+#                          test = "t",
+#                          sparse=TRUE
+#                          )
+# 
+# summary(mod_other_reg2)
+# 
+# p_other2 <- orchard_plot(mod_other_reg2, mod = "Sex_Type", 
+#     xlab = "log risk difference (Other)", group = "Species", angle = 45) + ylim(-0.85, 0.7)
+# 
+# p_other2
 
 
 # combining all plots - use cowplot
@@ -1014,3 +1205,16 @@ p_all2 <- plot_grid(p_trauma2,
                    ncol = 2)
 
 p_all2
+
+# using patchwork
+
+design <- "AAAA
+           BBBB
+           CCCC
+           DDDD
+           EE##
+           FFFF"
+
+
+p_trauma2 + p_infectious2 + p_noninfectious2 + p_chronic2 + p_deathAtBirth2 + p_other2 +
+  plot_layout(design = design) + plot_annotation(title = "Risk Difference (RD) for different causes of death")
