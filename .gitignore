@@ -48,3 +48,5 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .DS_Store
+data/zoo/km_females_horm_pre05.csv
+data/zoo/km_females_horm_post05.csv
