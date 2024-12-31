@@ -1319,8 +1319,9 @@ res_lower_f <- list(mod_table = mod_table_lower_f, data = data_lower_f)
 class(res_lower_f) <-  c("orchard", "data.frame")
 
 p_lower_f <- orchard_plot(res_lower_f, mod = "sex_type",
-            xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
-  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+            xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + labs(title = "Female") + 
+  theme(axis.title.x = element_blank(), axis.text.x  = element_blank(), axis.ticks.x = element_blank())
+  #theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
 # median female
 
@@ -1355,7 +1356,8 @@ class(res_median_f) <-  c("orchard", "data.frame")
 
 p_median_f <- orchard_plot(res_median_f, mod = "sex_type",
             xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
-  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank()) + 
+  theme(axis.title.x = element_blank(), axis.text.x  = element_blank(), axis.ticks.x = element_blank())
 
 # upper female
 
@@ -1390,7 +1392,8 @@ class(res_upper_f) <-  c("orchard", "data.frame")
 
 p_upper_f <- orchard_plot(res_upper_f, mod = "sex_type",
                            xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
-  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank()) + 
+  theme(axis.title.x = element_blank(), axis.text.x  = element_blank(), axis.ticks.x = element_blank())
 
 # lower male
 
@@ -1425,8 +1428,8 @@ res_lower_m <- list(mod_table = mod_table_lower_m, data = data_lower_m)
 class(res_lower_m) <-  c("orchard", "data.frame") 
 
 p_lower_m <- orchard_plot(res_lower_m, mod = "sex_type",
-                          xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
-  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+                          xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + labs(title = "Male") #+ 
+ #theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
 
 # median male
@@ -1462,7 +1465,8 @@ res_median_m <- list(mod_table = mod_table_median_m, data = data_median_m)
 class(res_median_m) <-  c("orchard", "data.frame") 
 
 p_median_m <- orchard_plot(res_median_m, mod = "sex_type",
-                          xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7) 
+                          xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7)  +
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
                                           
 # upper male
 
@@ -1497,7 +1501,8 @@ res_upper_m <- list(mod_table = mod_table_upper_m, data = data_upper_m)
 class(res_upper_m) <-  c("orchard", "data.frame")
 
 p_upper_m <- orchard_plot(res_upper_m, mod = "sex_type",
-                          xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7)
+                          xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) +  
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
 
 ######################
@@ -1510,4 +1515,4 @@ p_female <- p_lower_f + p_median_f + p_upper_f +
 p_male <- p_lower_m + p_median_m + p_upper_m +
   plot_annotation(title = "Male")
 
-p_female /p_male + plot_layout(n)
+p_female /p_male + plot_layout(heights = c(6,5))
