@@ -312,11 +312,25 @@ summary(mod_trauma_reg2)
 
 
 p_trauma2 <- orchard_plot(mod_trauma_reg2, mod = "sex_type",
-                         xlab = "log risk difference \n(Trauma)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+                         xlab = "log risk difference \n(Trauma)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_trauma2
 
+# mod_table
+res_trauma <- mod_results(mod_trauma_reg2,  mod = "sex_type", group = "Species")
+
+attr(res_trauma, "class") <- NULL
+
+res_trauma$mod_table$name <- paste( res_trauma$mod_table$name, "Trauma", sep = "_")
+res_trauma$mod_table$name <- factor(res_trauma$mod_table$name)
+res_trauma$data$moderator <- paste( res_trauma$data$moderator, "Trauma", sep = "_")
+res_trauma$data$moderator <- factor(res_trauma$data$moderator)
+
+#class(res_trauma) <-  c("orchard", "data.frame")
+
+#orchard_plot(res_trauma, mod = "sex_type",
+#             xlab = "log risk difference \n(Trauma)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 # # checking Sex_Type effect
 # 
@@ -477,10 +491,20 @@ summary(mod_infectious_reg2)
 
 
 p_infectious2 <- orchard_plot(mod_infectious_reg2, mod = "sex_type",
-                          xlab = "log risk difference \n(Infectious Disease)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+                          xlab = "log risk difference \n(Infectious Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_infectious2
+
+# mod_table
+res_infectious <- mod_results(mod_infectious_reg2,  mod = "sex_type", group = "Species")
+
+attr(res_infectious, "class") <- NULL
+
+res_infectious$mod_table$name <- paste(res_infectious$mod_table$name, "Infectious", sep = "_")
+res_infectious$mod_table$name <- factor(res_infectious$mod_table$name)
+res_infectious$data$moderator <- paste(res_infectious$data$moderator, "Infectious", sep = "_")
+res_infectious$data$moderator <- factor(res_infectious$data$moderator)
 
 
 # # checking Sex_Type effect
@@ -636,10 +660,21 @@ summary(mod_noninfectious_reg2)
 
 
 p_noninfectious2 <- orchard_plot(mod_noninfectious_reg2, mod = "sex_type",
-                              xlab = "log risk difference \n(None-infectious Disease)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+                              xlab = "log risk difference \n(None-infectious Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_noninfectious2
+
+# mod_table
+res_noninfectious <- mod_results(mod_noninfectious_reg2,  mod = "sex_type", group = "Species")
+
+attr(res_noninfectious, "class") <- NULL
+
+res_noninfectious$mod_table$name <- paste(res_noninfectious$mod_table$name, "None-infectious", sep = "_")
+res_noninfectious$mod_table$name <- factor(res_noninfectious$mod_table$name)
+res_noninfectious$data$moderator <- paste(res_noninfectious$data$moderator, "None-infectious", sep = "_")
+res_noninfectious$data$moderator <- factor(res_noninfectious$data$moderator)
+
 
 # # Sex_Type effect
 # 
@@ -805,10 +840,21 @@ summary(mod_chronic_reg2)
 
 
 p_chronic2 <- orchard_plot(mod_chronic_reg2, mod = "sex_type",
-                                 xlab = "log risk difference \n(Chronic Disease)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+                                 xlab = "log risk difference \n(Chronic Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_chronic2
+
+# mod_table
+res_chronic <- mod_results(mod_chronic_reg2,  mod = "sex_type", group = "Species")
+
+attr(res_chronic, "class") <- NULL
+
+res_chronic$mod_table$name <- paste(res_chronic$mod_table$name, "Chronic", sep = "_")
+res_chronic$mod_table$name <- factor(res_chronic$mod_table$name)
+res_chronic$data$moderator <- paste(res_chronic$data$moderator, "Chronic", sep = "_")
+res_chronic$data$moderator <- factor(res_chronic$data$moderator)
+
 
 
 # # Sex_Type effect
@@ -969,6 +1015,17 @@ mod_deathAtBirth_reg2 <- rma.mv(yi = yi, V = VCV,
 
 summary(mod_deathAtBirth_reg2)
 
+
+# mod_table
+res_deathAtBirth <- mod_results(mod_deathAtBirth_reg2,  mod = "sex_type", group = "Species")
+
+attr(res_deathAtBirth, "class") <- NULL
+
+res_deathAtBirth$mod_table$name <- paste(res_deathAtBirth$mod_table$name, "Death", sep = "_")
+res_deathAtBirth$mod_table$name <- factor(res_deathAtBirth$mod_table$name)
+res_deathAtBirth$data$moderator <- paste(res_deathAtBirth$data$moderator, "Death", sep = "_")
+res_deathAtBirth$data$moderator <- factor(res_deathAtBirth$data$moderator)
+
 # 
 # # adding Male_Lower  etc
 # 
@@ -987,7 +1044,7 @@ summary(mod_deathAtBirth_reg2)
 
 
 p_deathAtBirth2 <- orchard_plot(mod_deathAtBirth_reg2, mod = "sex_type",
-                           xlab = "log risk difference \n(Death at birth)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+                           xlab = "log risk difference \n(Death at birth)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_deathAtBirth2
@@ -1143,10 +1200,20 @@ summary(mod_other_reg2)
 
 
 p_other2 <- orchard_plot(mod_other_reg2, mod = "sex_type",
-                           xlab = "log risk difference \n(Other causes)", group = "Species", flip = F) + ylim(-0.7, 0.7)
+                           xlab = "log risk difference \n(Other causes)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_other2
+
+# mod_table
+res_other <- mod_results(mod_other_reg2,  mod = "sex_type", group = "Species")
+
+attr(res_other, "class") <- NULL
+
+res_other$mod_table$name <- paste(res_other$mod_table$name, "Other", sep = "_")
+res_other$mod_table$name <- factor(res_other$mod_table$name)
+res_other$data$moderator <- paste(res_other$data$moderator, "Other", sep = "_")
+res_other$data$moderator <- factor(res_other$data$moderator)
 
 # # Sex_Type effect
 # 
@@ -1218,3 +1285,229 @@ design <- "AAAA
 
 p_trauma2 + p_infectious2 + p_noninfectious2 + p_chronic2 + p_deathAtBirth2 + p_other2 +
   plot_layout(design = design) + plot_annotation(title = "Risk Difference (RD) for different causes of death")
+
+
+# figures 
+# lower female
+
+mod_table_lower_f <- rbind(res_other$mod_table[1, ],
+                           res_deathAtBirth$mod_table[1, ],
+                           res_chronic$mod_table[1, ],
+                           res_noninfectious$mod_table[1, ],
+                           res_infectious$mod_table[1, ],
+                           res_trauma$mod_table[1, ]
+                           )
+
+data_lower_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Lower_Trauma", ],
+                      res_infectious$data[res_infectious$data$moderator == "Female_Lower_Infectious", ],
+                      res_noninfectious$data[res_noninfectious$data$moderator == "Female_Lower_None-infectious", ],
+                      res_chronic$data[res_chronic$data$moderator == "Female_Lower_Chronic", ],
+                      res_deathAtBirth$data[res_deathAtBirth$data$moderator == "Female_Lower_Death", ],
+                      res_other$data[res_other$data$moderator == "Female_Lower_Other", ])
+
+mod_table_lower_f$name <- gsub("Female_Lower_", "", mod_table_lower_f$name)
+mod_table_lower_f$name <- factor(mod_table_lower_f$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                         "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
+data_lower_f$moderator <- gsub("Female_Lower_", "", data_lower_f$moderator)
+data_lower_f$moderator <- factor(data_lower_f$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                         "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
+
+res_lower_f <- list(mod_table = mod_table_lower_f, data = data_lower_f)
+
+class(res_lower_f) <-  c("orchard", "data.frame")
+
+p_lower_f <- orchard_plot(res_lower_f, mod = "sex_type",
+            xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+
+# median female
+
+mod_table_median_f <- rbind(res_other$mod_table[2, ],
+                           res_deathAtBirth$mod_table[2, ],
+                           res_chronic$mod_table[2, ],
+                           res_noninfectious$mod_table[2, ],
+                           res_infectious$mod_table[2, ],
+                           res_trauma$mod_table[2, ]
+                           )
+
+data_median_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Median_Trauma", ],
+                      res_infectious$data[res_infectious$data$moderator == "Female_Median_Infectious", ],
+                      res_noninfectious$data[res_noninfectious$data$moderator == "Female_Median_None-infectious", ],
+                      res_chronic$data[res_chronic$data$moderator == "Female_Median_Chronic", ],
+                      res_deathAtBirth$data[res_deathAtBirth$data$moderator == "Female_Median_Death", ],
+                      res_other$data[res_other$data$moderator == "Female_Median_Other", ]
+                      )
+
+mod_table_median_f$name <- gsub("Female_Median_", "", mod_table_median_f$name)
+mod_table_median_f$name <- factor(mod_table_median_f$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                         "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
+data_median_f$moderator <- gsub("Female_Median_", "", data_median_f$moderator)
+data_median_f$moderator <- factor(data_median_f$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                         "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
+
+res_median_f <- list(mod_table = mod_table_median_f, data = data_median_f)
+
+class(res_median_f) <-  c("orchard", "data.frame")
+
+p_median_f <- orchard_plot(res_median_f, mod = "sex_type",
+            xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+
+# upper female
+
+mod_table_upper_f <- rbind(res_other$mod_table[3, ],
+                           res_deathAtBirth$mod_table[3, ],
+                           res_chronic$mod_table[3, ],
+                           res_noninfectious$mod_table[3, ],
+                           res_infectious$mod_table[3, ],
+                           res_trauma$mod_table[3, ]
+                           )
+
+data_upper_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Upper_Trauma", ],
+                      res_infectious$data[res_infectious$data$moderator == "Female_Upper_Infectious", ],
+                      res_noninfectious$data[res_noninfectious$data$moderator == "Female_Upper_None-infectious", ],
+                      res_chronic$data[res_chronic$data$moderator == "Female_Upper_Chronic", ],
+                      res_deathAtBirth$data[res_deathAtBirth$data$moderator == "Female_Upper_Death", ],
+                      res_other$data[res_other$data$moderator == "Female_Upper_Other", ]
+                      ) 
+
+mod_table_upper_f$name <- gsub("Female_Upper_", "", mod_table_upper_f$name)
+mod_table_upper_f$name <- factor(mod_table_upper_f$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                                  labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                 "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
+data_upper_f$moderator <- gsub("Female_Upper_", "", data_upper_f$moderator)
+data_upper_f$moderator <- factor(data_upper_f$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                                  labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                 "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
+
+res_upper_f <- list(mod_table = mod_table_upper_f, data = data_upper_f)
+
+class(res_upper_f) <-  c("orchard", "data.frame")
+
+p_upper_f <- orchard_plot(res_upper_f, mod = "sex_type",
+                           xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+
+# lower male
+
+mod_table_lower_m <- rbind(res_other$mod_table[4, ],
+                           res_chronic$mod_table[4, ],
+                           res_noninfectious$mod_table[4, ],
+                           res_infectious$mod_table[4, ],
+                           res_trauma$mod_table[4, ]
+                           )
+
+mod_table_lower_m$name <- as.character(mod_table_lower_m$name)
+
+data_lower_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Lower_Trauma", ],
+                      res_infectious$data[res_infectious$data$moderator == "Male_Lower_Infectious", ],
+                      res_noninfectious$data[res_noninfectious$data$moderator == "Male_Lower_None-infectious", ],
+                      res_chronic$data[res_chronic$data$moderator == "Male_Lower_Chronic", ],
+                      res_other$data[res_other$data$moderator == "Male_Lower_Other", ])
+
+data_lower_m$moderator <- as.character(data_lower_m$moderator)
+
+mod_table_lower_m$name <- gsub("Male_Lower_", "", mod_table_lower_m$name)
+mod_table_lower_m$name <- factor(mod_table_lower_m$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic","Other")), 
+                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                "Chronic\ndisease", "Other\ncauses")) )
+data_lower_m$moderator <- gsub("Male_Lower_", "", data_lower_m$moderator)
+data_lower_m$moderator <- factor(data_lower_m$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Other")), 
+                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                "Chronic\ndisease", "Other\ncauses")) )
+
+res_lower_m <- list(mod_table = mod_table_lower_m, data = data_lower_m)
+
+class(res_lower_m) <-  c("orchard", "data.frame") 
+
+p_lower_m <- orchard_plot(res_lower_m, mod = "sex_type",
+                          xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
+  theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
+
+
+# median male
+
+mod_table_median_m <- rbind(res_other$mod_table[5, ],
+                           res_chronic$mod_table[5, ],
+                           res_noninfectious$mod_table[5, ],
+                           res_infectious$mod_table[5, ],
+                           res_trauma$mod_table[5, ]
+                           )
+
+mod_table_median_m$name <- as.character(mod_table_median_m$name)
+
+data_median_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Median_Trauma", ],
+                      res_infectious$data[res_infectious$data$moderator == "Male_Median_Infectious", ],
+                      res_noninfectious$data[res_noninfectious$data$moderator == "Male_Median_None-infectious", ],
+                      res_chronic$data[res_chronic$data$moderator == "Male_Median_Chronic", ],
+                      res_other$data[res_other$data$moderator == "Male_Median_Other", ])
+
+data_median_m$moderator <- as.character(data_median_m$moderator)
+
+mod_table_median_m$name <- gsub("Male_Median_", "", mod_table_median_m$name)
+mod_table_median_m$name <- factor(mod_table_median_m$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic","Other")), 
+                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                "Chronic\ndisease", "Other\ncauses")) )
+data_median_m$moderator <- gsub("Male_Median_", "", data_median_m$moderator)
+data_median_m$moderator <- factor(data_median_m$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Other")), 
+                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                "Chronic\ndisease", "Other\ncauses")) )
+
+res_median_m <- list(mod_table = mod_table_median_m, data = data_median_m)
+
+class(res_median_m) <-  c("orchard", "data.frame") 
+
+p_median_m <- orchard_plot(res_median_m, mod = "sex_type",
+                          xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7) 
+                                          
+# upper male
+
+mod_table_upper_m <- rbind(res_other$mod_table[6, ],
+                           res_chronic$mod_table[6, ],
+                           res_noninfectious$mod_table[6, ],
+                           res_infectious$mod_table[6, ],
+                           res_trauma$mod_table[6, ]
+                           )
+
+mod_table_upper_m$name <- as.character(mod_table_upper_m$name)
+
+data_upper_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Upper_Trauma", ],
+                      res_infectious$data[res_infectious$data$moderator == "Male_Upper_Infectious", ],
+                      res_noninfectious$data[res_noninfectious$data$moderator == "Male_Upper_None-infectious", ],
+                      res_chronic$data[res_chronic$data$moderator == "Male_Upper_Chronic", ],
+                      res_other$data[res_other$data$moderator == "Male_Upper_Other", ])
+
+data_upper_m$moderator <- as.character(data_upper_m$moderator)
+
+mod_table_upper_m$name <- gsub("Male_Upper_", "", mod_table_upper_m$name)
+mod_table_upper_m$name <- factor(mod_table_upper_m$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic","Other")), 
+                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                "Chronic\ndisease", "Other\ncauses")) )
+data_upper_m$moderator <- gsub("Male_Upper_", "", data_upper_m$moderator)
+data_upper_m$moderator <- factor(data_upper_m$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Other")), 
+                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+                                                "Chronic\ndisease", "Other\ncauses")) )
+
+res_upper_m <- list(mod_table = mod_table_upper_m, data = data_upper_m)
+
+class(res_upper_m) <-  c("orchard", "data.frame")
+
+p_upper_m <- orchard_plot(res_upper_m, mod = "sex_type",
+                          xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7)
+
+
+######################
+#ddrwoing
+#########################
+
+p_female <- p_lower_f + p_median_f + p_upper_f +
+   plot_annotation(title = "Female")
+
+p_male <- p_lower_m + p_median_m + p_upper_m +
+  plot_annotation(title = "Male")
+
+p_female /p_male + plot_layout(n)

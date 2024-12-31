@@ -241,6 +241,7 @@ attr(main, "class") <- NULL
 main$mod_table$name <- gsub("Intrcpt", "Overall", main$mod_table$name)
 main$mod_table$name <- factor(main$mod_table$name)
 main$data$moderator <- gsub("Intrcpt", "Overall", main$data$moderator)
+main$data$moderator <- factor(main$data$moderator)
 
 class(main) <- c("orchard", "data.frame")
 
@@ -418,3 +419,60 @@ p_female <- orchard_plot(res3_female, mod = "MesSex",
 #                          theme = theme(plot.title = element_text(size = 20)))
 
 p_overall + p_sex_diff + p_female + p_male +  plot_layout(widths = c(2, 2), heights = c(1,2.5)) 
+
+
+# creating a forest plot using dat
+
+str(dat)
+
+# selecting
+
+fdat <- dat %>% select(Study, Measure, Effect_ID, Measurement.type, Sub.measure, yi, vi)
+
+# add lower.ci and upper.ci
+
+# fdat <- dat %>% mutate(lower.ci = yi - 1.96*sqrt(vi), upper.ci = yi + 1.96*sqrt(vi)) 
+# 
+# p_forest <- ggplot(data = fdat, aes(x = yi, y = Measurement.type)) +
+#   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sub.measure), 
+#                  height = 1, show.legend = TRUE, size = 1, alpha = 0.8, position = position_dodge2(width = 1)) +
+#   geom_point(aes(col = Sub.measure), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 1)) +
+#   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
+#   geom_vline(xintercept = mod$b, linetype = 2, colour = "red", alpha = 0.3) +
+#   labs(x = "lnRR (effect size)", y = "")
+
+fdat$Measurement.type <- factor(
+  fdat$Measurement.type,
+  levels = unique(fdat$Measurement.type)
+)
+
+dodge <- position_dodge2(width = 0.6, preserve = "single")
+
+p_forest <- ggplot(data = fdat, aes(x = yi, y = Measurement.type)) +
+  geom_errorbarh(
+    aes(xmin = lower.ci, xmax = upper.ci, colour = Sub.measure), 
+    height = 0.3,
+    position = dodge,
+    size = 1, alpha = 0.8
+  ) +
+  geom_point(
+    aes(colour = Sub.measure),
+    fill = "white",
+    shape = 21,
+    size = 2,
+    position = dodge
+  ) +
+  geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
+  geom_vline(xintercept = mod$b, linetype = 1, linewidth = 2, colour = "red", alpha = 0.3) +
+  scale_y_discrete(expand = c(0,0)) +
+  # Rename legend title
+  scale_colour_discrete(name = "Sub-measure") +
+  labs(x = "lnRR (effect size)", y = "") +
+  theme_minimal() +
+  # Place legend below plot
+  theme(
+    legend.position = "bottom",
+    axis.text.y = element_text(size = 9)
+  )
+
+p_forest
