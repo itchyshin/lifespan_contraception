@@ -1499,7 +1499,7 @@ data_upper_m$moderator <- factor(data_upper_m$moderator, levels = rev(c("Trauma"
 res_upper_m <- list(mod_table = mod_table_upper_m, data = data_upper_m)
 
 class(res_upper_m) <-  c("orchard", "data.frame")
-
+ 
 p_upper_m <- orchard_plot(res_upper_m, mod = "sex_type",
                           xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) +  
   theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
