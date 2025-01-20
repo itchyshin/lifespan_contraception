@@ -295,7 +295,7 @@ orchard_plot(combined,
 # summary(mod2) 
 
 mod2 <-  rma.mv(yi = yi, 
-                V = VCV2, 
+                V = VCV, 
                 mod = ~ Sub.measure - 1, 
                 random = list(~ 1|Strain, 
                               ~ 1|Study, 
@@ -431,8 +431,8 @@ fdat <- dat %>% select(Study, Measure, Effect_ID, Measurement.type, Sub.measure,
 
 # add lower.ci and upper.ci
 
-# fdat <- dat %>% mutate(lower.ci = yi - 1.96*sqrt(vi), upper.ci = yi + 1.96*sqrt(vi)) 
-# 
+fdat <- dat %>% mutate(lower.ci = yi - 1.96*sqrt(vi), upper.ci = yi + 1.96*sqrt(vi))
+
 # p_forest <- ggplot(data = fdat, aes(x = yi, y = Measurement.type)) +
 #   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sub.measure), 
 #                  height = 1, show.legend = TRUE, size = 1, alpha = 0.8, position = position_dodge2(width = 1)) +
@@ -476,3 +476,15 @@ p_forest <- ggplot(data = fdat, aes(x = yi, y = Measurement.type)) +
   )
 
 p_forest
+
+########################
+# different drawing .... 
+########################
+
+# example....
+
+
+
+
+
+
