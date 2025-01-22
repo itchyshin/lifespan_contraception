@@ -55,6 +55,7 @@ lnrrp <- function(m1, m2, n1, n2) {
 # function to get to lnRR for longevity data (CV required)
 # The method proposed in Nakagawa et al (2022) - missing SD method
 
+
 lnrrm <- function(m1, m2, n1, n2, cv21, cv22) {
   # lnRR - with 2nd order correction
   lnrr <- log(m1/m2) + 
@@ -65,6 +66,23 @@ lnrrm <- function(m1, m2, n1, n2, cv21, cv22) {
   
   invisible(data.frame(yi = lnrr , vi = var))
 }
+
+# not using CV for drawing the plot
+lnrrm2 <- function(m1, m2, n1, n2, sd1, sd2) {
+  # lnRR - with 2nd order correction
+  cv21 <- (sd1/m1)^2
+  cv22 <- (sd2/m2)^2
+  
+  lnrr <- log(m1/m2) + 
+    0.5 * ((cv21 /n1) - (cv22 / n2))	
+  
+  var <- (cv21 / n1) + ((cv21^2) / (2 * n1^2))  + 
+    (cv22/ n2) + ((cv22^2) / (2 * n2^2) )
+  
+  invisible(data.frame(yi = lnrr , vi = var))
+}
+
+
 
 # for folded normal distribution see: https://en.wikipedia.org/wiki/Folded_normal_distribution
 
@@ -143,7 +161,7 @@ dat %>% group_by(Study) %>%
 dat$yi <- ifelse(effect_type == "other", lnrrm(dat$Experimental_value,
                                                dat$Control_value, 
                                                dat$Sample_size_experimental, 
-                                               dat$Sample_size_control, 
+                                               dat$Sample_size_control,
                                                cvs[["cv2_trt"]],
                                                cvs[["cv2_cont"]])[[1]],
                                          lnrrp(dat$Experimental_value, 
@@ -161,6 +179,21 @@ dat$vi <- ifelse(effect_type == "other", lnrrm(dat$Experimental_value,
                                                dat$Control_value, 
                                                dat$Sample_size_experimental, 
                                                dat$Sample_size_control)[[2]])
+
+# for plotting without using CV
+
+dat$vi2 <- ifelse(effect_type == "other", lnrrm2(dat$Experimental_value,
+                                               dat$Control_value, 
+                                               dat$Sample_size_experimental, 
+                                               dat$Sample_size_control, 
+                                               dat$Error_experimental_SD,
+                                               dat$Error_control_SD)[[2]],
+                                        lnrrp(dat$Experimental_value, 
+                                              dat$Control_value, 
+                                              dat$Sample_size_experimental, 
+                                              dat$Sample_size_control)[[2]])
+
+
 
 # flipping directions
 
@@ -481,10 +514,109 @@ p_forest
 # different drawing .... 
 ########################
 
+# meta-analytic mean
+
+
+
+results <- mod_results(mod, group = "Study", data = dat)[[1]]
+
+
 # example....
 
+bdat <- escalc(yi = yi, vi = vi2, data = dat)
 
+bdat$es_ID <- factor(1:nrow(bdat))
 
+cdat <- aggregate(x = bdat, cluster = MesSex, obs = es_ID, rho = 0)
+# 
+# # adding non-aggredated ones
+# cdat <- rbind(cdat, bdat[bdat$MesSex == "Frailty_Male", ], bdat[bdat$MesSex == "Sensory\nfunction_Female", ])
+# 
+# # replacing vi with vi2
+# cdat$vi[cdat$MesSex == "Frailty_Male"] <- cdat$vi2[cdat$MesSex == "Frailty_Male"]
+# cdat$vi[cdat$MesSex == "Sensory\nfunction_Female"] <- cdat$vi2[cdat$MesSex == "Sensory\nfunction_Female"]
+# 
+dim(dat)
+dim(cdat)
 
+# CI1
+cdat$lower.ci <- cdat$yi - sqrt(cdat$vi) * qnorm(0.975) 
+cdat$upper.ci <- cdat$yi + sqrt(cdat$vi) *  qnorm(0.975)
 
+# adding more informaition
+cdat %>% select(Sub.measure, yi, lower.ci, upper.ci, Sex) -> ddat
+
+addition <- data.frame(Sub.measure = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
+
+ddat <- rbind(ddat, addition)
+
+sum_data <- data.frame("x.diamond" = c(results$lowerCL,
+                                       results$estimate ,
+                                       results$upperCL,
+                                       results$estimate ),
+                       "y.diamond" = c(1,
+                                       1 + 0.25,
+                                       1,
+                                       1 - 0.25)
+)
+
+# looking at 
+#dat$Sub.measure 
+ddat$Sub.measure <- factor(ddat$Sub.measure,
+                          levels = c( "Overall", 
+                                      "Cardiac\nfunction/\npathology", 
+                                      "Cardiac size", 
+                                      "Cognition", 
+                                      "Frailty",
+                                      "Immune\nfunction", 
+                                      "Metabolism", 
+                                      "Muscle size", 
+                                      "Non-tumor\npathology",
+                                      "Sensory\nfunction", 
+                                      "Strength/\nbalance",
+                                      "Tumor\nmammory", 
+                                      "Tumor\nnonmammory",
+                                      "Voluntary\nactivity"),
+                          labels = c("Overall", 
+                                     "Cardiac\nfunction/\npathology", 
+                                     "Cardiac size", 
+                                     "Cognition", 
+                                     "Frailty",
+                                     "Immune\nfunction", 
+                                     "Metabolism", 
+                                     "Muscle size", 
+                                     "Non-tumor\npathology",
+                                     "Sensory\nfunction", 
+                                     "Strength/\nbalance",
+                                     "Tumor\nmammory", 
+                                     "Tumor\nnonmammory",
+                                     "Voluntary\nactivity"))
+
+mes_sex <- ggplot(data = ddat, aes(x = yi, y = Sub.measure)) +
+  geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
+                 height = 0, show.legend = TRUE, linewidth = 4.5, 
+                 alpha = 0.8, position =position_dodge(width = 0.75)) +
+  geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
+  geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
+  geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
+  xlim(-1.6, 1.6) +
+  #creating 95% prediction intervals
+  geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
+  # creating diamonsts (95% CI)
+  ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond), fill = "red") +
+  
+  theme_bw() +
+  scale_color_manual(values = c("#CC6677", "#88CCEE")) +
+  labs(x = "lnRR (effect size)", y = "", colour = "Sex") +
+  theme(legend.position = c(0.95, 0.85),
+        legend.justification = c(1, 0)) +
+  theme(legend.title = element_text(size = 9)) +
+  #theme(legend.direction="horizontal") +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.text.y = element_text(size = 10, colour ="black",
+                                   hjust = 0.5)) 
+
+mes_sex
+
+## need to do a version for Measurement.type
 

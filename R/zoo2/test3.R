@@ -136,3 +136,55 @@ round(i2_ml(mod_pp2), 2)
 #robust(mod_all, cluster = species)  
 
 orchard_plot(mod_pp2, xlab = "lnRR (all)", group = "species", g = FALSE)
+
+# primate as moderator
+
+
+mod_pp3 <- rma.mv(yi, V = vi,
+                  mod = ~ Primate,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny),
+                  R = list(phylogeny = cor_tree),
+                  data = dat)
+summary(mod_pp3)
+round(r2_ml(mod_pp3), 2)
+
+orchard_plot(mod_pp3, mod = "Primate", xlab = "lnRR (all)", group = "species", g = FALSE)
+
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_pp2, xlab = "lnRR (all)", group = "species", g = FALSE)
+
+
+# no phylogeny
+
+mod_np <- rma.mv(yi, V = vi,
+                 random = list(
+                   ~1|species),
+                 data = dat)
+summary(mod_np)
+round(i2_ml(mod_np), 2)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_np, xlab = "lnRR (all)", group = "species", g = FALSE)
+
+
+# phlo - primates as a separate group 
+
+
+mod_np2 <- rma.mv(yi, V = vi,
+                 mod = ~ Primate,
+                 random = list(
+                   ~1|species),
+                 data = dat)
+summary(mod_np2)
+round(r2_ml(mod_np2), 2)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_np2, mod = "Primate", xlab = "lnRR (all)", group = "species", g = FALSE)
+
+

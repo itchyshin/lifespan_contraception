@@ -76,7 +76,7 @@ pacman::p_load(tidyverse,
 
 ```{r}
 # main data
-dat0 <- read_csv(here("data", "zoo", "zoo_rev3.csv"), na = c("", "NA"), show_col_types = FALSE)
+dat0 <- read_csv(here("data", "zoo", "resultsBaSTApost2005oldFormat.csv"), na = c("", "NA"), show_col_types = FALSE)
 
 # phylogeny
 load(here("Rdata", "zoo", "maxCredTree.RData"))
