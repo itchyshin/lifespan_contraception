@@ -132,6 +132,7 @@ lnrre <- function(m1, m2, n1, n2) {
 
 
 # loading data
+# TODO data needs to be updated....
 
 dat_full <- read.csv(here("data", "healthspan", "healthspan.csv"), na = c("", "NA"))
 
@@ -516,19 +517,26 @@ p_forest
 
 # meta-analytic mean
 
-
-
 results <- mod_results(mod, group = "Study", data = dat)[[1]]
 
 
 # example....
+dat$MestypeSex <- paste0(dat$Measurement.type, "_", dat$Sex)
 
 bdat <- escalc(yi = yi, vi = vi2, data = dat)
 
 bdat$es_ID <- factor(1:nrow(bdat))
 
+# MesSex
 cdat <- aggregate(x = bdat, cluster = MesSex, obs = es_ID, rho = 0)
-# 
+
+# MestypeSex
+
+edat <- aggregate(x = bdat, cluster = MestypeSex, obs = es_ID, rho = 0)
+
+edat$MestypeSex
+
+
 # # adding non-aggredated ones
 # cdat <- rbind(cdat, bdat[bdat$MesSex == "Frailty_Male", ], bdat[bdat$MesSex == "Sensory\nfunction_Female", ])
 # 
@@ -538,17 +546,29 @@ cdat <- aggregate(x = bdat, cluster = MesSex, obs = es_ID, rho = 0)
 # 
 dim(dat)
 dim(cdat)
+dim(edat)
 
 # CI1
 cdat$lower.ci <- cdat$yi - sqrt(cdat$vi) * qnorm(0.975) 
 cdat$upper.ci <- cdat$yi + sqrt(cdat$vi) *  qnorm(0.975)
 
+edat$lower.ci <- edat$yi - sqrt(edat$vi) * qnorm(0.975) 
+edat$upper.ci <- edat$yi + sqrt(edat$vi) *  qnorm(0.975)
+
+
+
+
 # adding more informaition
 cdat %>% select(Sub.measure, yi, lower.ci, upper.ci, Sex) -> ddat
+# adding more informaition
+edat %>% select(Measurement.type, yi, lower.ci, upper.ci, Sex) -> gdat
 
 addition <- data.frame(Sub.measure = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
+addition1 <- data.frame(Measurement.type = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
+
 
 ddat <- rbind(ddat, addition)
+gdat <- rbind(gdat, addition1)
 
 sum_data <- data.frame("x.diamond" = c(results$lowerCL,
                                        results$estimate ,
@@ -616,7 +636,63 @@ mes_sex <- ggplot(data = ddat, aes(x = yi, y = Sub.measure)) +
   theme(axis.text.y = element_text(size = 10, colour ="black",
                                    hjust = 0.5)) 
 
-mes_sex
+
+
+# icons 
+
+filenames <- list.files(here("icons", "literature"), pattern=".png", full.names=TRUE)
+ldf <- lapply(filenames, readPNG)
+names(ldf) <- substr(filenames, 99, 99+60)
+
+mes_sex1 <- mes_sex +
+  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -1.5, xmax = -1, ymin = 12.5, ymax = 13.5) +
+  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1, xmax = -0.5, ymin = 12, ymax = 13)
+
+mes_sex1
+ 
 
 ## need to do a version for Measurement.type
 
+#gdat$S
+gdat$Measurement.type <- factor(gdat$Measurement.type,
+                           levels = levels(gdat$Measurement.type),
+                           labels = levels(gdat$Measurement.type)
+                           )
+
+mestype_sex <- ggplot(data = gdat, aes(x = yi, y = Measurement.type)) +
+  geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
+                 height = 0, show.legend = TRUE, linewidth = 4.5, 
+                 alpha = 0.8, position =position_dodge(width = 0.75)) +
+  geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
+  geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
+  geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
+  xlim(-1.6, 1.6) +
+  #creating 95% prediction intervals
+  geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
+  # creating diamonsts (95% CI)
+  ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond), fill = "red") +
+  
+  theme_bw() +
+  scale_color_manual(values = c("#CC6677", "#88CCEE")) +
+  labs(x = "lnRR (effect size)", y = "", colour = "Sex") +
+  theme(legend.position = c(0.95, 0.85),
+        legend.justification = c(1, 0)) +
+  theme(legend.title = element_text(size = 9)) +
+  #theme(legend.direction="horizontal") +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.text.y = element_text(size = 10, colour ="black",
+                                   hjust = 0.5)) 
+
+mestype_sex
+
+# icons 
+
+filenames <- list.files(here("icons", "literature"), pattern=".png", full.names=TRUE)
+ldf <- lapply(filenames, readPNG)
+names(ldf) <- substr(filenames, 99, 99+60)
+
+mestype_sex1 <- mestype_sex +
+  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -1.5, xmax = -1, ymin = 13.5, ymax = 14.5) +
+  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1, xmax = -0.5, ymin = 13, ymax = 14)
+
+mestype_sex1
