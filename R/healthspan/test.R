@@ -134,7 +134,11 @@ lnrre <- function(m1, m2, n1, n2) {
 # loading data
 # TODO data needs to be updated....
 
-dat_full <- read.csv(here("data", "healthspan", "healthspan.csv"), na = c("", "NA"))
+dat_full <- read.csv(here("data", "healthspan", "healthspan2.csv"), na = c("", "NA"))
+
+# read excel file
+#dat_full <- read_excel(here("data", "healthspan", "Full healthspan search data_For Shinichi.xlsx"))
+
 
 dat_full %>% 
   mutate_if(is.character, as.factor) -> dat
@@ -352,7 +356,8 @@ orchard_plot(mod2, mod = "Sub.measure",
 # Measure x Sex
 # need to clearn up Sub.measure
 
-dat$Sub.measure <- factor(dat$Sub.measure, levels = levels(dat$Sub.measure),
+dat$Sub.measure <- factor(dat$Sub.measure, 
+                          levels = levels(dat$Sub.measure),
                           labels = c("Cardiac\nfunction/\npathology", "Cardiac size", "Cognition", "Frailty",
                                      "Immune\nfunction", "Metabolism", "Muscle size", "Non-tumor\npathology",
                                      "Sensory\nfunction", "Strength/\nbalance", "Tumor\nmammory", "Tumor\nnonmammory",
@@ -360,6 +365,12 @@ dat$Sub.measure <- factor(dat$Sub.measure, levels = levels(dat$Sub.measure),
 
 
 dat$MesSex <- paste0(dat$Sub.measure, "_", dat$Sex)
+
+dat$Measurement.type <- factor(dat$Measurement.type,
+                           levels = levels(as.factor(dat$Measurement.type)),
+                           labels = levels(as.factor(dat$Measurement.type))
+                           )
+
 
 #VCV <- vcalc(vi = vi, cluster = Study, obs = Effect_ID, subgroup = MesSex,
 #             data = dat, rho = 0.5)
@@ -563,8 +574,8 @@ cdat %>% select(Sub.measure, yi, lower.ci, upper.ci, Sex) -> ddat
 # adding more informaition
 edat %>% select(Measurement.type, yi, lower.ci, upper.ci, Sex) -> gdat
 
-addition <- data.frame(Sub.measure = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
-addition1 <- data.frame(Measurement.type = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
+addition <- data.frame(Sub.measure = "Overall", yi =  NA, lower.ci = NA, upper.ci = NA, Sex = "Female")
+addition1 <- data.frame(Measurement.type = "Overall", yi =  NA, lower.ci = NA, upper.ci = NA, Sex = "Female")
 
 
 ddat <- rbind(ddat, addition)
@@ -645,8 +656,8 @@ ldf <- lapply(filenames, readPNG)
 names(ldf) <- substr(filenames, 99, 99+60)
 
 mes_sex1 <- mes_sex +
-  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -1.5, xmax = -1, ymin = 12.5, ymax = 13.5) +
-  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1, xmax = -0.5, ymin = 12, ymax = 13)
+  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -2, xmax = -1, ymin = 12, ymax = 13.5) +
+  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1.5, xmax = -0.5, ymin = 11.5, ymax = 13)
 
 mes_sex1
  
@@ -655,18 +666,120 @@ mes_sex1
 
 #gdat$S
 gdat$Measurement.type <- factor(gdat$Measurement.type,
-                           levels = levels(gdat$Measurement.type),
-                           labels = levels(gdat$Measurement.type)
+                           levels = c("Overall",
+                                      "Adrenal-Cortical adenoma",
+                                      "Autoshaping learning test",
+                                      "balance on a dowel",
+                                      "Barnes maze test",
+                                      "cardiac fibrosis",
+                                      "Cardiac pathology",
+                                      "Cardiomyocyte size",
+                                      "E/A ratio",
+                                      "Ejection fraction",
+                                      "Energy expenditure",
+                                      "fractional shortening",
+                                      "Frailty score",
+                                      "Glucose tolerance",
+                                      "Grip strength",
+                                      "Harderian adenoma",
+                                      "Heart size",
+                                      "inhibitory avoidance test",
+                                      "Insulin sensitivity",
+                                      "Kidney pathology",
+                                      "left ventricle size",
+                                      "Left Ventricular Isovolumic Relaxation Time",
+                                      "Liver pathology",
+                                      "Mammary pathology",
+                                      "Morris water maze",
+                                      "nonthymic lymphosarcoma",
+                                      "novel object recognition",
+                                      "Open field test",
+                                      #"Overall",
+                                      "pituitary tumors",
+                                      "Polyarteritis",
+                                      "Proportion with hypophyseal adenoma",
+                                      "Proportion with tumors",
+                                      "Pulmonary adenoma",
+                                      "Quadriceps size",
+                                      "RAM memory test",
+                                      "Reticulum cell sarcoma",
+                                      "rotarod",
+                                      "Skeletal muscle fiber size",
+                                      "Smell preference",
+                                      "superficial skin and subcutaneous tumor not mammary",
+                                      "T cell function test",
+                                      "T maze test",
+                                      "thymic lymphomas",
+                                      "Total activity dark period",
+                                      "total non-neoplastic lesions",
+                                      "Treamill",
+                                      "vision presence of cataracts",
+                                      "voluntary activity assessment",
+                                      "voluntary wheel running",
+                                      "water radial arm maze test",
+                                      "Y maze testing"),
+                              labels = c("Overall",
+                                         "Adrenal-Cortical adenoma",
+                                         "Autoshaping learning test",
+                                         "balance on a dowel",
+                                         "Barnes maze test",
+                                         "cardiac fibrosis",
+                                         "Cardiac pathology",
+                                         "Cardiomyocyte size",
+                                         "E/A ratio",
+                                         "Ejection fraction",
+                                         "Energy expenditure",
+                                         "fractional shortening",
+                                         "Frailty score",
+                                         "Glucose tolerance",
+                                         "Grip strength",
+                                         "Harderian adenoma",
+                                         "Heart size",
+                                         "inhibitory avoidance test",
+                                         "Insulin sensitivity",
+                                         "Kidney pathology",
+                                         "left ventricle size",
+                                         "Left Ventricular Isovolumic Relaxation Time",
+                                         "Liver pathology",
+                                         "Mammary pathology",
+                                         "Morris water maze",
+                                         "nonthymic lymphosarcoma",
+                                         "novel object recognition",
+                                         "Open field test",
+                                         #"Overall",
+                                         "pituitary tumors",
+                                         "Polyarteritis",
+                                         "Proportion with hypophyseal adenoma",
+                                         "Proportion with tumors",
+                                         "Pulmonary adenoma",
+                                         "Quadriceps size",
+                                         "RAM memory test",
+                                         "Reticulum cell sarcoma",
+                                         "rotarod",
+                                         "Skeletal muscle fiber size",
+                                         "Smell preference",
+                                         "superficial skin and subcutaneous tumor not mammary",
+                                         "T cell function test",
+                                         "T maze test",
+                                         "thymic lymphomas",
+                                         "Total activity dark period",
+                                         "total non-neoplastic lesions",
+                                         "Treamill",
+                                         "vision presence of cataracts",
+                                         "voluntary activity assessment",
+                                         "voluntary wheel running",
+                                         "water radial arm maze test",
+                                         "Y maze testing")
                            )
 
 mestype_sex <- ggplot(data = gdat, aes(x = yi, y = Measurement.type)) +
   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
-                 height = 0, show.legend = TRUE, linewidth = 4.5, 
+                 height = 0, show.legend = TRUE, linewidth = 4, 
                  alpha = 0.8, position =position_dodge(width = 0.75)) +
   geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
   geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
-  xlim(-1.6, 1.6) +
+  xlim(-2, 2) +
   #creating 95% prediction intervals
   geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
   # creating diamonsts (95% CI)
