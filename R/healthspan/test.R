@@ -591,6 +591,7 @@ sum_data <- data.frame("x.diamond" = c(results$lowerCL,
                                        1 - 0.25)
 )
 
+# plotting Sub.measure
 # looking at 
 #dat$Sub.measure 
 ddat$Sub.measure <- factor(ddat$Sub.measure,
@@ -694,11 +695,10 @@ gdat$Measurement.type <- factor(gdat$Measurement.type,
                                       "nonthymic lymphosarcoma",
                                       "novel object recognition",
                                       "Open field test",
-                                      #"Overall",
                                       "pituitary tumors",
                                       "Polyarteritis",
                                       "Proportion with hypophyseal adenoma",
-                                      "Proportion with tumors",
+                                      "Proportion with tumors ",
                                       "Pulmonary adenoma",
                                       "Quadriceps size",
                                       "RAM memory test",
@@ -719,35 +719,34 @@ gdat$Measurement.type <- factor(gdat$Measurement.type,
                                       "water radial arm maze test",
                                       "Y maze testing"),
                               labels = c("Overall",
-                                         "Adrenal-Cortical adenoma",
+                                         "Adrenal-cortical adenoma",
                                          "Autoshaping learning test",
-                                         "balance on a dowel",
+                                         "Balance on a dowel",
                                          "Barnes maze test",
-                                         "cardiac fibrosis",
+                                         "Cardiac fibrosis",
                                          "Cardiac pathology",
                                          "Cardiomyocyte size",
                                          "E/A ratio",
                                          "Ejection fraction",
                                          "Energy expenditure",
-                                         "fractional shortening",
+                                         "Fractional shortening",
                                          "Frailty score",
                                          "Glucose tolerance",
                                          "Grip strength",
                                          "Harderian adenoma",
                                          "Heart size",
-                                         "inhibitory avoidance test",
+                                         "Inhibitory avoidance test",
                                          "Insulin sensitivity",
                                          "Kidney pathology",
                                          "left ventricle size",
-                                         "Left Ventricular Isovolumic Relaxation Time",
+                                         "Left ventricular isovolumic relaxation time",
                                          "Liver pathology",
                                          "Mammary pathology",
                                          "Morris water maze",
-                                         "nonthymic lymphosarcoma",
-                                         "novel object recognition",
+                                         "Nonthymic lymphosarcoma",
+                                         "Novel object recognition",
                                          "Open field test",
-                                         #"Overall",
-                                         "pituitary tumors",
+                                         "Pituitary tumors",
                                          "Polyarteritis",
                                          "Proportion with hypophyseal adenoma",
                                          "Proportion with tumors",
@@ -755,31 +754,31 @@ gdat$Measurement.type <- factor(gdat$Measurement.type,
                                          "Quadriceps size",
                                          "RAM memory test",
                                          "Reticulum cell sarcoma",
-                                         "rotarod",
+                                         "Rotarod",
                                          "Skeletal muscle fiber size",
                                          "Smell preference",
-                                         "superficial skin and subcutaneous tumor not mammary",
+                                         "Superficial skin and subcutaneous tumor not mammary",
                                          "T cell function test",
                                          "T maze test",
-                                         "thymic lymphomas",
+                                         "Thymic lymphomas",
                                          "Total activity dark period",
-                                         "total non-neoplastic lesions",
+                                         "Total non-neoplastic lesions",
                                          "Treamill",
-                                         "vision presence of cataracts",
-                                         "voluntary activity assessment",
+                                         "Vision presence of cataracts",
+                                         "Voluntary activity assessment",
                                          "voluntary wheel running",
-                                         "water radial arm maze test",
+                                         "Water radial arm maze test",
                                          "Y maze testing")
                            )
 
 mestype_sex <- ggplot(data = gdat, aes(x = yi, y = Measurement.type)) +
   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
-                 height = 0, show.legend = TRUE, linewidth = 4, 
+                 height = 0, show.legend = TRUE, linewidth = 2, 
                  alpha = 0.8, position =position_dodge(width = 0.75)) +
   geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
   geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
-  xlim(-2, 2) +
+  xlim(-4, 3) +
   #creating 95% prediction intervals
   geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
   # creating diamonsts (95% CI)
@@ -805,7 +804,7 @@ ldf <- lapply(filenames, readPNG)
 names(ldf) <- substr(filenames, 99, 99+60)
 
 mestype_sex1 <- mestype_sex +
-  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -1.5, xmax = -1, ymin = 13.5, ymax = 14.5) +
-  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1, xmax = -0.5, ymin = 13, ymax = 14)
+  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -1.5*2.5, xmax = -1*2.5, ymin = 13.5*3.5, ymax = 14.5*3.5) +
+  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1*2.5, xmax = -0.5*2.5, ymin = 13*3.5, ymax = 14*3.5)
 
 mestype_sex1
