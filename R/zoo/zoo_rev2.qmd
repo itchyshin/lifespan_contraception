@@ -419,10 +419,10 @@ dat_f_surg <- escalc("ROM",
 
 
 rbind(
-dat_m_horm[ , c(1, 21, 28:31)], # 1
-dat_m_surg[ , c(1, 21, 28:31)], # 2
-dat_f_horm[ , c(1, 21, 28:31)], # 3 
-dat_f_surg[ , c(1, 21, 28:31)] # 4
+dat_m_horm[ , c(1, 22, 29:32)], # 1
+dat_m_surg[ , c(1, 22, 29:32)], # 2
+dat_f_horm[ , c(1, 22, 29:32)], # 3 
+dat_f_surg[ , c(1, 22, 29:32)] # 4
 ) -> dat_all
 
 # observation id
@@ -768,7 +768,7 @@ orchard_plot(mod_all1, mod = "sex",
 ```{r}
 
 dat_all$type <- factor(dat_all$type, 
-                   levels = rev(c("surgical", "hormonal", "immunological")))
+                   levels = rev(c("surgical", "hormonal")))
 
 mod_all2 <- rma.mv(yi, V = VCV,
                  mod = ~ type -1,
@@ -791,6 +791,36 @@ orchard_plot(mod_all2, mod = "type",
 # result table
 all_models(mod_all2, mod = "type")
 ```
+
+## Meta-regression: sex_type
+
+```{r}
+
+# creating a new variable combining sex and type
+dat_all$sex_type <- as.factor(paste(dat_all$sex, dat_all$type, sep = "_"))
+
+mod_all3 <- rma.mv(yi, V = VCV,
+                 mod = ~ sex_type -1,
+                 random = list(
+                   ~1|species,
+                   ~1|phylogeny,
+                   ~1|obs_id),
+                 R = list(phylogeny = cor_tree),
+                 data = dat_all)
+
+summary(mod_all3)
+
+# R^2 - hardly any
+round(r2_ml(mod_all3)*100, 2)
+
+orchard_plot(mod_all3, mod = "sex_type",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
+
+
+# result table
+all_models(mod_all3, mod = "sex_type")
+```
+
 
 ::: 
 
@@ -868,6 +898,9 @@ all_models(mod_comb_a, mod = "contraception", type = "abs")
 
 ::: 
 
+
+
+# this does not quite work any longer
 
 # Figure gallery
 
@@ -1056,21 +1089,62 @@ p_phylo <- p1 + p2
 
 main <- mod_results(mod_all, group = "species")
 sex_diff <- mod_results(mod_all1, mod = "sex", group = "species")
+type_diff <- mod_results(mod_all2, mod = "type", group = "species")
 
-combined <- submerge(sex_diff, main)
+combined <- submerge(type_diff,sex_diff, main)
 
 # changing the name (intercept) to:
 
 combined$mod_table$name <- gsub("Intrcpt", "Overall", combined$mod_table$name)
 combined$mod_table$name <- factor(combined$mod_table$name)
-
 combined$data$moderator <- gsub("Intrcpt", "Overall", combined$data$moderator)
+
+
+# comb2
+sex_type_diff <- mod_results(mod_all3, mod = "sex_type", group = "species")
+
+combined <- submerge(sex_type_diff, main)
+
+combined$mod_table$name <- gsub("Intrcpt", "Overall", combined$mod_table$name)
+combined$mod_table$name <- factor(combined$mod_table$name)
+combined$data$moderator <- gsub("Intrcpt", "Overall", combined$data$moderator)
+
+
+# same combined as rds 
+
+# combined
+saveRDS(combined, file = here("Rdata", "fig", "fig1_comb1.rds"))
+
+# sex_type
+saveRDS(combined, file = here("Rdata", "fig", "fig1_comb2.rds"))
+
+# sex + sex_type
+# sex_type
+saveRDS(combined, file = here("Rdata", "fig", "fig1_comb3.rds"))
+
+
+
+sex_type_talbe <- sex_type_diff$mod_table[c(1,4), ]
+
+sex_type_dat <- sex_type_diff$data[sex_type_diff$data$moderator == "Female_hormonal" | sex_type_diff$data$moderator == "Male_surgical", ]
+
+sex_type_diff2 <- list(mod_table = sex_type_talbe, data = sex_type_dat)
+
+class(sex_type_diff2) <-  c("orchard", "data.frame") 
+
+
+combined <- submerge(sex_type_diff2,sex_diff, main)
+
+combined$mod_table$name <- gsub("Intrcpt", "Overall", combined$mod_table$name)
+combined$mod_table$name <- factor(combined$mod_table$name)
+combined$data$moderator <- gsub("Intrcpt", "Overall", combined$data$moderator)
+
 
 combo <- orchard_plot(combined,
                       group = "species", 
                       xlab = "log response ratio (lnRR)") +
-  scale_colour_manual(values = rev(c("#999999", "#88CCEE", "#CC6677"))) +
-  scale_fill_manual(values = rev(c("#999999", "#88CCEE", "#CC6677")))
+  scale_colour_manual(values = rev(c("#999999", "#88CCEE", "#CC6677", "#117733",  "#332288"))) +
+  scale_fill_manual(values = rev(c("#999999", "#88CCEE", "#CC6677", "#117733",  "#332288")))
 
 #combo
 

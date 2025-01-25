@@ -265,9 +265,18 @@ mod1 <-  rma.mv(yi = yi,
 )
 summary(mod1) 
 
+
+
 # visualizing the result
-orchard_plot(mod1, mod = "Sex", 
-             xlab = "log response ratio (lnRR)", group = "Study", angle = 45, cb = F) # colour = T)
+
+mod_healthspan_sex <- mod_results(mod1, group = "Study", mod = "Sex", data = dat)
+
+saveRDS(mod_healthspan_sex, here("Rdata", "fig", "mod_healthspan_sex"))
+
+mod_healthspan_sex <- readRDS(here("Rdata", "fig", "mod_healthspan_sex"))        
+        
+orchard_plot(mod_healthspan_sex, mod = "Sex", 
+             xlab = "log response ratio (lnRR)", group = "Study", cb = F) # colour = T)
 
 
 # attr(lm_result, "class") <- NULL
@@ -528,24 +537,25 @@ p_forest
 
 # meta-analytic mean
 
-results <- mod_results(mod, group = "Study", data = dat)[[1]]
+res <- mod_results(mod, group = "Study", data = dat)[[1]]
 
+saveRDS(res, here("Rdata", "fig", "res.rds"))
 
 # example....
 dat$MestypeSex <- paste0(dat$Measurement.type, "_", dat$Sex)
 
-bdat <- escalc(yi = yi, vi = vi2, data = dat)
+hdat <- escalc(yi = yi, vi = vi2, data = dat)
 
-bdat$es_ID <- factor(1:nrow(bdat))
+hdat$es_ID <- factor(1:nrow(hdat))
 
 # MesSex
-cdat <- aggregate(x = bdat, cluster = MesSex, obs = es_ID, rho = 0)
+idat <- aggregate(x = hdat, cluster = MesSex, obs = es_ID, rho = 0)
 
 # MestypeSex
 
-edat <- aggregate(x = bdat, cluster = MestypeSex, obs = es_ID, rho = 0)
+jdat <- aggregate(x = hdat, cluster = MestypeSex, obs = es_ID, rho = 0)
 
-edat$MestypeSex
+jdat$MestypeSex
 
 
 # # adding non-aggredated ones
@@ -556,35 +566,46 @@ edat$MestypeSex
 # cdat$vi[cdat$MesSex == "Sensory\nfunction_Female"] <- cdat$vi2[cdat$MesSex == "Sensory\nfunction_Female"]
 # 
 dim(dat)
-dim(cdat)
-dim(edat)
+dim(idat)
+dim(jdat)
 
 # CI1
-cdat$lower.ci <- cdat$yi - sqrt(cdat$vi) * qnorm(0.975) 
-cdat$upper.ci <- cdat$yi + sqrt(cdat$vi) *  qnorm(0.975)
+idat$lower.ci <- idat$yi - sqrt(idat$vi) * qnorm(0.975) 
+idat$upper.ci <- idat$yi + sqrt(idat$vi) *  qnorm(0.975)
 
-edat$lower.ci <- edat$yi - sqrt(edat$vi) * qnorm(0.975) 
-edat$upper.ci <- edat$yi + sqrt(edat$vi) *  qnorm(0.975)
+jdat$lower.ci <- jdat$yi - sqrt(jdat$vi) * qnorm(0.975) 
+jdat$upper.ci <- jdat$yi + sqrt(jdat$vi) *  qnorm(0.975)
 
 
 
 
 # adding more informaition
-cdat %>% select(Sub.measure, yi, lower.ci, upper.ci, Sex) -> ddat
+idat %>% select(Sub.measure, yi, lower.ci, upper.ci, Sex) -> kdat
 # adding more informaition
-edat %>% select(Measurement.type, yi, lower.ci, upper.ci, Sex) -> gdat
+jdat %>% select(Measurement.type, yi, lower.ci, upper.ci, Sex) -> ldat
 
 addition <- data.frame(Sub.measure = "Overall", yi =  NA, lower.ci = NA, upper.ci = NA, Sex = "Female")
 addition1 <- data.frame(Measurement.type = "Overall", yi =  NA, lower.ci = NA, upper.ci = NA, Sex = "Female")
 
 
-ddat <- rbind(ddat, addition)
-gdat <- rbind(gdat, addition1)
+kdat <- rbind(kdat, addition)
+ldat <- rbind(ldat, addition1)
 
-sum_data <- data.frame("x.diamond" = c(results$lowerCL,
-                                       results$estimate ,
-                                       results$upperCL,
-                                       results$estimate ),
+# saving these data
+saveRDS(kdat, here("Rdata", "fig", "kdat.rds"))
+saveRDS(ldat, here("Rdata", "fig", "ldat.rds"))
+
+####### Start here
+
+res <- readRDS(here("Rdata", "fig", "res.rds"))
+kdat <- readRDS(here("Rdata", "fig", "kdat.rds"))
+ldat <- readRDS(here("Rdata", "fig", "ldat.rds"))
+
+
+sum_data <- data.frame("x.diamond" = c(res$lowerCL,
+                                       res$estimate ,
+                                       res$upperCL,
+                                       res$estimate ),
                        "y.diamond" = c(1,
                                        1 + 0.25,
                                        1,
@@ -594,7 +615,7 @@ sum_data <- data.frame("x.diamond" = c(results$lowerCL,
 # plotting Sub.measure
 # looking at 
 #dat$Sub.measure 
-ddat$Sub.measure <- factor(ddat$Sub.measure,
+kdat$Sub.measure <- factor(kdat$Sub.measure,
                           levels = c( "Overall", 
                                       "Cardiac\nfunction/\npathology", 
                                       "Cardiac size", 
@@ -624,16 +645,16 @@ ddat$Sub.measure <- factor(ddat$Sub.measure,
                                      "Tumor\nnonmammory",
                                      "Voluntary\nactivity"))
 
-mes_sex <- ggplot(data = ddat, aes(x = yi, y = Sub.measure)) +
+mes_sex <- ggplot(data = kdat, aes(x = yi, y = Sub.measure)) +
   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
                  height = 0, show.legend = TRUE, linewidth = 4.5, 
                  alpha = 0.8, position =position_dodge(width = 0.75)) +
   geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
-  geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
+  geom_vline(xintercept = res$estimate, linetype = 1, colour = "red", alpha = 0.3) +
   xlim(-1.6, 1.6) +
   #creating 95% prediction intervals
-  geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
+  geom_segment(data = res, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
   # creating diamonsts (95% CI)
   ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond), fill = "red") +
   
@@ -666,7 +687,7 @@ mes_sex1
 ## need to do a version for Measurement.type
 
 #gdat$S
-gdat$Measurement.type <- factor(gdat$Measurement.type,
+ldat$Measurement.type <- factor(ldat$Measurement.type,
                            levels = c("Overall",
                                       "Adrenal-Cortical adenoma",
                                       "Autoshaping learning test",
@@ -771,16 +792,16 @@ gdat$Measurement.type <- factor(gdat$Measurement.type,
                                          "Y maze testing")
                            )
 
-mestype_sex <- ggplot(data = gdat, aes(x = yi, y = Measurement.type)) +
+mestype_sex <- ggplot(data = ldat, aes(x = yi, y = Measurement.type)) +
   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
                  height = 0, show.legend = TRUE, linewidth = 2, 
                  alpha = 0.8, position =position_dodge(width = 0.75)) +
   geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
-  geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
+  geom_vline(xintercept = res$estimate, linetype = 1, colour = "red", alpha = 0.3) +
   xlim(-4, 3) +
   #creating 95% prediction intervals
-  geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
+  geom_segment(data = res, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
   # creating diamonsts (95% CI)
   ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond), fill = "red") +
   

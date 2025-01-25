@@ -146,6 +146,23 @@ folded_v <-function(mean, variance){
 } 
 
 
+# log response ratio for plotting (replacing just missing data)
+# not using CV for drawing the plot
+lnrrm2 <- function(m1, m2, n1, n2, sd1, sd2) {
+  # lnRR - with 2nd order correction
+  cv21 <- (sd1/m1)^2
+  cv22 <- (sd2/m2)^2
+  
+  lnrr <- log(m1/m2) + 
+    0.5 * ((cv21 /n1) - (cv22 / n2))	
+  
+  var <- (cv21 / n1) + ((cv21^2) / (2 * n1^2))  + 
+    (cv22/ n2) + ((cv22^2) / (2 * n2^2) )
+  
+  invisible(data.frame(yi = lnrr , vi = var))
+}
+
+
 # turning survival % into life expectancy
 # note that if m1 = treatment lives 100% (happens twice in the data then we use the height observed in the data-set)
 
@@ -195,6 +212,9 @@ dat_full %>% filter(is.na(Treatment_lifespan_variable) == FALSE) %>%
 
 effect_type <- ifelse(str_detect(dat$Lifespan_parameter, "Me"), "longevity", "mortality")
 
+# splitting longevity into two types where they have SD or not
+effect_type2 <- ifelse(str_detect(dat$Lifespan_parameter, "Me") & is.na(dat$Error_control_SD), "missing", effect_type)
+
 #fix a typo in species name
 dat$Species_Latin <- gsub("Macaca Fascicularis", "Macaca fascicularis", dat$Species_Latin) 
 dat$Species_Latin <- gsub("Equus caballus", "Equus ferus", dat$Species_Latin)
@@ -229,6 +249,11 @@ dat %>% group_by(Study) %>% summarise(cv2_cont = mean((Error_control_SD/Control_
 dat$yi <- ifelse(effect_type == "longevity", lnrrm(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization, dat$Sample_size_control, cvs[["cv2_trt"]],cvs[["cv2_cont"]])[[1]], lnrrp(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization, dat$Sample_size_control)[[1]])
 
 dat$vi <- ifelse(effect_type == "longevity", lnrrm(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization, dat$Sample_size_control, cvs[["cv2_trt"]],cvs[["cv2_cont"]])[[2]], lnrrp(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization, dat$Sample_size_control)[[2]])
+
+# here vi2 is the same as vi1
+dat$vi2 <- ifelse(effect_type2 == "missing", lnrrm(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization, dat$Sample_size_control, cvs[["cv2_trt"]],cvs[["cv2_cont"]])[[2]], 
+                  ifelse(effect_type2 == "longevity", 
+                  lnrrm2(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization, dat$Sample_size_control, dat$Error_control_SD, dat$Error_experimental_SD)[[2]],                                                                         lnrrp(dat$Treatment_lifespan_variable, dat$Control_lifespan_variable, dat$Sample_size_sterilization,dat$Sample_size_control)[[2]]))
 
 # survival transformation using -1/log(p)
 # first transform - just to 
@@ -819,11 +844,15 @@ orchard_plot(mod_alt, xlab = "log response ratio (lnRR)", group = "Study")
 
 results <- mod_results(mod, group = "Study", data = dat)[[1]]
 
+# save results
+saveRDS(results, here("Rdata", "fig", "results.rds"))
+
 # create a new cluster
 dat$Phylo_Sex <- paste(dat$Phylogeny, dat$Sex , sep = "_" )
 
 # rho = 0.5 is as in Noble et al (Mol Ecol)
-dat <- escalc(yi=yi, vi=vi, data = dat)
+# the same as vi and vi2 are the same
+dat <- escalc(yi=yi, vi=vi2, data = dat)
 cdat <- aggregate(dat, cluster=Phylo_Sex, struct="CS", rho = 0.5)
 
 dim(dat)
@@ -839,6 +868,16 @@ cdat %>% select(Species_Latin, yi, lower.ci, upper.ci, Sex) -> ddat
 addition <- data.frame(Species_Latin = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
 
 ddat <- rbind(ddat, addition)
+
+# saving ddat as rds
+saveRDS(ddat, here("Rdata", "fig", "ddat.rds"))
+
+
+# start here
+#### CODE
+
+resutls <- readRDS(here("Rdata", "fig", "results.rds"))
+ddat <- readRDS(here("Rdata", "fig", "ddat.rds"))
 
 sum_data <- data.frame("x.diamond" = c(results$lowerCL,
                                          results$estimate ,
@@ -908,8 +947,8 @@ phy_sex <- ggplot(data = ddat, aes(x = yi, y = Species_Latin)) +
                   alpha = 0.8, position =position_dodge(width = 0.75)) +
    geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
-  geom_vline(xintercept = mod$b, linetype = 1, colour = "red", alpha = 0.3) +
-  xlim(-1.6, 1.6) +
+  geom_vline(xintercept = results$estimate, linetype = 1, colour = "red", alpha = 0.3) +
+ xlim(-1.6, 1.6) +
   #creating 95% prediction intervals
   geom_segment(data = results, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
     # creating diamonsts (95% CI)
@@ -927,9 +966,9 @@ phy_sex <- ggplot(data = ddat, aes(x = yi, y = Species_Latin)) +
 
 
 # adding incons
-filenames <- list.files("icons", pattern=".png", full.names=TRUE)
+filenames <- list.files(here("icons", "literature"), pattern=".png", full.names=TRUE)
 ldf <- lapply(filenames, readPNG)
-names(ldf) <- substr(filenames, 7, 60)
+names(ldf) <- substr(filenames,99, 99+60)
 
 p0 <- phy_sex +
   annotation_custom(rasterGrob(ldf$Lampetra_fluviatilis.png), xmin = -1.5, xmax = -1, ymin = 1.5, ymax = 2.5) +

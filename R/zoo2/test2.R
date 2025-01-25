@@ -1287,8 +1287,10 @@ p_trauma2 + p_infectious2 + p_noninfectious2 + p_chronic2 + p_deathAtBirth2 + p_
   plot_layout(design = design) + plot_annotation(title = "Risk Difference (RD) for different causes of death")
 
 
+##############
 # figures 
 # lower female
+##################
 
 mod_table_lower_f <- rbind(res_other$mod_table[1, ],
                            res_deathAtBirth$mod_table[1, ],
@@ -1504,6 +1506,15 @@ p_upper_m <- orchard_plot(res_upper_m, mod = "sex_type",
                           xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) +  
   theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
+
+# all the data for causes of death saving as rds each (6 of them)
+
+saveRDS(res_lower_f, here("Rdata", "fig", "res_lower_f.rds"))
+saveRDS(res_median_f, here("Rdata", "fig", "res_median_f.rds"))
+saveRDS(res_upper_f, here("Rdata", "fig", "res_upper_f.rds"))
+saveRDS(res_lower_m, here("Rdata", "fig", "res_lower_m.rds"))
+saveRDS(res_median_m, here("Rdata", "fig", "res_median_m.rds"))
+saveRDS(res_upper_m, here("Rdata", "fig", "res_upper_m.rds"))
 
 ######################
 #ddrwoing
