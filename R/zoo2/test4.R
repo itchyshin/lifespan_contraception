@@ -119,6 +119,7 @@ mod_extra <- rma.mv(yi, V = vi,
                    ~1|species,
                    ~1|phylogeny),
                  R = list(phylogeny = cor_tree),
+                 test = "t",
                  data = dat)
 summary(mod_extra)
 round(i2_ml(mod_extra), 2)
