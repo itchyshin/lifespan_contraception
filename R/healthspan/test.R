@@ -271,7 +271,7 @@ summary(mod1)
 
 mod_healthspan_sex <- mod_results(mod1, group = "Study", mod = "Sex", data = dat)
 
-saveRDS(mod_healthspan_sex, here("Rdata", "fig", "mod_healthspan_sex"))
+saveRDS(mod_healthspan_sex, here("Rdata", "fig", "mod_healthspan_sex.rds"))
 
 mod_healthspan_sex <- readRDS(here("Rdata", "fig", "mod_healthspan_sex"))        
         
