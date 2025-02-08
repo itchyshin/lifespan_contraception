@@ -77,6 +77,9 @@ pacman::p_load(tidyverse,
 ## Loading data
 
 ```{r}
+#| warning: false
+#| message: false
+
 # main data
 dat0 <- read_csv(here("data", "zoo", "resultsBaSTApost2005oldFormatFeb2025.csv"), na = c("", "NA"), show_col_types = FALSE)
 
@@ -442,7 +445,7 @@ dat_all %>% mutate(sex_type = paste(sex, type, sep = "_")) -> dat_all
 ######################################
 
 # female normal vs. male surgical (1)
-# TODO - we could include Female_Hormonal_NoContra_Mean 
+
 dat_fm_ns <- dat %>% filter(is.na(Female_Surgical_NoContra_Mean) == FALSE, 
                             is.na(Male_Surgical_Contra_Mean) == FALSE) %>% 
   transmute(F_normal_m = Female_Surgical_NoContra_Mean,
@@ -466,16 +469,17 @@ dat_fm_ns <- escalc("ROM",
               data = dat_fm_ns,
               )
 
+
 # female hormonal vs. male normal (2)
 
-dat_fm_hn <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE, 
-                            is.na(Male_None_Mean) == FALSE) %>% 
-  transmute(F_hormonal_m = Female_Hormonal_Mean,
-         F_hormonal_sd = sqrt(Female_Hormonal_N*Female_Hormonal_SE),
-         F_hormonal_n = Female_Hormonal_N,
-         M_normal_m = Male_None_Mean,
-         M_normal_sd = sqrt(Male_None_N)*Male_None_SE,
-         M_normal_n = Male_None_N,
+dat_fm_hn <- dat %>% filter(is.na(Female_Hormonal_Contra_Mean) == FALSE, 
+                            is.na(Male_Hormonal_NoContra_Mean) == FALSE) %>% 
+  transmute(F_hormonal_m = Female_Hormonal_Contra_Mean,
+         F_hormonal_sd = sqrt(Female_Hormonal_Contra_N)*Female_Hormonal_Contra_SE,
+         F_hormonal_n = Female_Hormonal_Contra_N,
+         M_normal_m = Male_Hormonal_NoContra_Mean,
+         M_normal_sd = sqrt(Male_Hormonal_NoContra_N)*Male_Hormonal_NoContra_SE,
+         M_normal_n = Male_Hormonal_NoContra_N,
          species = species,
          phylogeny = phylogeny,
          category = "F hormonal/M normal"
@@ -495,14 +499,14 @@ dat_fm_hn <- escalc("ROM",
 
 # female surgical vs. male normal (3)
 
-dat_fm_sn <- dat %>% filter(is.na(Female_Surgical_Mean) == FALSE,
-                            is.na(Male_None_Mean) == FALSE) %>%
-  transmute(F_surgical_m = Female_Surgical_Mean,
-         F_surgical_sd = sqrt(Female_Surgical_N*Female_Surgical_SE),
-         F_surgical_n = Female_Surgical_N,
-         M_normal_m = Male_None_Mean,
-         M_normal_sd = sqrt(Male_None_N)*Male_None_SE,
-         M_normal_n = Male_None_N,
+dat_fm_sn <- dat %>% filter(is.na(Female_Surgical_Contra_Mean) == FALSE,
+                            is.na(Male_Surgical_NoContra_Mean) == FALSE) %>%
+  transmute(F_surgical_m = Female_Surgical_Contra_Mean,
+         F_surgical_sd = sqrt(Female_Surgical_Contra_N)*Female_Surgical_Contra_SE,
+         F_surgical_n = Female_Surgical_Contra_N,
+         M_normal_m = Male_Surgical_NoContra_Mean,
+         M_normal_sd = sqrt(Male_Surgical_NoContra_N)*Male_Surgical_NoContra_SE,
+         M_normal_n = Male_Surgical_NoContra_N,
          species = species,
          phylogeny = phylogeny,
          category = "F hormonal/M normal"
@@ -521,14 +525,14 @@ dat_fm_sn <- escalc("ROM",
 
 # female surgical vs. male surgical (4)
 
-dat_fm_ss <- dat %>% filter(is.na(Female_Surgical_Mean) == FALSE, 
-                            is.na(Male_Surgical_Mean) == FALSE) %>% 
-    transmute(F_surgical_m = Female_Surgical_Mean,
-                 F_surgical_sd = sqrt(Female_Surgical_N*Female_Surgical_SE),
-                 F_surgical_n = Female_Surgical_N,
-                 M_surgical_m = Male_Surgical_Mean,
-                 M_surgical_sd = sqrt(Male_Surgical_N)*Male_Surgical_SE,
-                 M_surgical_n = Male_Surgical_N,
+dat_fm_ss <- dat %>% filter(is.na(Female_Surgical_Contra_Mean) == FALSE, 
+                            is.na(Male_Surgical_Contra_Mean) == FALSE) %>% 
+    transmute(F_surgical_m = Female_Surgical_Contra_Mean,
+                 F_surgical_sd = sqrt(Female_Surgical_Contra_N)*Female_Surgical_Contra_SE,
+                 F_surgical_n = Female_Surgical_Contra_N,
+                 M_surgical_m = Male_Surgical_Contra_Mean,
+                 M_surgical_sd = sqrt(Male_Surgical_Contra_N)*Male_Surgical_Contra_SE,
+                 M_surgical_n = Male_Surgical_Contra_N,
                  species = species,
                  phylogeny = phylogeny,
                  category = "F surgical/M surgical"
@@ -546,39 +550,64 @@ dat_fm_ss <- escalc("ROM",
 
 # female normal vs. male normal (5)
 
-dat_fm_nn <- dat %>% filter(is.na(Female_None_Mean) == FALSE, 
-                                                        is.na(Male_None_Mean) == FALSE) %>% 
-    transmute(F_normal_m = Female_None_Mean,
-                 F_normal_sd = sqrt(Female_None_N*Female_None_SE),
-                 F_normal_n = Female_None_N,
-                 M_normal_m = Male_None_Mean,
-                 M_normal_sd = sqrt(Male_None_N*Male_None_SE),
-                 M_normal_n = Male_None_N,
+dat_fm_nn1 <- dat %>% filter(is.na(Female_Hormonal_NoContra_Mean) == FALSE, 
+                                                        is.na(Male_Hormonal_NoContra_Mean) == FALSE) %>% 
+    transmute(F_normal_m = Female_Hormonal_NoContra_Mean,
+                 F_normal_sd = sqrt(Female_Hormonal_NoContra_N)*Female_Hormonal_NoContra_SE,
+                 F_normal_n = Female_Hormonal_NoContra_N,
+                 M_normal_m = Male_Hormonal_NoContra_Mean,
+                 M_normal_sd = sqrt(Male_Hormonal_NoContra_N)*Male_Hormonal_NoContra_SE,
+                 M_normal_n = Male_Hormonal_NoContra_N,
                  species = species,
                  phylogeny = phylogeny,
                  category = "F normal/M normal"
                  )
 
-dat_fm_nn <- escalc("ROM", 
+dat_fm_nn1 <- escalc("ROM", 
                             m1i = F_normal_m,
                             m2i = M_normal_m,
                             sd1i = F_normal_sd,
                             sd2i = M_normal_sd,
                             n1i = F_normal_n,
                             n2i = M_normal_n,
-                            data = dat_fm_nn,
+                            data = dat_fm_nn1,
                             )
+
+dat_fm_nn2 <- dat %>% filter(is.na(Female_Surgical_NoContra_Mean) == FALSE, 
+                                                        is.na(Male_Surgical_NoContra_Mean) == FALSE) %>% 
+    transmute(F_normal_m = Female_Surgical_NoContra_Mean,
+                 F_normal_sd = sqrt(Female_Surgical_NoContra_N)*Female_Surgical_NoContra_SE,
+                 F_normal_n = Female_Surgical_NoContra_N,
+                 M_normal_m = Male_Surgical_NoContra_Mean,
+                 M_normal_sd = sqrt(Male_Surgical_NoContra_N)*Male_Surgical_NoContra_SE,
+                 M_normal_n = Male_Surgical_NoContra_N,
+                 species = species,
+                 phylogeny = phylogeny,
+                 category = "F normal/M normal"
+                 )
+
+dat_fm_nn2 <- escalc("ROM", 
+                            m1i = F_normal_m,
+                            m2i = M_normal_m,
+                            sd1i = F_normal_sd,
+                            sd2i = M_normal_sd,
+                            n1i = F_normal_n,
+                            n2i = M_normal_n,
+                            data = dat_fm_nn2,
+                            )
+
+
 
 # female normal vs. male hormonal (6)
 
-dat_fm_nh <- dat %>% filter(is.na(Female_None_Mean) == FALSE,
-                            is.na(Male_Hormonal_Mean) == FALSE) %>%
-  transmute(F_normal_m = Female_None_Mean,
-            F_normal_sd = sqrt(Female_None_N*Female_None_SE),
-            F_normal_n = Female_None_N,
-            M_hornomal_m = Male_Hormonal_Mean,
-            M_hornomal_sd = sqrt(Male_Hormonal_N)*Male_Hormonal_SE,
-            M_hornomal_n = Male_Hormonal_N,
+dat_fm_nh <- dat %>% filter(is.na(Female_Hormonal_NoContra_Mean) == FALSE,
+                            is.na(Male_Hormonal_Contra_Mean) == FALSE) %>%
+  transmute(F_normal_m = Female_Hormonal_NoContra_Mean,
+            F_normal_sd = sqrt(Female_Hormonal_NoContra_N)*Female_Hormonal_NoContra_SE,
+            F_normal_n = Female_Hormonal_NoContra_N,
+            M_hornomal_m = Male_Hormonal_Contra_Mean,
+            M_hornomal_sd = sqrt(Male_Hormonal_Contra_N)*Male_Hormonal_Contra_SE,
+            M_hornomal_n = Male_Hormonal_Contra_N,
             species = species,
             phylogeny = phylogeny,
             category = "F normal/M hornomal"
@@ -597,14 +626,14 @@ dat_fm_nh <- escalc("ROM",
 
 # female hormonal vs. male hormonal (9)
 
-dat_fm_hh <- dat %>% filter(is.na(Female_Hormonal_Mean) == FALSE,
-                            is.na(Male_Hormonal_Mean) == FALSE) %>%
-  transmute(F_hornomal_m = Female_Hormonal_Mean,
-            F_hornomal_sd = sqrt(Female_Hormonal_N*Female_Hormonal_SE),
-            F_hornomal_n = Female_Hormonal_N,
-            M_hornomal_m = Male_Hormonal_Mean,
-            M_hornomal_sd = sqrt(Male_Hormonal_N)*Male_Hormonal_SE,
-            M_hornomal_n = Male_Hormonal_N,
+dat_fm_hh <- dat %>% filter(is.na(Female_Hormonal_Contra_Mean) == FALSE,
+                            is.na(Male_Hormonal_Contra_Mean) == FALSE) %>%
+  transmute(F_hornomal_m = Female_Hormonal_Contra_Mean,
+            F_hornomal_sd = sqrt(Female_Hormonal_Contra_N)*Female_Hormonal_Contra_SE,
+            F_hornomal_n = Female_Hormonal_Contra_N,
+            M_hornomal_m = Male_Hormonal_Contra_Mean,
+            M_hornomal_sd = sqrt(Male_Hormonal_Contra_N)*Male_Hormonal_Contra_SE,
+            M_hornomal_n = Male_Hormonal_Contra_N,
             species = species,
             phylogeny = phylogeny,
             category = "F hornomal/M hornomal"
@@ -627,7 +656,8 @@ bind_rows(
   dat_fm_hn[ , 7:11], # 2 
   dat_fm_sn[ , 7:11], # 3
   dat_fm_ss[ , 7:11], # 4
-  dat_fm_nn[ , 7:11], # 5
+  dat_fm_nn1[ , 7:11], # 5
+  dat_fm_nn2[ , 7:11], # 5
   dat_fm_nh[ , 7:11], # 6
   dat_fm_hh[ , 7:11], # 9
 ) -> dat_comb
