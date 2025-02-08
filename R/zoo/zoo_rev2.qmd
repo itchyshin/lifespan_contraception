@@ -67,7 +67,9 @@ pacman::p_load(tidyverse,
                apextra,
                ggimage,
                ggstance,
-               ggtree
+               ggtree,
+               apextra,
+               phytools
 )
 
 ```
@@ -76,7 +78,7 @@ pacman::p_load(tidyverse,
 
 ```{r}
 # main data
-dat0 <- read_csv(here("data", "zoo", "resultsBaSTApost2005oldFormat.csv"), na = c("", "NA"), show_col_types = FALSE)
+dat0 <- read_csv(here("data", "zoo", "resultsBaSTApost2005oldFormatFeb2025.csv"), na = c("", "NA"), show_col_types = FALSE)
 
 # phylogeny
 load(here("Rdata", "zoo", "maxCredTree.RData"))
@@ -116,8 +118,7 @@ tree <- drop.tip(tree, to_drop)
 
 # checking the number of spp
 #length(tree$tip.label)
-
-tree <- as.ultrametric(tree)
+tree <- force.ultrametric(tree)
 
 #tree <- compute.brlen(tree)
 cor_tree <- vcv(tree, corr = TRUE)
@@ -329,13 +330,13 @@ folded_v <-function(mean, variance){
 
 # male surgical
 
-dat_m_surg <- dat %>% filter(is.na(Male_Surgical_Mean) == FALSE, is.na(Male_None_Mean) == FALSE) %>% 
-  mutate(M_control_m = Male_None_Mean,
-         M_control_sd = sqrt(Male_None_N)*Male_None_SE,
-         M_control_n = Male_Surgical_N,
-         M_surgical_m = Male_Surgical_Mean,
-         M_surgical_sd = sqrt(Male_Surgical_N)*Male_Surgical_SE,
-         M_surgical_n = Male_Surgical_N,
+dat_m_surg <- dat %>% filter(is.na(Male_Surgical_Contra_Mean) == FALSE, is.na(Male_Surgical_NoContra_Mean) == FALSE) %>% 
+  mutate(M_control_m = Male_Surgical_NoContra_Mean,
+         M_control_sd = sqrt(Male_Surgical_NoContra_N)*Male_Surgical_NoContra_SE,
+         M_control_n = Male_Surgical_NoContra_N,
+         M_surgical_m = Male_Surgical_Contra_Mean,
+         M_surgical_sd = sqrt(Male)*,
+         M_surgical_n = ,
          sex = "male",
          type = "surgical")
 
