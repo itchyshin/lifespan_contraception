@@ -1,8 +1,5 @@
 # extra-analysis
 
-# make pre- and post purbety
-
-
 rm(list = ls())
 
 # loading

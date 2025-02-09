@@ -84,8 +84,6 @@ dat <- dat_full
 
 dat$Phylogeny <- gsub(" ", "_", dat$vertlife.species)
 
-#TODO - we need to do phylogenetic tree matching
-
 #life span data
 to_drop <-
   tree$tip.label[which(!(tree$tip.label %in% unique(dat$Phylogeny)))]
