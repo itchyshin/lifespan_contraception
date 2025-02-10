@@ -3252,7 +3252,9 @@ all_models(mod_comb_a, mod = "contraception", type = "abs")
 
 ::: 
 
-# Pre-post analysis
+# Pre-post puberty analysis
+
+This analysis compares the effect size of the lifespan extension before and after puberty.
 
 ## Loading data and obtaining effect isze
 
@@ -3459,7 +3461,7 @@ orchard_plot(mod_np2, mod = "Primate", xlab = "lnRR (all)", group = "species", g
 
 # Extra analysis
 
-Explain what it is 
+This extra analysis compares the impact of group living and testes mass on the lifespan extension.
 
 ## Loading data and effect size calculation
 
