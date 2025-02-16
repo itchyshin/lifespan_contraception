@@ -2629,7 +2629,7 @@ tree <- drop.tip(tree, to_drop)
 
 # checking the number of spp
 #length(tree$tip.label)
-tree <- force.ultrametric(tree)
+tree <- as.ultrametric(tree)
 
 #tree <- compute.brlen(tree)
 cor_tree <- vcv(tree, corr = TRUE)
@@ -3309,7 +3309,7 @@ tree <- drop.tip(tree, to_drop)
 # checking the number of spp
 #length(tree$tip.label)
 
-tree <- force.ultrametric(tree)
+tree <- as.ultrametric(tree)
 
 #tree <- compute.brlen(tree)
 cor_tree <- vcv(tree, corr = TRUE)
@@ -3509,7 +3509,7 @@ tree <- drop.tip(tree, to_drop)
 # checking the number of spp
 #length(tree$tip.label)
 
-tree <- force.ultrametric(tree)
+tree <- as.ultrametric(tree)
 
 #tree <- compute.brlen(tree)
 cor_tree <- vcv(tree, corr = TRUE)
