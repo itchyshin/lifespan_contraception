@@ -380,7 +380,7 @@ if (type == "homo"){
 ```
 
 
-# PART I; LIFESPAN ANALYSIS ON LITERAURE DATA
+# PART I: LIFESPAN ANALYSIS ON LITERAURE DATA
 
 # Data preparation & processing
 
@@ -699,12 +699,12 @@ vis_miss(dat) +
 
 ## Key predictors (moderators)
 
-Visualise missing data in 6 key variables (moderators):\
-- Sex,\
-- Wild_or_semi_wild,\
-- Maturity_at_treatment_ordinal,\
-- Gonads_removed,\
-- Controlled_treatments,\
+Visualise missing data in 6 key variables (moderators):
+- Sex,
+- Wild_or_semi_wild,
+- Maturity_at_treatment_ordinal,
+- Gonads_removed,
+- Controlled_treatments,
 - Effect_type
 
 ```{r key variables missing values, echo = FALSE}
@@ -729,7 +729,9 @@ plot(GKmatrix)
 
 Alluvial diagrams for key predictor variables (moderators) - two groups of 3 moderators, grouped by similarity:
 
-## For Sex, Gonads_removed, \$ Maturity_at_treatment_ordinal (changed NA to 0)
+## For Sex, Gonads_removed, & Maturity_at_treatment_ordinal
+
+0 in Mautraity class is NA
 
 ```{r alluvial plots A, results = 'hide'}
 #use ggalluvial (https://cran.r-project.org/web/packages/ggalluvial/vignettes/ggalluvial.html)
@@ -3596,7 +3598,7 @@ bubble_plot(mod_extra2, xlab = "log(Teste mass)", mod = "lntestemass", group = "
 
 :::
 
-# PART IV; ANALYSIS OF CAUSES OF DEATH ON ZOO DATA
+# PART IV: ANALYSIS OF CAUSES OF DEATH ON ZOO DATA
 
 ## Loading data
 
