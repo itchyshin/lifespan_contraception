@@ -2578,6 +2578,114 @@ mestype_sex1
 
 :::
 
+
+# Publication bais & sensitivity analysis
+
+::: panel-tabset
+## Funnel plot
+
+```{r}
+# raw funnel plot
+# funnel plot - 
+funnel(mod)
+
+# residual funnel plot
+funnel(best2)
+
+```
+
+## Small-study effect: uni-moderaotor
+
+```{r}
+
+dat$Effective_N <- 1/dat$Sample_size_sterilization + 1/dat$Sample_size_control
+
+egger_uni <- mod_func(formula = ~ sqrt(Effective_N))
+#egger_uni2 <- mod_func(formula = ~ Effective_N)
+
+summary(egger_uni)
+
+# 
+egger_uni2 <- mod_func(formula = ~ Effective_N)
+summary(egger_uni2)
+```
+
+## Decline effect (time lag bias): uni-moderator
+
+```{r}
+
+dat$Year <- as.numeric(str_extract(as.character(dat$Study),"[:digit:][:digit:][:digit:][:digit:]"))
+
+decline_uni <- mod_func(formula = ~ Year)
+summary(decline_uni)
+```
+
+## Leave-one-study-out analysis
+
+```{r}
+#| eval: false
+# The function for leave-one-study-out
+
+dat$Study <- as.factor(dat$Study)
+
+LeaveOneOut_effectsize <- list()
+for(i in 1:length(levels(dat$Study))){
+  dat1 <- dat[dat$Study != levels(dat$Study)[i], ]
+  V_matrix <- impute_covariance_matrix(vi = dat1$vi, cluster = dat1$Shared_control, r = 0.5)
+  
+  LeaveOneOut_effectsize[[i]] <- rma.mv(yi, 
+               V = V_matrix,
+               random = list(~1|Species_Latin, 
+                             ~1|Study, 
+                             ~1|Effect_ID), 
+               test = "t",
+               sparse = TRUE,
+               control=list(optimizer="optim", optmethod="BFGS"),
+               data = dat1)
+  }
+
+
+# writing function for extracting est, ci.lb, and ci.ub from all models
+est.func <- function(mod){
+  df <- data.frame(est = mod$b, lower = mod$ci.lb, upper = mod$ci.ub)
+  return(df)
+}
+
+#using dplyr to form data frame
+MA_LOO <- lapply(LeaveOneOut_effectsize, function(x) est.func(x))%>% bind_rows %>% mutate(left_out = levels(dat$Study))
+
+
+saveRDS(MA_LOO,file = here("Rdata", "literature","MA_LOO.rds"))
+```
+
+```{r}
+#telling ggplot to stop reordering factors
+MA_LOO <- readRDS(file = here("Rdata",  "literature", "MA_LOO.rds"))
+
+MA_LOO$left_out<- as.factor(MA_LOO$left_out)
+MA_LOO$left_out<-factor(MA_LOO$left_out, levels = MA_LOO$left_out)
+
+
+#plotting
+leaveoneout_E <- ggplot(MA_LOO) +
+  geom_hline(yintercept = 0, lty = 2, lwd = 1) +
+  geom_hline(yintercept = mod$ci.lb, lty = 3, lwd = 0.75, colour = "black") +
+  geom_hline(yintercept = mod$b, lty = 1, lwd = 0.75, colour = "black") +
+  geom_hline(yintercept = mod$ci.ub, lty = 3, lwd = 0.75, colour = "black") +
+  geom_pointrange(aes(x = left_out, y = est, ymin = lower, ymax = upper)) +
+  xlab("Study left out") + 
+  ylab("lnRR, 95% CI") + 
+  coord_flip() +
+  theme(panel.grid.minor = element_blank())+
+  theme_bw() + theme(panel.grid.major = element_blank()) +
+  theme(panel.grid.minor.x = element_blank() ) +
+  theme(axis.text.y = element_text(size = 6))
+
+leaveoneout_E
+```
+:::
+
+
 # PART III: LIFESPAN ANALYSIS ON ZOO DATA
 
 # Data preparation & processing
