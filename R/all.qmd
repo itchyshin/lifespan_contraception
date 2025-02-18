@@ -3105,7 +3105,7 @@ mod_all1b <- rma.mv(yi, V = VCV,
                    sparse = TRUE)
 summary(mod_all1b)
 
-round(r2_ml(mod_all1), 2)
+round(r2_ml(mod_all1), 5)
 
 orchard_plot(mod_all1, mod = "sex",
              xlab = "lnRR (all)", group = "species", g = FALSE)
@@ -3132,7 +3132,7 @@ mod_all2 <- rma.mv(yi, V = VCV,
 summary(mod_all2)
 
 # R^2 - hardly any
-round(r2_ml(mod_all2)*100, 2)
+round(r2_ml(mod_all2)*100, 5)
 
 orchard_plot(mod_all2, mod = "type",
              xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
@@ -3163,7 +3163,7 @@ mod_all3 <- rma.mv(yi, V = VCV,
 summary(mod_all3)
 
 # R^2 - hardly any
-round(r2_ml(mod_all3)*100, 2)
+round(r2_ml(mod_all3)*100, 5)
 
 orchard_plot(mod_all3, mod = "sex_type",
              xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
@@ -3203,7 +3203,7 @@ mod_comb <- rma.mv(yi, V = VCV,
                   sparse = TRUE)
 summary(mod_comb)
 
-round(r2_ml(mod_comb)*100, 2)
+round(r2_ml(mod_comb)*100, 5)
 
 #robust(mod_comb, cluster = species)  
 
@@ -3240,7 +3240,7 @@ mod_comb_a <- rma.mv(abs_yi, V = VCVa,
                      sparse = TRUE)
 summary(mod_comb_a)
 
-round(r2_ml(mod_comb_a)*100, 2)
+round(r2_ml(mod_comb_a)*100, 5)
 
 #robust(mod_comb_a, cluster = species)  
 
@@ -3358,7 +3358,7 @@ mod_pp <- rma.mv(yi, V = vi,
                   test = "t",
                   sparse = TRUE)
 summary(mod_pp)
-round(i2_ml(mod_pp), 2)
+round(i2_ml(mod_pp), 5)
 
 #robust(mod_all, cluster = species)  
 
@@ -3383,7 +3383,7 @@ mod_pp2 <- rma.mv(yi, V = vi,
                   test = "t",
                   sparse = TRUE)
 summary(mod_pp2)
-round(i2_ml(mod_pp2), 2)
+round(i2_ml(mod_pp2), 5)
 
 #robust(mod_all, cluster = species)  
 
@@ -3407,7 +3407,18 @@ mod_pp3 <- rma.mv(yi, V = vi,
                    test = "t",
                   sparse = TRUE)
 summary(mod_pp3)
-round(r2_ml(mod_pp3), 2)
+round(r2_ml(mod_pp3), 5)
+
+mod_pp3b <- rma.mv(yi, V = vi,
+                  mod = ~ Primate - 1,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny),
+                  R = list(phylogeny = cor_tree),
+                  data = dat,
+                   test = "t",
+                  sparse = TRUE)
+summary(mod_pp3b)
 
 orchard_plot(mod_pp3, mod = "Primate", xlab = "lnRR (all)", group = "species", g = FALSE)
 
@@ -3431,7 +3442,7 @@ mod_np <- rma.mv(yi, V = vi,
                   test = "t",
                   sparse = TRUE)
 summary(mod_np)
-round(i2_ml(mod_np), 2)
+round(i2_ml(mod_np), 5)
 
 #robust(mod_all, cluster = species)  
 
@@ -3451,7 +3462,16 @@ mod_np2 <- rma.mv(yi, V = vi,
                   test = "t",
                   sparse = TRUE)
 summary(mod_np2)
-round(r2_ml(mod_np2), 2)
+round(r2_ml(mod_np2), 5)
+
+mod_np2b <- rma.mv(yi, V = vi,
+                 mod = ~ Primate -1,
+                 random = list(
+                   ~1|species),
+                 data = dat,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_np2b)
 
 #robust(mod_all, cluster = species)  
 
