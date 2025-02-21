@@ -1902,7 +1902,7 @@ patch3 +  plot_annotation(tag_levels = "A")
 
 ```{r}
 # remove odl data
-dat_full <- read.csv(here("data", "healthspan", "healthspan2.csv"), na = c("", "NA"))
+dat_full <- read.csv(here("data", "healthspan", "healthspan3.csv"), na = c("", "NA"))
 
 dat_full %>% 
   mutate_if(is.character, as.factor) -> dat
@@ -2012,7 +2012,7 @@ mod <-  rma.mv(yi = yi,
 
 summary(mod) 
 
-round(i2_ml(mod),2) # almost no phylogenetic effect
+round(i2_ml(mod),5) # almost no phylogenetic effect
 
 # visualizing the result
 orchard_plot(mod, xlab = "log response ratio (lnRR)", group = "Study")
@@ -2589,8 +2589,7 @@ mestype_sex1
 # funnel plot - 
 funnel(mod)
 
-# residual funnel plot
-funnel(best2)
+funnel(mod3)
 
 ```
 
@@ -2598,16 +2597,23 @@ funnel(best2)
 
 ```{r}
 
-dat$Effective_N <- 1/dat$Sample_size_sterilization + 1/dat$Sample_size_control
+dat$Effective_N <- 1/dat$Sample_size_experimental + 1/dat$Sample_size_control
 
-egger_uni <- mod_func(formula = ~ sqrt(Effective_N))
-#egger_uni2 <- mod_func(formula = ~ Effective_N)
+egger_hs <-  rma.mv(yi = yi, 
+                 V = vi, 
+                 mod = ~sqrt(Effective_N), 
+                 random = list(~ 1|Strain, 
+                               ~ 1|Study, 
+                               ~ 1|Effect_ID), 
+                 data = dat, 
+                 test = "t",
+                 sparse = TRUE,
+                 control=list(optimizer="optim", optmethod="BFGS")
+)
 
-summary(egger_uni)
+summary(egger_hs)
 
-# 
-egger_uni2 <- mod_func(formula = ~ Effective_N)
-summary(egger_uni2)
+
 ```
 
 ## Decline effect (time lag bias): uni-moderator
@@ -2616,8 +2622,19 @@ summary(egger_uni2)
 
 dat$Year <- as.numeric(str_extract(as.character(dat$Study),"[:digit:][:digit:][:digit:][:digit:]"))
 
-decline_uni <- mod_func(formula = ~ Year)
-summary(decline_uni)
+decline <-  rma.mv(yi = yi, 
+                 V = vi, 
+                 mod = ~ Year, 
+                 random = list(~ 1|Strain, 
+                               ~ 1|Study, 
+                               ~ 1|Effect_ID), 
+                 data = dat, 
+                 test = "t",
+                 sparse = TRUE,
+                 control=list(optimizer="optim", optmethod="BFGS")
+)
+
+summary(decline)
 ```
 
 ## Leave-one-study-out analysis
@@ -2631,18 +2648,19 @@ dat$Study <- as.factor(dat$Study)
 LeaveOneOut_effectsize <- list()
 for(i in 1:length(levels(dat$Study))){
   dat1 <- dat[dat$Study != levels(dat$Study)[i], ]
-  V_matrix <- impute_covariance_matrix(vi = dat1$vi, cluster = dat1$Shared_control, r = 0.5)
   
-  LeaveOneOut_effectsize[[i]] <- rma.mv(yi, 
-               V = V_matrix,
-               random = list(~1|Species_Latin, 
-                             ~1|Study, 
-                             ~1|Effect_ID), 
-               test = "t",
-               sparse = TRUE,
-               control=list(optimizer="optim", optmethod="BFGS"),
-               data = dat1)
-  }
+  LeaveOneOut_effectsize[[i]] <- rma.mv(yi = yi, 
+                 V = vi, 
+                 random = list(~ 1|Strain, 
+                               ~ 1|Study, 
+                               ~ 1|Effect_ID), 
+                 data = dat1, 
+                 test = "t",
+                 sparse = TRUE,
+                 control=list(optimizer="optim", optmethod="BFGS")
+  )
+                 
+}
 
 
 # writing function for extracting est, ci.lb, and ci.ub from all models
@@ -2655,12 +2673,12 @@ est.func <- function(mod){
 MA_LOO <- lapply(LeaveOneOut_effectsize, function(x) est.func(x))%>% bind_rows %>% mutate(left_out = levels(dat$Study))
 
 
-saveRDS(MA_LOO,file = here("Rdata", "literature","MA_LOO.rds"))
+saveRDS(MA_LOO,file = here("Rdata", "literature","MA_LOO2.rds"))
 ```
 
 ```{r}
 #telling ggplot to stop reordering factors
-MA_LOO <- readRDS(file = here("Rdata",  "literature", "MA_LOO.rds"))
+MA_LOO <- readRDS(file = here("Rdata",  "literature", "MA_LOO2.rds"))
 
 MA_LOO$left_out<- as.factor(MA_LOO$left_out)
 MA_LOO$left_out<-factor(MA_LOO$left_out, levels = MA_LOO$left_out)
