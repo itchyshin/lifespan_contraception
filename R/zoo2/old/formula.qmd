@@ -1,14 +1,20 @@
 ---
-title: "formula"
-format: html
-editor: visual
+title: "Meta-analysis: summarizing causes of death"
+format: docx
 ---
 
-## Formula 
+To summarize these differences across studies, we calculated the risk difference (RD) between treatment (castrated or contraceptive) and control groups using the formula:
 
 $$
-1 + 1 = 2
+RD = p_t - p_c
 $$
 
+where $p_t$ is the proportion of deaths from a specific cause in the treatment group and $p_c$ is the proportion of deaths from the same cause in the control group.
 
-##
+The sampling variance ($V_{RD}$) of the risk difference was calculated as follows:
+
+$$
+V_{RD} = \frac{p_t(1 - p_t)}{n_t} + \frac{p_c(1 - p_c)}{n_c}
+$$
+
+where $n_t$ and $n_c$ are the total number of individuals in the treatment and control groups, respectivel.
