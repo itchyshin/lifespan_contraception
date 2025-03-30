@@ -3809,153 +3809,153 @@ dat$Sex_Type <- as.factor(paste0(dat$Sex, "_", dat$Type))
 
 ::: {.panel-tabset}
 
-## Trauma
+## Behavioural
 
 ```{r}
 #########
-# Trauma
+# Behavioural
 #########
 
 # Low
-dat_trauma <- escalc(measure = "RD", 
-               ai = Contra_Trauma_Low*Contra_Trauma_N, 
-               bi = (1-Contra_Trauma_Low)*Contra_Trauma_N, 
-               ci = noContra_Trauma_Low*noContra_Trauma_N,
-               di = (1-noContra_Trauma_Low)*noContra_Trauma_N,
-               var.names = c("yi_trauma_low", "vi_trauma_low"),
+dat_behavioural <- escalc(measure = "RD", 
+               ai = Contra_Behavioural_Low*Contra_Behavioural_N, 
+               bi = (1-Contra_Behavioural_Low)*Contra_Behavioural_N, 
+               ci = noContra_Behavioural_Low*noContra_Behavioural_N,
+               di = (1-noContra_Behavioural_Low)*noContra_Behavioural_N,
+               var.names = c("yi_behavioural_low", "vi_behavioural_low"),
                data = dat)
 # Med
 
-dat_trauma <- escalc(measure = "RD", 
-               ai = Contra_Trauma_Med*Contra_Trauma_N, 
-               bi = (1-Contra_Trauma_Med)*Contra_Trauma_N, 
-               ci = noContra_Trauma_Med*noContra_Trauma_N,
-               di = (1-noContra_Trauma_Med)*noContra_Trauma_N,
-               var.names = c("yi_trauma_med", "vi_trauma_med"),
-               data = dat_trauma)
+dat_behavioural <- escalc(measure = "RD", 
+               ai = Contra_Behavioural_Med*Contra_Behavioural_N, 
+               bi = (1-Contra_Behavioural_Med)*Contra_Behavioural_N, 
+               ci = noContra_Behavioural_Med*noContra_Behavioural_N,
+               di = (1-noContra_Behavioural_Med)*noContra_Behavioural_N,
+               var.names = c("yi_behavioural_med", "vi_behavioural_med"),
+               data = dat_behavioural)
 
 # Upp
 
-dat_trauma <- escalc(measure = "RD", 
-               ai = Contra_Trauma_Upp*Contra_Trauma_N, 
-               bi = (1-Contra_Trauma_Upp)*Contra_Trauma_N, 
-               ci = noContra_Trauma_Upp*noContra_Trauma_N,
-               di = (1-noContra_Trauma_Upp)*noContra_Trauma_N,
-               var.names = c("yi_trauma_upp", "vi_trauma_upp"),
-               data = dat_trauma)
+dat_behavioural <- escalc(measure = "RD", 
+               ai = Contra_Behavioural_Upp*Contra_Behavioural_N, 
+               bi = (1-Contra_Behavioural_Upp)*Contra_Behavioural_N, 
+               ci = noContra_Behavioural_Upp*noContra_Behavioural_N,
+               di = (1-noContra_Behavioural_Upp)*noContra_Behavioural_N,
+               var.names = c("yi_behavioural_upp", "vi_behavioural_upp"),
+               data = dat_behavioural)
 
-dat_trauma %>% filter(Contra_Trauma_N > 0) -> dat_trauma
+dat_behavioural %>% filter(Contra_Behavioural_N > 0) -> dat_behavioural
 
 # create a long format of the data  using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
-dat_long_trauma <- dat_trauma %>% select(Effect_ID, Species, Phylogeny, Sex_Type, Sex,
-                           yi_trauma_low, vi_trauma_low, 
-                           yi_trauma_med, vi_trauma_med, 
-                           yi_trauma_upp, vi_trauma_upp) %>% 
-  pivot_longer(cols = c(yi_trauma_low, yi_trauma_med, yi_trauma_upp, vi_trauma_low, vi_trauma_med, vi_trauma_upp), 
+dat_long_behavioural <- dat_behavioural %>% select(Effect_ID, Species, Phylogeny, Sex_Type, Sex,
+                           yi_behavioural_low, vi_behavioural_low, 
+                           yi_behavioural_med, vi_behavioural_med, 
+                           yi_behavioural_upp, vi_behavioural_upp) %>% 
+  pivot_longer(cols = c(yi_behavioural_low, yi_behavioural_med, yi_behavioural_upp, vi_behavioural_low, vi_behavioural_med, vi_behavioural_upp), 
                names_to = c(".value", "type"), 
                names_pattern = "(yi|vi)_(.*)")
 
-dat_long_trauma <- dat_long_trauma %>% filter(!is.na(yi))
+dat_long_behavioural <- dat_long_behavioural %>% filter(!is.na(yi))
 
-str(dat_long_trauma)
+str(dat_long_behavioural)
 
-dat_long_trauma$type <- factor(dat_long_trauma$type, levels = rev(c("trauma_low", "trauma_med", "trauma_upp")),
+dat_long_behavioural$type <- factor(dat_long_behavioural$type, levels = rev(c("behavioural_low", "behavioural_med", "behavioural_upp")),
                         labels = rev(c("Lower", "Median", "Upper")))
 
 # effect size level ID
 
-dat_long_trauma$Effect_ID2 <- factor(1 : nrow(dat_long_trauma))
+dat_long_behavioural$Effect_ID2 <- factor(1 : nrow(dat_long_behavioural))
 
 
 # VCV
 
-VCV <- vcalc(dat_long_trauma$vi, 
-            cluster = dat_long_trauma$Effect_ID, 
-            obs = dat_long_trauma$Effect_ID2, 
-            data = dat_long_trauma, rho = 0.5)
+VCV <- vcalc(dat_long_behavioural$vi, 
+            cluster = dat_long_behavioural$Effect_ID, 
+            obs = dat_long_behavioural$Effect_ID2, 
+            data = dat_long_behavioural, rho = 0.5)
 
 
 # meta-analysis using dat_long
 
-mod_trauma <- rma.mv(yi = yi, V = VCV, 
+mod_behavioural <- rma.mv(yi = yi, V = VCV, 
                      random = list(
                        ~1|Species,
                        ~1|Phylogeny,
                        #~1|Effect_ID, 
                        ~1|Effect_ID2),
                      R = list(Phylogeny = cor_tree), 
-                     data = dat_long_trauma,
+                     data = dat_long_behavioural,
                      method="REML", 
                      sparse=TRUE,
                      control=list(optimizer="optim", optmethod="Nelder-Mead")
 )
 
 
-summary(mod_trauma)
+summary(mod_behavioural)
 
 
 # meta-regression
 
-mod_trauma_reg <- rma.mv(yi = yi, V = VCV, 
+mod_behavioural_reg <- rma.mv(yi = yi, V = VCV, 
                          random = list(
                            ~1|Species,
                            ~1|Phylogeny,
                            ~1|Effect_ID2), 
                          #struct = "DIAG",
                          R = list(Phylogeny = cor_tree), 
-                         data = dat_long_trauma,
+                         data = dat_long_behavioural,
                          method="REML", 
                          control=list(optimizer="optim", optmethod= "Nelder-Mead"),
                          mods = ~ type - 1,
                          sparse=TRUE
 )
 
-summary(mod_trauma_reg)
+summary(mod_behavioural_reg)
 
 
-p_trauma <- orchard_plot(mod_trauma_reg, mod = "type",
-    xlab = "log risk difference (Trauma)", group = "Species") + ylim(-0.7, 0.7)
+p_behavioural <- orchard_plot(mod_behavioural_reg, mod = "type",
+    xlab = "log risk difference (Behavioural)", group = "Species") + ylim(-0.7, 0.7)
 
 
-p_trauma
+p_behavioural
 
 # sex_type 
 
-dat_long_trauma$sex_type <-  as.factor(paste0(dat_long_trauma$Sex, "_", dat_long_trauma$type))
+dat_long_behavioural$sex_type <-  as.factor(paste0(dat_long_behavioural$Sex, "_", dat_long_behavioural$type))
 
-mod_trauma_reg2 <- rma.mv(yi = yi, V = VCV, 
+mod_behavioural_reg2 <- rma.mv(yi = yi, V = VCV, 
                          random = list(
                            ~1|Species,
                            ~1|Phylogeny,
                            ~1|Effect_ID2), 
                          #struct = "DIAG",
                          R = list(Phylogeny = cor_tree), 
-                         data = dat_long_trauma,
+                         data = dat_long_behavioural,
                          method="REML", 
                          control=list(optimizer="optim", optmethod= "Nelder-Mead"),
                          mods = ~ sex_type - 1,
                          sparse=TRUE
 )
 
-summary(mod_trauma_reg2)
+summary(mod_behavioural_reg2)
 
 
-p_trauma2 <- orchard_plot(mod_trauma_reg2, mod = "sex_type",
-                         xlab = "log risk difference \n(Trauma)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+p_behavioural2 <- orchard_plot(mod_behavioural_reg2, mod = "sex_type",
+                         xlab = "log risk difference \n(Behavioural)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
-p_trauma2
+p_behavioural2
 
 # mod_table
-res_trauma <- mod_results(mod_trauma_reg2,  mod = "sex_type", group = "Species")
+res_behavioural <- mod_results(mod_behavioural_reg2,  mod = "sex_type", group = "Species")
 
-attr(res_trauma, "class") <- NULL
+attr(res_behavioural, "class") <- NULL
 
-res_trauma$mod_table$name <- paste( res_trauma$mod_table$name, "Trauma", sep = "_")
-res_trauma$mod_table$name <- factor(res_trauma$mod_table$name)
-res_trauma$data$moderator <- paste( res_trauma$data$moderator, "Trauma", sep = "_")
-res_trauma$data$moderator <- factor(res_trauma$data$moderator)
+res_behavioural$mod_table$name <- paste( res_behavioural$mod_table$name, "Behavioural", sep = "_")
+res_behavioural$mod_table$name <- factor(res_behavioural$mod_table$name)
+res_behavioural$data$moderator <- paste( res_behavioural$data$moderator, "Behavioural", sep = "_")
+res_behavioural$data$moderator <- factor(res_behavioural$data$moderator)
 
 ```
 
@@ -4722,7 +4722,7 @@ res_other$data$moderator <- factor(res_other$data$moderator)
 
 # combining all plots - use cowplot
 
-p_all <- plot_grid(p_trauma, 
+p_all <- plot_grid(p_behavioural, 
                    p_infectious, 
                    p_noninfectious, 
                    p_chronic, 
@@ -4732,7 +4732,7 @@ p_all <- plot_grid(p_trauma,
 
 p_all
 
-p_all2 <- plot_grid(p_trauma2, 
+p_all2 <- plot_grid(p_behavioural2, 
                    p_infectious2, 
                    p_noninfectious2, 
                    p_chronic2, 
@@ -4752,7 +4752,7 @@ design <- "AAAA
            FFFF"
 
 
-p_trauma2 + p_infectious2 + p_noninfectious2 + p_chronic2 + p_deathAtBirth2 + p_other2 +
+p_behavioural2 + p_infectious2 + p_noninfectious2 + p_chronic2 + p_deathAtBirth2 + p_other2 +
   plot_layout(design = design) + plot_annotation(title = "Risk Difference (RD) for different causes of death")
 
 
@@ -4766,10 +4766,10 @@ mod_table_lower_f <- rbind(res_other$mod_table[1, ],
                            res_chronic$mod_table[1, ],
                            res_noninfectious$mod_table[1, ],
                            res_infectious$mod_table[1, ],
-                           res_trauma$mod_table[1, ]
+                           res_behavioural$mod_table[1, ]
                            )
 
-data_lower_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Lower_Trauma", ],
+data_lower_f <- rbind(res_behavioural$data[res_behavioural$data$moderator == "Female_Lower_Behavioural", ],
                       res_infectious$data[res_infectious$data$moderator == "Female_Lower_Infectious", ],
                       res_noninfectious$data[res_noninfectious$data$moderator == "Female_Lower_None-infectious", ],
                       res_chronic$data[res_chronic$data$moderator == "Female_Lower_Chronic", ],
@@ -4777,12 +4777,12 @@ data_lower_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Lower
                       res_other$data[res_other$data$moderator == "Female_Lower_Other", ])
 
 mod_table_lower_f$name <- gsub("Female_Lower_", "", mod_table_lower_f$name)
-mod_table_lower_f$name <- factor(mod_table_lower_f$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
-                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+mod_table_lower_f$name <- factor(mod_table_lower_f$name, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                          "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
 data_lower_f$moderator <- gsub("Female_Lower_", "", data_lower_f$moderator)
-data_lower_f$moderator <- factor(data_lower_f$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
-                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+data_lower_f$moderator <- factor(data_lower_f$moderator, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                          "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
 
 res_lower_f <- list(mod_table = mod_table_lower_f, data = data_lower_f)
@@ -4801,10 +4801,10 @@ mod_table_median_f <- rbind(res_other$mod_table[2, ],
                            res_chronic$mod_table[2, ],
                            res_noninfectious$mod_table[2, ],
                            res_infectious$mod_table[2, ],
-                           res_trauma$mod_table[2, ]
+                           res_behavioural$mod_table[2, ]
                            )
 
-data_median_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Median_Trauma", ],
+data_median_f <- rbind(res_behavioural$data[res_behavioural$data$moderator == "Female_Median_Behavioural", ],
                       res_infectious$data[res_infectious$data$moderator == "Female_Median_Infectious", ],
                       res_noninfectious$data[res_noninfectious$data$moderator == "Female_Median_None-infectious", ],
                       res_chronic$data[res_chronic$data$moderator == "Female_Median_Chronic", ],
@@ -4813,12 +4813,12 @@ data_median_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Medi
                       )
 
 mod_table_median_f$name <- gsub("Female_Median_", "", mod_table_median_f$name)
-mod_table_median_f$name <- factor(mod_table_median_f$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
-                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+mod_table_median_f$name <- factor(mod_table_median_f$name, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                          "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
 data_median_f$moderator <- gsub("Female_Median_", "", data_median_f$moderator)
-data_median_f$moderator <- factor(data_median_f$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
-                              labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+data_median_f$moderator <- factor(data_median_f$moderator, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                              labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                          "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
 
 res_median_f <- list(mod_table = mod_table_median_f, data = data_median_f)
@@ -4837,10 +4837,10 @@ mod_table_upper_f <- rbind(res_other$mod_table[3, ],
                            res_chronic$mod_table[3, ],
                            res_noninfectious$mod_table[3, ],
                            res_infectious$mod_table[3, ],
-                           res_trauma$mod_table[3, ]
+                           res_behavioural$mod_table[3, ]
                            )
 
-data_upper_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Upper_Trauma", ],
+data_upper_f <- rbind(res_behavioural$data[res_behavioural$data$moderator == "Female_Upper_Behavioural", ],
                       res_infectious$data[res_infectious$data$moderator == "Female_Upper_Infectious", ],
                       res_noninfectious$data[res_noninfectious$data$moderator == "Female_Upper_None-infectious", ],
                       res_chronic$data[res_chronic$data$moderator == "Female_Upper_Chronic", ],
@@ -4849,12 +4849,12 @@ data_upper_f <- rbind(res_trauma$data[res_trauma$data$moderator == "Female_Upper
                       ) 
 
 mod_table_upper_f$name <- gsub("Female_Upper_", "", mod_table_upper_f$name)
-mod_table_upper_f$name <- factor(mod_table_upper_f$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
-                                  labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+mod_table_upper_f$name <- factor(mod_table_upper_f$name, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                                  labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                  "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
 data_upper_f$moderator <- gsub("Female_Upper_", "", data_upper_f$moderator)
-data_upper_f$moderator <- factor(data_upper_f$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
-                                  labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+data_upper_f$moderator <- factor(data_upper_f$moderator, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Death", "Other")), 
+                                  labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                  "Chronic\ndisease", "Death\nat birth", "Other\ncauses")) )
 
 res_upper_f <- list(mod_table = mod_table_upper_f, data = data_upper_f)
@@ -4872,12 +4872,12 @@ mod_table_lower_m <- rbind(res_other$mod_table[4, ],
                            res_chronic$mod_table[4, ],
                            res_noninfectious$mod_table[4, ],
                            res_infectious$mod_table[4, ],
-                           res_trauma$mod_table[4, ]
+                           res_behavioural$mod_table[4, ]
                            )
 
 mod_table_lower_m$name <- as.character(mod_table_lower_m$name)
 
-data_lower_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Lower_Trauma", ],
+data_lower_m <- rbind(res_behavioural$data[res_behavioural$data$moderator == "Male_Lower_Behavioural", ],
                       res_infectious$data[res_infectious$data$moderator == "Male_Lower_Infectious", ],
                       res_noninfectious$data[res_noninfectious$data$moderator == "Male_Lower_None-infectious", ],
                       res_chronic$data[res_chronic$data$moderator == "Male_Lower_Chronic", ],
@@ -4886,12 +4886,12 @@ data_lower_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Lower_T
 data_lower_m$moderator <- as.character(data_lower_m$moderator)
 
 mod_table_lower_m$name <- gsub("Male_Lower_", "", mod_table_lower_m$name)
-mod_table_lower_m$name <- factor(mod_table_lower_m$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic","Other")), 
-                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+mod_table_lower_m$name <- factor(mod_table_lower_m$name, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic","Other")), 
+                                 labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                 "Chronic\ndisease", "Other\ncauses")) )
 data_lower_m$moderator <- gsub("Male_Lower_", "", data_lower_m$moderator)
-data_lower_m$moderator <- factor(data_lower_m$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Other")), 
-                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+data_lower_m$moderator <- factor(data_lower_m$moderator, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Other")), 
+                                 labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                 "Chronic\ndisease", "Other\ncauses")) )
 
 res_lower_m <- list(mod_table = mod_table_lower_m, data = data_lower_m)
@@ -4909,12 +4909,12 @@ mod_table_median_m <- rbind(res_other$mod_table[5, ],
                            res_chronic$mod_table[5, ],
                            res_noninfectious$mod_table[5, ],
                            res_infectious$mod_table[5, ],
-                           res_trauma$mod_table[5, ]
+                           res_behavioural$mod_table[5, ]
                            )
 
 mod_table_median_m$name <- as.character(mod_table_median_m$name)
 
-data_median_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Median_Trauma", ],
+data_median_m <- rbind(res_behavioural$data[res_behavioural$data$moderator == "Male_Median_Behavioural", ],
                       res_infectious$data[res_infectious$data$moderator == "Male_Median_Infectious", ],
                       res_noninfectious$data[res_noninfectious$data$moderator == "Male_Median_None-infectious", ],
                       res_chronic$data[res_chronic$data$moderator == "Male_Median_Chronic", ],
@@ -4923,12 +4923,12 @@ data_median_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Median
 data_median_m$moderator <- as.character(data_median_m$moderator)
 
 mod_table_median_m$name <- gsub("Male_Median_", "", mod_table_median_m$name)
-mod_table_median_m$name <- factor(mod_table_median_m$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic","Other")), 
-                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+mod_table_median_m$name <- factor(mod_table_median_m$name, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic","Other")), 
+                                 labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                 "Chronic\ndisease", "Other\ncauses")) )
 data_median_m$moderator <- gsub("Male_Median_", "", data_median_m$moderator)
-data_median_m$moderator <- factor(data_median_m$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Other")), 
-                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+data_median_m$moderator <- factor(data_median_m$moderator, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Other")), 
+                                 labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                 "Chronic\ndisease", "Other\ncauses")) )
 
 res_median_m <- list(mod_table = mod_table_median_m, data = data_median_m)
@@ -4945,12 +4945,12 @@ mod_table_upper_m <- rbind(res_other$mod_table[6, ],
                            res_chronic$mod_table[6, ],
                            res_noninfectious$mod_table[6, ],
                            res_infectious$mod_table[6, ],
-                           res_trauma$mod_table[6, ]
+                           res_behavioural$mod_table[6, ]
                            )
 
 mod_table_upper_m$name <- as.character(mod_table_upper_m$name)
 
-data_upper_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Upper_Trauma", ],
+data_upper_m <- rbind(res_behavioural$data[res_behavioural$data$moderator == "Male_Upper_Behavioural", ],
                       res_infectious$data[res_infectious$data$moderator == "Male_Upper_Infectious", ],
                       res_noninfectious$data[res_noninfectious$data$moderator == "Male_Upper_None-infectious", ],
                       res_chronic$data[res_chronic$data$moderator == "Male_Upper_Chronic", ],
@@ -4959,12 +4959,12 @@ data_upper_m <- rbind(res_trauma$data[res_trauma$data$moderator == "Male_Upper_T
 data_upper_m$moderator <- as.character(data_upper_m$moderator)
 
 mod_table_upper_m$name <- gsub("Male_Upper_", "", mod_table_upper_m$name)
-mod_table_upper_m$name <- factor(mod_table_upper_m$name, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic","Other")), 
-                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+mod_table_upper_m$name <- factor(mod_table_upper_m$name, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic","Other")), 
+                                 labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                 "Chronic\ndisease", "Other\ncauses")) )
 data_upper_m$moderator <- gsub("Male_Upper_", "", data_upper_m$moderator)
-data_upper_m$moderator <- factor(data_upper_m$moderator, levels = rev(c("Trauma", "Infectious", "None-infectious", "Chronic", "Other")), 
-                                 labels = rev(c("Trauma", "Infectious\ndisease", "None-infectious\ndisease", 
+data_upper_m$moderator <- factor(data_upper_m$moderator, levels = rev(c("Behavioural", "Infectious", "None-infectious", "Chronic", "Other")), 
+                                 labels = rev(c("Behavioural", "Infectious\ndisease", "None-infectious\ndisease", 
                                                 "Chronic\ndisease", "Other\ncauses")) )
 
 res_upper_m <- list(mod_table = mod_table_upper_m, data = data_upper_m)
