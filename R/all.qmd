@@ -3816,6 +3816,11 @@ dat$Sex_Type <- as.factor(paste0(dat$Sex, "_", dat$Type))
 # Behavioural
 #########
 
+# adding 0.5 for N = 0
+
+dat$Contra_Behavioural_N[dat$Contra_Behavioural_N == 0] <- 0.5
+dat$noContra_Behavioural_N[dat$noContra_Behavioural_N == 0] <- 0.5
+
 # Low
 dat_behavioural <- escalc(measure = "RD", 
                ai = Contra_Behavioural_Low*Contra_Behavioural_N, 
@@ -3844,7 +3849,7 @@ dat_behavioural <- escalc(measure = "RD",
                var.names = c("yi_behavioural_upp", "vi_behavioural_upp"),
                data = dat_behavioural)
 
-dat_behavioural %>% filter(Contra_Behavioural_N > 0) -> dat_behavioural
+#dat_behavioural %>% filter(Contra_Behavioural_N > 0) -> dat_behavioural
 
 # create a long format of the data  using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -3915,7 +3920,7 @@ summary(mod_behavioural_reg)
 
 
 p_behavioural <- orchard_plot(mod_behavioural_reg, mod = "type",
-    xlab = "log risk difference (Behavioural)", group = "Species") + ylim(-0.7, 0.7)
+    xlab = "Risk difference (Behavioural)", group = "Species") + ylim(-0.7, 0.7)
 
 
 p_behavioural
@@ -3942,7 +3947,7 @@ summary(mod_behavioural_reg2)
 
 
 p_behavioural2 <- orchard_plot(mod_behavioural_reg2, mod = "sex_type",
-                         xlab = "log risk difference \n(Behavioural)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+                         xlab = "Risk difference \n(Behavioural)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_behavioural2
@@ -3965,6 +3970,12 @@ res_behavioural$data$moderator <- factor(res_behavioural$data$moderator)
 ####################
 # Infectious Disease
 ####################
+
+# adding 0.5 for N = 0
+
+dat$Contra_InfectDisease_N[dat$Contra_InfectDisease_N == 0] <- 0.5
+dat$noContra_InfectDisease_N[dat$noContra_InfectDisease_N == 0] <- 0.5
+
 # Low
 
 dat_infectious <- escalc(measure = "RD", 
@@ -3995,7 +4006,7 @@ dat_infectious <- escalc(measure = "RD",
                var.names = c("yi_infectious_upp", "vi_infectious_upp"),
                data = dat_infectious)
 
-dat_infectious %>% filter(Contra_InfectDisease_N > 0) -> dat_infectious
+#dat_infectious %>% filter(Contra_InfectDisease_N > 0) -> dat_infectious
 
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
@@ -4065,7 +4076,7 @@ mod_infectious_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_infectious_reg)
 
 p_infectious <- orchard_plot(mod_infectious_reg, mod = "type",
-    xlab = "log risk difference (Infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "Risk difference (Infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
 
 p_infectious
 
@@ -4091,7 +4102,7 @@ summary(mod_infectious_reg2)
 
 
 p_infectious2 <- orchard_plot(mod_infectious_reg2, mod = "sex_type",
-                          xlab = "log risk difference \n(Infectious Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+                          xlab = "Risk difference \n(Infectious Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_infectious2
@@ -4117,6 +4128,11 @@ res_infectious$data$moderator <- factor(res_infectious$data$moderator)
 ########################
 # Non-infectious Disease
 ########################
+
+# adding 0.5 for N = 0
+
+dat$Contra_NonInfectDisease_N[dat$Contra_NonInfectDisease_N == 0] <- 0.5
+dat$noContra_NonInfectDisease_N[dat$noContra_NonInfectDisease_N == 0] <- 0.5
 
 # Low
 
@@ -4148,7 +4164,7 @@ dat_noninfectious <- escalc(measure = "RD",
                var.names = c("yi_noninfectious_upp", "vi_noninfectious_upp"),
                data = dat_noninfectious)
 
-dat_noninfectious %>% filter(Contra_NonInfectDisease_N > 0) -> dat_noninfectious
+#dat_noninfectious %>% filter(Contra_NonInfectDisease_N > 0) -> dat_noninfectious
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -4216,7 +4232,7 @@ mod_noninfectious_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_noninfectious_reg)
 
 p_noninfectious <- orchard_plot(mod_noninfectious_reg, mod = "type",
-    xlab = "log risk difference (Non-infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "Risk difference (Non-infectious Disease)", group = "Species") + ylim(-0.85, 0.7)
 
 p_noninfectious
 
@@ -4243,7 +4259,7 @@ summary(mod_noninfectious_reg2)
 
 
 p_noninfectious2 <- orchard_plot(mod_noninfectious_reg2, mod = "sex_type",
-                              xlab = "log risk difference \n(None-infectious Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+                              xlab = "Risk difference \n(None-infectious Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_noninfectious2
@@ -4269,6 +4285,10 @@ res_noninfectious$data$moderator <- factor(res_noninfectious$data$moderator)
 ###################
 # Chronic Disease
 ###################
+
+# adding 0.5 for N = 0
+dat$Contra_ChronDisease_N[dat$Contra_ChronDisease_N == 0] <- 0.5
+dat$noContra_ChronDisease_N[dat$noContra_ChronDisease_N == 0] <- 0.5
 
 # Low
 
@@ -4300,7 +4320,7 @@ dat_chronic <- escalc(measure = "RD",
                var.names = c("yi_chronic_upp", "vi_chronic_upp"),
                data = dat_chronic)
 
-dat_chronic %>% filter(Contra_ChronDisease_N > 0) -> dat_chronic
+#dat_chronic %>% filter(Contra_ChronDisease_N > 0) -> dat_chronic
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -4369,7 +4389,7 @@ mod_chronic_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_chronic_reg)
 
 p_chronic <- orchard_plot(mod_chronic_reg, mod = "type",
-    xlab = "log risk difference (Chronic Disease)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "Risk difference (Chronic Disease)", group = "Species") + ylim(-0.85, 0.7)
 
 p_chronic
 
@@ -4395,7 +4415,7 @@ summary(mod_chronic_reg2)
 
 
 p_chronic2 <- orchard_plot(mod_chronic_reg2, mod = "sex_type",
-                                 xlab = "log risk difference \n(Chronic Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+                                 xlab = "Risk difference \n(Chronic Disease)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_chronic2
@@ -4419,6 +4439,10 @@ res_chronic$data$moderator <- factor(res_chronic$data$moderator)
 ###################
 # Death at birth
 ###################
+
+# adding 0.5 for N = 0
+dat$Contra_deathAtBirth_N[dat$Contra_deathAtBirth_N == 0] <- 0.5
+dat$noContra_deathAtBirth_N[dat$noContra_deathAtBirth_N == 0] <- 0.5
 
 # Low
 
@@ -4450,7 +4474,7 @@ dat_deathAtBirth <- escalc(measure = "RD",
                var.names = c("yi_deathAtBirth_upp", "vi_deathAtBirth_upp"),
                data = dat_deathAtBirth)
 
-dat_deathAtBirth %>% filter(Contra_deathAtBirth_N > 0) -> dat_deathAtBirth
+#dat_deathAtBirth %>% filter(Contra_deathAtBirth_N > 0) -> dat_deathAtBirth
 
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
@@ -4519,7 +4543,7 @@ mod_deathAtBirth_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_deathAtBirth_reg)
 
 p_deathAtBirth <- orchard_plot(mod_deathAtBirth_reg, mod = "type",
-    xlab = "log risk difference (Death at Birth)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "Risk difference (Death at Birth)", group = "Species") + ylim(-0.85, 0.7)
 
 p_deathAtBirth
 
@@ -4556,7 +4580,7 @@ res_deathAtBirth$data$moderator <- factor(res_deathAtBirth$data$moderator)
 
 
 p_deathAtBirth2 <- orchard_plot(mod_deathAtBirth_reg2, mod = "sex_type",
-                           xlab = "log risk difference \n(Death at birth)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+                           xlab = "Risk difference \n(Death at birth)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_deathAtBirth2
@@ -4570,6 +4594,10 @@ p_deathAtBirth2
 ########
 # Other
 ########
+
+# adding 0.5 for N = 0
+dat$Contra_Other_N[dat$Contra_Other_N == 0] <- 0.5
+dat$noContra_Other_N[dat$noContra_Other_N == 0] <- 0.5
 
 # Low
 
@@ -4601,7 +4629,7 @@ dat_other <- escalc(measure = "RD",
                var.names = c("yi_other_upp", "vi_other_upp"),
                data = dat_other)
 
-dat_other %>% filter(Contra_Other_N > 0) -> dat_other
+#dat_other %>% filter(Contra_Other_N > 0) -> dat_other
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -4669,7 +4697,7 @@ mod_other_reg <- rma.mv(yi = yi, V = VCV,
 summary(mod_other_reg)
 
 p_other <- orchard_plot(mod_other_reg, mod = "type",
-    xlab = "log risk difference (Other)", group = "Species") + ylim(-0.85, 0.7)
+    xlab = "Risk difference (Other)", group = "Species") + ylim(-0.85, 0.7)
 
 p_other
 
@@ -4695,7 +4723,7 @@ summary(mod_other_reg2)
 
 
 p_other2 <- orchard_plot(mod_other_reg2, mod = "sex_type",
-                           xlab = "log risk difference \n(Other causes)", group = "Species", flip = F) + ylim(-0.85, 0.7)
+                           xlab = "Risk difference \n(Other causes)", group = "Species", flip = F) + ylim(-0.85, 0.7)
 
 
 p_other2
@@ -4790,7 +4818,7 @@ res_lower_f <- list(mod_table = mod_table_lower_f, data = data_lower_f)
 class(res_lower_f) <-  c("orchard", "data.frame")
 
 p_lower_f <- orchard_plot(res_lower_f, mod = "sex_type",
-            xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + labs(title = "Female") + 
+            xlab = "Risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + labs(title = "Female") + 
   theme(axis.title.x = element_blank(), axis.text.x  = element_blank(), axis.ticks.x = element_blank())
   #theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
@@ -4826,7 +4854,7 @@ res_median_f <- list(mod_table = mod_table_median_f, data = data_median_f)
 class(res_median_f) <-  c("orchard", "data.frame")
 
 p_median_f <- orchard_plot(res_median_f, mod = "sex_type",
-            xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
+            xlab = "Risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
   theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank()) + 
   theme(axis.title.x = element_blank(), axis.text.x  = element_blank(), axis.ticks.x = element_blank())
 
@@ -4862,7 +4890,7 @@ res_upper_f <- list(mod_table = mod_table_upper_f, data = data_upper_f)
 class(res_upper_f) <-  c("orchard", "data.frame")
 
 p_upper_f <- orchard_plot(res_upper_f, mod = "sex_type",
-                           xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
+                           xlab = "Risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + 
   theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank()) + 
   theme(axis.title.x = element_blank(), axis.text.x  = element_blank(), axis.ticks.x = element_blank())
 
@@ -4899,7 +4927,7 @@ res_lower_m <- list(mod_table = mod_table_lower_m, data = data_lower_m)
 class(res_lower_m) <-  c("orchard", "data.frame") 
 
 p_lower_m <- orchard_plot(res_lower_m, mod = "sex_type",
-                          xlab = "log risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + labs(title = "Male") #+ 
+                          xlab = "Risk difference (Lower)", group = "Species", angle = 0) + ylim(-0.85, 0.7) + labs(title = "Male") #+ 
  #theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
 
@@ -4936,7 +4964,7 @@ res_median_m <- list(mod_table = mod_table_median_m, data = data_median_m)
 class(res_median_m) <-  c("orchard", "data.frame") 
 
 p_median_m <- orchard_plot(res_median_m, mod = "sex_type",
-                          xlab = "log risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7)  +
+                          xlab = "Risk difference (Median)", group = "Species", angle = 0) + ylim(-0.85, 0.7)  +
   theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
                                           
 # upper male
@@ -4972,7 +5000,7 @@ res_upper_m <- list(mod_table = mod_table_upper_m, data = data_upper_m)
 class(res_upper_m) <-  c("orchard", "data.frame")
  
 p_upper_m <- orchard_plot(res_upper_m, mod = "sex_type",
-                          xlab = "log risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) +  
+                          xlab = "Risk difference (Upper)", group = "Species", angle = 0) + ylim(-0.85, 0.7) +  
   theme(axis.title.y = element_blank(), axis.text.y  = element_blank(), axis.ticks.y = element_blank())
 
 
@@ -4986,7 +5014,7 @@ saveRDS(res_median_m, here("Rdata", "fig", "res_median_m.rds"))
 saveRDS(res_upper_m, here("Rdata", "fig", "res_upper_m.rds"))
 
 ######################
-#ddrwoing
+# drowning
 #########################
 
 p_female <- p_lower_f + p_median_f + p_upper_f +
