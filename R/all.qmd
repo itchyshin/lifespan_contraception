@@ -2432,108 +2432,244 @@ mes_sex1
 
 #gdat$S
 ldat$Measurement.type <- factor(ldat$Measurement.type,
+                                
                            levels = c("Overall",
-                                      "Adrenal-Cortical adenoma",
-                                      "Autoshaping learning test",
-                                      "balance on a dowel",
-                                      "Barnes maze test",
-                                      "cardiac fibrosis",
-                                      "Cardiac pathology",
-                                      "Cardiomyocyte size",
-                                      "E/A ratio",
-                                      "Ejection fraction",
-                                      "Energy expenditure",
-                                      "fractional shortening",
-                                      "Frailty score",
-                                      "Glucose tolerance",
-                                      "Grip strength",
-                                      "Harderian adenoma",
-                                      "Heart size",
-                                      "inhibitory avoidance test",
-                                      "Insulin sensitivity",
-                                      "Kidney pathology",
-                                      "left ventricle size",
-                                      "Left Ventricular Isovolumic Relaxation Time",
-                                      "Liver pathology",
-                                      "Mammary pathology",
-                                      "Morris water maze",
-                                      "nonthymic lymphosarcoma",
-                                      "novel object recognition",
-                                      "Open field test",
-                                      "pituitary tumors",
-                                      "Polyarteritis",
-                                      "Proportion with hypophyseal adenoma",
-                                      "Proportion with tumors ",
-                                      "Pulmonary adenoma",
-                                      "Quadriceps size",
-                                      "RAM memory test",
-                                      "Reticulum cell sarcoma",
-                                      "rotarod",
-                                      "Skeletal muscle fiber size",
-                                      "Smell preference",
-                                      "superficial skin and subcutaneous tumor not mammary",
-                                      "T cell function test",
-                                      "T maze test",
-                                      "thymic lymphomas",
-                                      "Total activity dark period",
-                                      "total non-neoplastic lesions",
-                                      "Treamill",
-                                      "vision presence of cataracts",
-                                      "voluntary activity assessment",
-                                      "voluntary wheel running",
-                                      "water radial arm maze test",
-                                      "Y maze testing"),
-                              labels = c("Overall",
-                                         "Adrenal-cortical adenoma",
-                                         "Autoshaping learning test",
-                                         "Balance on a dowel",
-                                         "Barnes maze test",
-                                         "Cardiac fibrosis",
-                                         "Cardiac pathology",
-                                         "Cardiomyocyte size",
-                                         "E/A ratio",
-                                         "Ejection fraction",
-                                         "Energy expenditure",
-                                         "Fractional shortening",
-                                         "Frailty score",
-                                         "Glucose tolerance",
-                                         "Grip strength",
-                                         "Harderian adenoma",
-                                         "Heart size",
-                                         "Inhibitory avoidance test",
-                                         "Insulin sensitivity",
-                                         "Kidney pathology",
-                                         "left ventricle size",
-                                         "Left ventricular isovolumic relaxation time",
-                                         "Liver pathology",
-                                         "Mammary pathology",
-                                         "Morris water maze",
-                                         "Nonthymic lymphosarcoma",
-                                         "Novel object recognition",
-                                         "Open field test",
-                                         "Pituitary tumors",
-                                         "Polyarteritis",
-                                         "Proportion with hypophyseal adenoma",
-                                         "Proportion with tumors",
-                                         "Pulmonary adenoma",
-                                         "Quadriceps size",
-                                         "RAM memory test",
-                                         "Reticulum cell sarcoma",
-                                         "Rotarod",
-                                         "Skeletal muscle fiber size",
-                                         "Smell preference",
-                                         "Superficial skin and subcutaneous tumor not mammary",
-                                         "T cell function test",
-                                         "T maze test",
-                                         "Thymic lymphomas",
-                                         "Total activity dark period",
-                                         "Total non-neoplastic lesions",
-                                         "Treamill",
-                                         "Vision presence of cataracts",
-                                         "Voluntary activity assessment",
-                                         "voluntary wheel running",
-                                         "Water radial arm maze test",
-                                         "Y maze testing")
+  # Survival & Frailty
+  "Frailty score",
+  "Energy expenditure",
+  "voluntary activity assessment",
+  "voluntary wheel running",
+  "Total activity dark period",
+  
+  # Cardiac
+  "Ejection fraction",
+  "fractional shortening",
+  "cardiac fibrosis",
+  "Cardiac pathology",
+  "Cardiomyocyte size",
+  "E/A ratio",
+  "Heart size",
+  "Left Ventricular Isovolumic Relaxation Time",
+  "left ventricle size",
+  
+  # Cognitive & Behavioral
+  "Morris water maze",
+  "Barnes maze test",
+  "water radial arm maze test",
+  "Y maze testing",
+  "RAM memory test",
+  "novel object recognition",
+  "Autoshaping learning test",
+  "inhibitory avoidance test",
+  "T maze test",
+  "Open field test",
+  "balance on a dowel",
+  "rotarod",
+  "Treamill",
+  
+  # Muscle
+  "Grip strength",
+  "Skeletal muscle fiber size",
+  "Quadriceps size",
+  
+  # Metabolic
+  "Glucose tolerance",
+  "Insulin sensitivity",
+  
+  # Immune & Tumors
+  "T cell function test",
+  "nonthymic lymphosarcoma",
+  "Mammary pathology",
+  "pituitary tumors",
+  "Pulmonary adenoma",
+  "Reticulum cell sarcoma",
+  "Polyarteritis",
+  "Proportion with tumors ",
+  "Proportion with hypophyseal adenoma",
+  "Harderian adenoma",
+  "Adrenal-Cortical adenoma",
+  "thymic lymphomas",
+  "superficial skin and subcutaneous tumor not mammary",
+  "total non-neoplastic lesions",
+  
+  # Organ-specific
+  "Liver pathology",
+  "Kidney pathology",
+  
+  # Sensory
+  "vision presence of cataracts",
+  "Smell preference"
+),
+
+labels =c("Overall",
+  # Survival & Frailty
+  "Frailty score",
+  "Energy expenditure",
+  "Voluntary activity assessment",
+  "Voluntary wheel running",
+  "Total activity dark period",
+  
+  # Cardiac
+  "Ejection fraction",
+  "Fractional shortening",
+  "Cardiac fibrosis",
+  "Cardiac pathology",
+  "Cardiomyocyte size",
+  "E/A ratio",
+  "Heart size",
+  "Left ventricular isovolumic relaxation time",
+  "Left ventricle size",
+  
+  # Cognitive & Behavioral
+  "Morris water maze",
+  "Barnes maze test",
+  "Water radial arm maze test",
+  "Y maze testing",
+  "RAM memory test",
+  "Novel object recognition",
+  "Autoshaping learning test",
+  "Inhibitory avoidance test",
+  "T maze test",
+  "Open field test",
+  "Balance on a dowel",
+  "Totarod",
+  "Treadmill",
+  
+  # Muscle
+  "Grip strength",
+  "Skeletal muscle fiber size",
+  "Quadriceps size",
+  
+  # Metabolic
+  "Glucose tolerance",
+  "Insulin sensitivity",
+  
+  # Immune & Tumors
+  "T cell function test",
+  "Nonthymic lymphosarcoma",
+  "Mammary pathology",
+  "Pituitary tumors",
+  "Pulmonary adenoma",
+  "Reticulum cell sarcoma",
+  "Polyarteritis",
+  "Proportion with tumors ",
+  "Proportion with hypophyseal adenoma",
+  "Harderian adenoma",
+  "Adrenal-Cortical adenoma",
+  "thymic lymphomas",
+  "Superficial skin and subcutaneous tumor not mammary",
+  "Total non-neoplastic lesions",
+  
+  # Organ-specific
+  "Liver pathology",
+  "Kidney pathology",
+  
+  # Sensory
+  "Vision presence of cataracts",
+  "Smell preference"
+)
+                           # levels = c("Overall",
+                           #            "Adrenal-Cortical adenoma",
+                           #            "Autoshaping learning test",
+                           #            "balance on a dowel",
+                           #            "Barnes maze test",
+                           #            "cardiac fibrosis",
+                           #            "Cardiac pathology",
+                           #            "Cardiomyocyte size",
+                           #            "E/A ratio",
+                           #            "Ejection fraction",
+                           #            "Energy expenditure",
+                           #            "fractional shortening",
+                           #            "Frailty score",
+                           #            "Glucose tolerance",
+                           #            "Grip strength",
+                           #            "Harderian adenoma",
+                           #            "Heart size",
+                           #            "inhibitory avoidance test",
+                           #            "Insulin sensitivity",
+                           #            "Kidney pathology",
+                           #            "left ventricle size",
+                           #            "Left Ventricular Isovolumic Relaxation Time",
+                           #            "Liver pathology",
+                           #            "Mammary pathology",
+                           #            "Morris water maze",
+                           #            "nonthymic lymphosarcoma",
+                           #            "novel object recognition",
+                           #            "Open field test",
+                           #            "pituitary tumors",
+                           #            "Polyarteritis",
+                           #            "Proportion with hypophyseal adenoma",
+                           #            "Proportion with tumors ",
+                           #            "Pulmonary adenoma",
+                           #            "Quadriceps size",
+                           #            "RAM memory test",
+                           #            "Reticulum cell sarcoma",
+                           #            "rotarod",
+                           #            "Skeletal muscle fiber size",
+                           #            "Smell preference",
+                           #            "superficial skin and subcutaneous tumor not mammary",
+                           #            "T cell function test",
+                           #            "T maze test",
+                           #            "thymic lymphomas",
+                           #            "Total activity dark period",
+                           #            "total non-neoplastic lesions",
+                           #            "Treamill",
+                           #            "vision presence of cataracts",
+                           #            "voluntary activity assessment",
+                           #            "voluntary wheel running",
+                           #            "water radial arm maze test",
+                           #            "Y maze testing"),
+                           #    labels = c("Overall",
+                           #               "Adrenal-cortical adenoma",
+                           #               "Autoshaping learning test",
+                           #               "Balance on a dowel",
+                           #               "Barnes maze test",
+                           #               "Cardiac fibrosis",
+                           #               "Cardiac pathology",
+                           #               "Cardiomyocyte size",
+                           #               "E/A ratio",
+                           #               "Ejection fraction",
+                           #               "Energy expenditure",
+                           #               "Fractional shortening",
+                           #               "Frailty score",
+                           #               "Glucose tolerance",
+                           #               "Grip strength",
+                           #               "Harderian adenoma",
+                           #               "Heart size",
+                           #               "Inhibitory avoidance test",
+                           #               "Insulin sensitivity",
+                           #               "Kidney pathology",
+                           #               "left ventricle size",
+                           #               "Left ventricular isovolumic relaxation time",
+                           #               "Liver pathology",
+                           #               "Mammary pathology",
+                           #               "Morris water maze",
+                           #               "Nonthymic lymphosarcoma",
+                           #               "Novel object recognition",
+                           #               "Open field test",
+                           #               "Pituitary tumors",
+                           #               "Polyarteritis",
+                           #               "Proportion with hypophyseal adenoma",
+                           #               "Proportion with tumors",
+                           #               "Pulmonary adenoma",
+                           #               "Quadriceps size",
+                           #               "RAM memory test",
+                           #               "Reticulum cell sarcoma",
+                           #               "Rotarod",
+                           #               "Skeletal muscle fiber size",
+                           #               "Smell preference",
+                           #               "Superficial skin and subcutaneous tumor not mammary",
+                           #               "T cell function test",
+                           #               "T maze test",
+                           #               "Thymic lymphomas",
+                           #               "Total activity dark period",
+                           #               "Total non-neoplastic lesions",
+                           #               "Treamill",
+                           #               "Vision presence of cataracts",
+                           #               "Voluntary activity assessment",
+                           #               "voluntary wheel running",
+                           #               "Water radial arm maze test",
+                           #               "Y maze testing")
                            )
 
 mestype_sex <- ggplot(data = ldat, aes(x = yi, y = Measurement.type)) +
@@ -3416,7 +3552,7 @@ dat0 %>% left_join(tax, by = c("Species" = "ZIMSSpecies")) -> dat_full
 #   mutate(phylogeny = gsub(" ", "_", vertlife.species)) -> dat
 
 dat_full %>% 
-  mutate(phylogeny = gsub(" ", "_", vertlife.treename)) -> dat
+  mutate(phylogeny = gsub(" ", "_", vertlife.treename)) -> dat1
 
 # adding Cervus canadensis
 # dat$vertlife.species[which(dat$Species == "Cervus canadensis")] <-"Cervus canadensis"
@@ -3424,13 +3560,13 @@ dat_full %>%
 
 # fixing species names
 #dat$Species[dat$Species == "Equus asinus"] <- "Equus_africanus"
-dat$Species[dat$Species == "Aonyx cinereus"] <- "Aonyx cinerea"
+dat1$Species[dat1$Species == "Aonyx cinereus"] <- "Aonyx cinerea"
 #dat$Species[dat$Species == "Bubalus bubalis"] <- "Bubalus arnee"
 
 
 # life span data 
 to_drop <-
-  tree$tip.label[which(!(tree$tip.label %in% unique(dat$phylogeny)))]
+  tree$tip.label[which(!(tree$tip.label %in% unique(dat1$phylogeny)))]
 
 tree <- drop.tip(tree, to_drop)
 
@@ -3456,10 +3592,42 @@ dat <- escalc("ROM",
                     sd1i = SEcontraBef*sqrt(NContraBef), 
                     n2i = NContraAft,
                     n1i = NContraBef,
-                    data = dat,
+                    data = dat1
 )
 
 dat$species <- factor(dat$Species)
+
+# another dataset where we have lnRR for both pre and post puberty
+
+dat2 <- escalc("ROM", 
+                    m1i = LifeExpContraBef,
+                    m2i = LifeExpNoContra,
+                    sd1i = SEcontraBef*sqrt(NContraBef),
+                    sd2i = SEnoContra*sqrt(NnoContra),
+                    n1i = NContraBef,
+                    n2i = NnoContra,
+                    data = dat1
+)
+
+
+dat3 <- escalc("ROM", 
+                    m1i = LifeExpContraAft,
+                    m2i = LifeExpNoContra,
+                    sd1i = SEcontraAft*sqrt(NContraAft),
+                    sd2i = SEnoContra*sqrt(NnoContra),
+                    n1i = NContraAft,
+                    n2i = NnoContra,
+                    data = dat1
+)
+
+dat_long <- rbind(dat2, dat3)
+
+dat_long$pairID <- rep(1:nrow(dat), 2)
+
+dat_long$species <- factor(dat_long$Species)
+
+# pre-post
+dat_long$pre_post <- c(rep("pre", nrow(dat)), rep("post", nrow(dat)))
 
 ```
 
@@ -3604,6 +3772,134 @@ summary(mod_np2b)
 orchard_plot(mod_np2, mod = "Primate", xlab = "lnRR (all)", group = "species", g = FALSE)
 
 ```
+
+
+## Meta-analysis: alternative (with phylogeny)
+
+```{r}
+
+# meta-analysis
+
+# variance-covariance matrix for sampling error assuming 0.5 correlation
+
+mod_pp2 <- rma.mv(yi, V = vi,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny,
+                    ~1|pairID),
+                  R = list(phylogeny = cor_tree),
+                  data = dat_long,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_pp2)
+round(i2_ml(mod_pp2), 5)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_pp2, xlab = "lnRR (all)", group = "species", g = FALSE)
+
+```
+
+## Meta-regressoin: pre vs. post  (with phylogeny)
+
+
+```{r}
+
+mod_pp3 <- rma.mv(yi, V = vi,
+                  mod = ~ pre_post - 1,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny,
+                    ~1|pairID),
+                  R = list(phylogeny = cor_tree),
+                  data = dat_long,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_pp3)
+round(r2_ml(mod_pp3), 5)
+
+
+mod_pp3b <- rma.mv(yi, V = vi,
+                  mod = ~ pre_post,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny,
+                    ~1|pairID),
+                  R = list(phylogeny = cor_tree),
+                  data = dat_long,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_pp3b)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_pp3, mod = "pre_post", xlab = "lnRR (all)", group = "species", g = FALSE)
+
+```
+
+## Meta-analysis: alternative (without phylogeny)
+
+```{r}
+
+# meta-analysis
+
+# variance-covariance matrix for sampling error assuming 0.5 correlation
+
+mod_np2 <- rma.mv(yi, V = vi,
+                  random = list(
+                    ~1|species,
+                    #~1|phylogeny,
+                    ~1|pairID),
+                  #R = list(phylogeny = cor_tree),
+                  data = dat_long,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_np2)
+round(i2_ml(mod_np2), 5)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_np2, xlab = "lnRR (all)", group = "species", g = FALSE)
+
+```
+
+## Meta-regressoin: pre vs. post  (wihtout phylogeny)
+
+
+```{r}
+
+mod_np3 <- rma.mv(yi, V = vi,
+                  mod = ~ pre_post - 1,
+                  random = list(
+                    ~1|species,
+                   # ~1|phylogeny,
+                    ~1|pairID),
+                  #R = list(phylogeny = cor_tree),
+                  data = dat_long,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_np3)
+round(r2_ml(mod_np3), 5)
+
+
+mod_np3b <- rma.mv(yi, V = vi,
+                  mod = ~ pre_post,
+                  random = list(
+                    ~1|species,
+                  #  ~1|phylogeny,
+                    ~1|pairID),
+                  #R = list(phylogeny = cor_tree),
+                  data = dat_long,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_np3b)
+
+#robust(mod_all, cluster = species)  
+
+orchard_plot(mod_np3, mod = "pre_post", xlab = "lnRR (all)", group = "species", g = FALSE)
+
+```
+
 
 :::
 
@@ -3817,9 +4113,8 @@ dat$Sex_Type <- as.factor(paste0(dat$Sex, "_", dat$Type))
 #########
 
 # adding 0.5 for N = 0
-
-dat$Contra_Behavioural_N[dat$Contra_Behavioural_N == 0] <- 0.5
-dat$noContra_Behavioural_N[dat$noContra_Behavioural_N == 0] <- 0.5
+#dat$Contra_Behavioural_N[dat$Contra_Behavioural_N == 0] <- 0.5
+#dat$noContra_Behavioural_N[dat$noContra_Behavioural_N == 0] <- 0.5
 
 # Low
 dat_behavioural <- escalc(measure = "RD", 
@@ -3849,7 +4144,7 @@ dat_behavioural <- escalc(measure = "RD",
                var.names = c("yi_behavioural_upp", "vi_behavioural_upp"),
                data = dat_behavioural)
 
-#dat_behavioural %>% filter(Contra_Behavioural_N > 0) -> dat_behavioural
+dat_behavioural %>% filter(Contra_Behavioural_N > 0) %>% filter(noContra_Behavioural_N > 0) -> dat_behavioural
 
 # create a long format of the data  using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -3973,8 +4268,8 @@ res_behavioural$data$moderator <- factor(res_behavioural$data$moderator)
 
 # adding 0.5 for N = 0
 
-dat$Contra_InfectDisease_N[dat$Contra_InfectDisease_N == 0] <- 0.5
-dat$noContra_InfectDisease_N[dat$noContra_InfectDisease_N == 0] <- 0.5
+#dat$Contra_InfectDisease_N[dat$Contra_InfectDisease_N == 0] <- 0.5
+#dat$noContra_InfectDisease_N[dat$noContra_InfectDisease_N == 0] <- 0.5
 
 # Low
 
@@ -4006,7 +4301,7 @@ dat_infectious <- escalc(measure = "RD",
                var.names = c("yi_infectious_upp", "vi_infectious_upp"),
                data = dat_infectious)
 
-#dat_infectious %>% filter(Contra_InfectDisease_N > 0) -> dat_infectious
+dat_infectious %>% filter(Contra_InfectDisease_N > 0) %>%  filter(noContra_InfectDisease_N > 0) -> dat_infectious
 
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
@@ -4131,8 +4426,8 @@ res_infectious$data$moderator <- factor(res_infectious$data$moderator)
 
 # adding 0.5 for N = 0
 
-dat$Contra_NonInfectDisease_N[dat$Contra_NonInfectDisease_N == 0] <- 0.5
-dat$noContra_NonInfectDisease_N[dat$noContra_NonInfectDisease_N == 0] <- 0.5
+#dat$Contra_NonInfectDisease_N[dat$Contra_NonInfectDisease_N == 0] <- 0.5
+#dat$noContra_NonInfectDisease_N[dat$noContra_NonInfectDisease_N == 0] <- 0.5
 
 # Low
 
@@ -4164,7 +4459,7 @@ dat_noninfectious <- escalc(measure = "RD",
                var.names = c("yi_noninfectious_upp", "vi_noninfectious_upp"),
                data = dat_noninfectious)
 
-#dat_noninfectious %>% filter(Contra_NonInfectDisease_N > 0) -> dat_noninfectious
+dat_noninfectious %>% filter(Contra_NonInfectDisease_N > 0) %>% filter(noContra_NonInfectDisease_N > 0) -> dat_noninfectious
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -4287,8 +4582,8 @@ res_noninfectious$data$moderator <- factor(res_noninfectious$data$moderator)
 ###################
 
 # adding 0.5 for N = 0
-dat$Contra_ChronDisease_N[dat$Contra_ChronDisease_N == 0] <- 0.5
-dat$noContra_ChronDisease_N[dat$noContra_ChronDisease_N == 0] <- 0.5
+#dat$Contra_ChronDisease_N[dat$Contra_ChronDisease_N == 0] <- 0.5
+#dat$noContra_ChronDisease_N[dat$noContra_ChronDisease_N == 0] <- 0.5
 
 # Low
 
@@ -4320,7 +4615,7 @@ dat_chronic <- escalc(measure = "RD",
                var.names = c("yi_chronic_upp", "vi_chronic_upp"),
                data = dat_chronic)
 
-#dat_chronic %>% filter(Contra_ChronDisease_N > 0) -> dat_chronic
+dat_chronic %>% filter(Contra_ChronDisease_N > 0) %>% filter(noContra_ChronDisease_N > 0) -> dat_chronic
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
@@ -4441,8 +4736,8 @@ res_chronic$data$moderator <- factor(res_chronic$data$moderator)
 ###################
 
 # adding 0.5 for N = 0
-dat$Contra_deathAtBirth_N[dat$Contra_deathAtBirth_N == 0] <- 0.5
-dat$noContra_deathAtBirth_N[dat$noContra_deathAtBirth_N == 0] <- 0.5
+#dat$Contra_deathAtBirth_N[dat$Contra_deathAtBirth_N == 0] <- 0.5
+#dat$noContra_deathAtBirth_N[dat$noContra_deathAtBirth_N == 0] <- 0.5
 
 # Low
 
@@ -4474,7 +4769,7 @@ dat_deathAtBirth <- escalc(measure = "RD",
                var.names = c("yi_deathAtBirth_upp", "vi_deathAtBirth_upp"),
                data = dat_deathAtBirth)
 
-#dat_deathAtBirth %>% filter(Contra_deathAtBirth_N > 0) -> dat_deathAtBirth
+dat_deathAtBirth %>% filter(Contra_deathAtBirth_N > 0) %>%  filter(noContra_deathAtBirth_N > 0) -> dat_deathAtBirth
 
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
@@ -4596,8 +4891,8 @@ p_deathAtBirth2
 ########
 
 # adding 0.5 for N = 0
-dat$Contra_Other_N[dat$Contra_Other_N == 0] <- 0.5
-dat$noContra_Other_N[dat$noContra_Other_N == 0] <- 0.5
+#dat$Contra_Other_N[dat$Contra_Other_N == 0] <- 0.5
+#dat$noContra_Other_N[dat$noContra_Other_N == 0] <- 0.5
 
 # Low
 
@@ -4629,7 +4924,7 @@ dat_other <- escalc(measure = "RD",
                var.names = c("yi_other_upp", "vi_other_upp"),
                data = dat_other)
 
-#dat_other %>% filter(Contra_Other_N > 0) -> dat_other
+dat_other %>% filter(Contra_Other_N > 0) %>% filter(noContra_Other_N > 0) -> dat_other
 
 # create a long format of the data using these 3 types of effect sizes (low, med, upp) yi and vi are the effect size and variance of the effect size
 
