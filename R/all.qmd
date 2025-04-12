@@ -2335,6 +2335,8 @@ addition1 <- data.frame(Measurement.type = "Overall", yi =  NA, lower.ci = NA, u
 kdat <- rbind(kdat, addition)
 ldat <- rbind(ldat, addition1)
 
+# removing sensory function and immune function from kdat
+
 # saving these data
 saveRDS(kdat, here("Rdata", "fig", "kdat.rds"))
 saveRDS(ldat, here("Rdata", "fig", "ldat.rds"))
@@ -2391,7 +2393,7 @@ kdat$Sub.measure <- factor(kdat$Sub.measure,
 
 mes_sex <- ggplot(data = kdat, aes(x = yi, y = Sub.measure)) +
   geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
-                 height = 0, show.legend = TRUE, linewidth = 4.5, 
+                 height = 0, show.legend = TRUE, size = 4.5, 
                  alpha = 0.8, position =position_dodge(width = 0.75)) +
   geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
   geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
@@ -2414,7 +2416,6 @@ mes_sex <- ggplot(data = kdat, aes(x = yi, y = Sub.measure)) +
                                    hjust = 0.5)) 
 
 
-
 # icons 
 
 filenames <- list.files(here("icons", "literature"), pattern=".png", full.names=TRUE)
@@ -2426,7 +2427,89 @@ mes_sex1 <- mes_sex +
   annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -1.5, xmax = -0.5, ymin = 11.5, ymax = 13)
 
 mes_sex1
- 
+
+###
+
+mes_sex2 <- ggplot(data = kdat, aes(x = yi, y = Sub.measure)) +
+  geom_errorbarh(aes(xmin = lower.ci, xmax = upper.ci, colour = Sex), 
+                 height = 0, show.legend = TRUE, size = 4.5, 
+                 alpha = 0.8, position =position_dodge(width = 0.75)) +
+  geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position =position_dodge2(width = 0.75)) +
+  geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
+  geom_vline(xintercept = res$estimate, linetype = 1, colour = "red", alpha = 0.3) +
+   coord_cartesian(xlim = c(-0.5, 0.7)) +
+  #creating 95% prediction intervals
+  geom_segment(data = res, ggplot2::aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
+  # creating diamonsts (95% CI)
+  ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond), fill = "red") +
+  
+  theme_bw() +
+  scale_color_manual(values = c("#CC6677", "#88CCEE")) +
+  labs(x = "lnRR (effect size)", y = "", colour = "Sex") +
+  theme(legend.position = c(0.95, 0.85),
+        legend.justification = c(1, 0)) +
+  theme(legend.title = element_text(size = 9)) +
+  #theme(legend.direction="horizontal") +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.text.y = element_text(size = 10, colour ="black",
+                                   hjust = 0.5)) 
+# icons
+mes_sex21 <- mes_sex2 +
+  annotation_custom(rasterGrob(ldf$Mus_musculus.png), xmin = -0.5, xmax = -0.25, ymin = 12, ymax = 13.5) +
+  annotation_custom(rasterGrob(ldf$Rattus_argentiventer.png), xmin = -0.3, xmax = -0.05, ymin = 11.5, ymax = 13)
+
+mes_sex21
+
+# the version with arrows
+
+library(dplyr)
+
+kdat <- kdat %>%
+  mutate(
+    lower.truncated = lower.ci < -0.5,
+    upper.truncated = upper.ci > 0.7
+  )
+
+ggplot(data = kdat, aes(x = yi, y = Sub.measure)) +
+  geom_errorbarh(aes(xmin = pmax(lower.ci, -0.5), 
+                     xmax = pmin(upper.ci, 0.7), 
+                     colour = Sex), 
+                 height = 0, show.legend = TRUE, size = 4.5, 
+                 alpha = 0.8, position = position_dodge(width = 0.75)) +
+  
+  geom_point(aes(col = Sex), fill = "white", size = 2, shape = 21, position = position_dodge2(width = 0.75)) +
+  
+  geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.3) +
+  geom_vline(xintercept = res$estimate, linetype = 1, colour = "red", alpha = 0.3) +
+  
+  # Add left arrows
+  geom_text(data = subset(kdat, lower.truncated),
+            aes(x = -0.5, label = "<", y = Sub.measure),
+            position = position_dodge(width = 0.75),
+            vjust = -0.5, size = 6, colour = "black") +
+  
+  # Add right arrows
+  geom_text(data = subset(kdat, upper.truncated),
+            aes(x = 0.7, label = ">", y = Sub.measure),
+            position = position_dodge(width = 0.75),
+            vjust = -0.5, size = 6, colour = "black") +
+  
+  coord_cartesian(xlim = c(-0.5, 0.7)) +
+  
+  geom_segment(data = res, aes(x = lowerPR, y = 1, xend = upperPR, yend = 1, group = name)) +
+  geom_polygon(data = sum_data, aes(x = x.diamond, y = y.diamond), fill = "red") +
+  
+  theme_bw() +
+  scale_color_manual(values = c("#CC6677", "#88CCEE")) +
+  labs(x = "lnRR (effect size)", y = "", colour = "Sex") +
+  
+  theme(
+    legend.position = c(0.95, 0.85),
+    legend.justification = c(1, 0),
+    legend.title = element_text(size = 9),
+    axis.text.y = element_text(size = 10, colour = "black", hjust = 0.5)
+  )
+
 
 ## need to do a version for Measurement.type
 
