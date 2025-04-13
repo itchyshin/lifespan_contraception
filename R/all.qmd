@@ -1591,9 +1591,9 @@ dat_long$Comp_type_Sex1 <- factor(dat_long$Comp_type_Sex,
                                  levels = c("one_castrated_Male", "both_normal_Male",
                                             "one_castrated_Female", "both_normal_Female"),
                                  labels = c("Male sterlized/\nFemale normal",
-                                            "Male normal/\nFemale normal (B)",
+                                            "Male normal/\nFemale normal",
                                             "Male normal/\nFemale sterlized",
-                                            "Male normal/\nFemale normal (A)") )
+                                            "Male normal/\nFemale normal (B)") )
 
 mod_comp_sex <-  rma.mv(yi, V = V_matrix_long, mod = ~ Comp_type_Sex1 -1 , random = list( ~1|Species_Latin, ~1|Study, ~1|Effect_ID, ~1|Obs ),data = dat_long, test = "t")
 summary(mod_comp_sex) 
@@ -1608,6 +1608,26 @@ d0 <- orchard_plot(mod_comp_sex, mod = "Comp_type_Sex1", xlab = "log response ra
   geom_vline(xintercept=2.5, size = 0.2)
 
 d0
+
+# plotting just male analyses - adjusting mod_comp_sex
+
+res_sex <- mod_results(mod_comp_sex, mod = "Comp_type_Sex1", group = "Study")
+
+attr(res_sex, "class") <- NULL
+
+res_sex$mod_table <- res_sex$mod_table[1:2, ]
+res_sex$data <- res_sex$data %>% filter(moderator == "Male sterlized/\nFemale normal"| moderator ==  "Male normal/\nFemale normal") 
+
+res_sex2 <- res_sex
+
+class(res_sex2) <-  c("orchard", "data.frame")
+
+d01 <- orchard_plot(res_sex2, mod = "Comp_type_Sex1", xlab = "log response ratio (lnRR)", 
+                   group = "Study", 
+                   cb = T, flip = FALSE) 
+
+d01
+
 ```
 
 ## Absolute effect size comparaion (M/F or F/M vs. M$\star$/F or F$\star$/M)
@@ -1637,6 +1657,28 @@ d1 <- orchard_plot(abs_mod_comp_sex, mod = "Comp_type_Sex1", xlab = "absolute lo
   geom_vline(xintercept=2.5, size = 0.2)
 
 d1
+
+# plotting just male analyses - adjusting mod_comp_sex
+
+res_sex_abs <- mod_results(abs_mod_comp_sex, mod = "Comp_type_Sex1", group = "Study")
+
+attr(res_sex_abs, "class") <- NULL
+
+res_sex_abs$mod_table <- res_sex_abs$mod_table[1:2, ]
+res_sex_abs$data <- res_sex_abs$data %>% filter(moderator == "Male sterlized/\nFemale normal"| moderator ==  "Male normal/\nFemale normal") 
+
+res_sex_abs2 <- res_sex_abs
+
+class(res_sex_abs2) <-  c("orchard", "data.frame")
+
+d11 <- orchard_plot(res_sex_abs2, mod = "Comp_type_Sex1", xlab = "log response ratio (lnRR)", 
+                   group = "Study", 
+                   cb = T, flip = FALSE) 
+
+d11
+
+d01 / d11
+
 ```
 
 ## Contrasting M/F and M/F$\star$
@@ -3334,13 +3376,13 @@ dat_comb$contraception <- factor(dat_comb$category, levels = c(
                                                            "M normal/F surgical",
                                                            "M normal/F normal"),
                                                 labels = c(
-                                                           "M contraceptive/\nF contraceptive",
-                                                           "M contraceptive/\nF contraceptive",
-                                                           "M contraceptive/\nF normal",
-                                                           "M contraceptive/\nF normal",  
-                                                           "M normal/\nF contraceptive",
-                                                           "M normal/\nF contraceptive",
-                                                           "M normal/\nF normal"),
+                                                           "Male sterlized/\nFemale sterlized",
+                                                           "Male sterlized/\nFemale sterlized",
+                                                           "Male sterlized/\nFemale normal",
+                                                           "Male sterlized/\nFemale normal",  
+                                                           "Male normal/\nFemale sterlized",
+                                                           "Male normal/\nFemale sterlized",
+                                                           "Male normal/\nFemale normal"),
                              
 )
 
@@ -3557,6 +3599,28 @@ orchard_plot(mod_comb, mod = "contraception",
              g = FALSE, angle = 45)
 
 all_models(mod_comb, mod = "contraception")  
+
+# adding only model figs
+# plotting just male analyses - adjusting mod_comp_sex
+
+res_sex <- mod_results(mod_comb, mod = "contraception", group = "species")
+
+attr(res_sex, "class") <- NULL
+
+res_sex$mod_table <- res_sex$mod_table[c(2, 4), ]
+res_sex$data <- res_sex$data %>% filter(moderator == "Male sterlized/\nFemale normal"| moderator ==  "Male normal/\nFemale normal") 
+
+res_sex2 <- res_sex
+
+class(res_sex2) <-  c("orchard", "data.frame")
+
+d01 <- orchard_plot(res_sex2, mod = "contraception", xlab = "log response ratio (lnRR)", 
+                   group = "species", 
+                   cb = T, flip = FALSE) 
+
+d01
+
+
 ```
 
 ## Different types of sex differences: absolute valies
@@ -3595,6 +3659,29 @@ orchard_plot(mod_comb_a, mod = "contraception",
 
 
 all_models(mod_comb_a, mod = "contraception", type = "abs")
+
+# plotting just male analyses - adjusting mod_comp_sex
+
+res_sex_ab <- mod_results(mod_comb_a, mod = "contraception", group = "species")
+
+attr(res_sex_ab, "class") <- NULL
+
+res_sex_ab$mod_table <- res_sex_ab$mod_table[c(2, 4), ]
+res_sex_ab$data <- res_sex_ab$data %>% filter(moderator == "Male sterlized/\nFemale normal"| moderator ==  "Male normal/\nFemale normal") 
+
+res_sex_ab2 <- res_sex_ab
+
+class(res_sex_ab2) <-  c("orchard", "data.frame")
+
+d11 <- orchard_plot(res_sex_ab2, mod = "contraception", xlab = "log response ratio (lnRR)", 
+                   group = "species", 
+                   cb = T, flip = FALSE) 
+
+d11
+
+
+d01 / d11
+
 ```
 
 ::: 
