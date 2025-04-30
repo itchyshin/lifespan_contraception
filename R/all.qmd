@@ -1679,6 +1679,11 @@ d11
 
 d01 / d11
 
+# saving results for figs rds
+
+saveRDS(res_sex2, file = here("Rdata", "fig", "res_sex_ma.rds"))
+saveRDS(res_sex_abs2, file = here("Rdata", "fig", "res_sex_ma_abs.rds"))
+
 ```
 
 ## Contrasting M/F and M/F$\star$
@@ -3681,6 +3686,12 @@ d11
 
 
 d01 / d11
+
+
+# saving results for figs rds
+
+saveRDS(res_sex2, file = here("Rdata", "fig", "res_sex_zoo.rds"))
+saveRDS(res_sex_abs2, file = here("Rdata", "fig", "res_sex_zoo_abs.rds"))
 
 ```
 
