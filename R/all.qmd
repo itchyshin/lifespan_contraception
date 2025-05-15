@@ -4278,7 +4278,11 @@ dat$Effect_ID <- factor(1:nrow(dat))
 # creating a variable combining Sex and Type
 dat$Sex_Type <- as.factor(paste0(dat$Sex, "_", dat$Type))
 
-
+# visualising data
+kable(dat, "html") %>% 
+  kable_styling("striped", position = "left") %>% 
+  scroll_box(width = "100%", 
+    height = "250px")
 ```
 
 
