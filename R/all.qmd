@@ -57,6 +57,7 @@ execute:
 # # metafor
 # install.packages("remotes")
 # remotes::install_github("wviechtb/metafor")
+# remotes::install_github("cmfield/apextra")
 
 # loading
 pacman::p_load(tidyverse,
@@ -1140,6 +1141,30 @@ p3 <- orchard_plot(mod_env1, mod = "Wild_or_semi_wild",
 p3
 ```
 
+## Environmental (`Wild_or_semi_wild`) x Sex
+
+```{r}
+
+dat$Wild_or_semi_wild_Sex <- paste(dat$Wild_or_semi_wild, dat$Sex, sep = "_")
+
+mod_env_sex <- mod_func(formula = ~ Wild_or_semi_wild_Sex-1)
+summary(mod_env_sex)
+# contrast
+mod_env_sex1 <- mod_func(formula = ~ Wild_or_semi_wild_Sex)
+summary(mod_env_sex1)
+r2_ml(mod_env_sex1)
+
+# orchard plot
+p3.5 <- orchard_plot(mod_env_sex1, mod = "Wild_or_semi_wild_Sex", 
+                   xlab = "log response ratio (lnRR)", 
+                   group = "Study") +
+  scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+  scale_colour_manual(values = c("#D55E00", "#009E73","#DDCC77", "#117733")) 
+
+p3.5
+```
+
+
 ## Controlled treatment (`Controlled_treatments`)
 
 ```{r}
@@ -1164,6 +1189,29 @@ p4 <- orchard_plot(mod_con1, mod = "Controlled_treatments",
   scale_colour_manual(values = c("#D55E00", "#009E73")) 
 
 p4
+```
+
+## Controlled treatment (`Controlled_treatments`) x Sex
+
+```{r}
+
+dat$Controlled_treatments_Sex <- paste(dat$Controlled_treatments, dat$Sex, sep = "_")
+
+mod_con_sex <- mod_func(formula = ~ Controlled_treatments_Sex-1)
+summary(mod_con_sex)
+# contrast
+mod_con_sex1 <- mod_func(formula = ~ Controlled_treatments_Sex)
+summary(mod_con_sex1)
+r2_ml(mod_con_sex1)
+
+# orchard plot
+p4.5 <- orchard_plot(mod_con_sex1, mod = "Controlled_treatments_Sex", 
+                   xlab = "log response ratio (lnRR)",
+                   group = "Study") +
+ scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+  scale_colour_manual(values = c("#D55E00", "#009E73","#DDCC77", "#117733")) 
+
+p4.5
 ```
 
 ## Sham (`Shamtreatment_moderator`)
@@ -1191,6 +1239,28 @@ p5 <- orchard_plot(mod_sham, mod = "Shamtreatment_moderator",
 p5
 ```
 
+## Sham (`Shamtreatment_moderator`) x Sex
+
+```{r}
+dat$Shamtreatment_moderator_Sex <- paste(dat$Shamtreatment_moderator, dat$Sex, sep = "_")
+
+mod_sham_sex <- mod_func(formula = ~ Shamtreatment_moderator_Sex-1)
+summary(mod_sham_sex)
+# contrast
+mod_sham_sex1 <- mod_func(formula = ~ Shamtreatment_moderator_Sex)
+summary(mod_sham_sex)
+r2_ml(mod_sham_sex)
+
+# orchard plot
+p5.5 <- orchard_plot(mod_sham_sex1, mod = "Shamtreatment_moderator_Sex", 
+             xlab = "log response ratio (lnRR)", 
+             group = "Study") +
+   scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+   scale_colour_manual(values = c("#D55E00", "#009E73","#DDCC77", "#117733")) 
+
+p5.5
+```
+
 ## Type of effect sizes (`Effect_type`)
 
 ```{r}
@@ -1215,37 +1285,26 @@ p6 <- orchard_plot(mod_eff1, mod = "Effect_type",
 p6
 ```
 
+
+## Type of effect sizes (`Effect_type`) x Sex
+
 ```{r}
-mod_effa <- mod_alt1 <-  rma.mv(y2, V = V_matrix2,
-              mod = ~ Effect_type-1, 
-               random = list(~1|Species_Latin, 
-                             ~1|Study, 
-                             ~1|Effect_ID), 
-               data = dat, 
-               test = "t",
-               sparse = TRUE,
-               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-summary(mod_effa)
+dat$Effect_type_Sex <- paste(dat$Effect_type, dat$Sex, sep = "_")
 
-mod_effa1 <- mod_alt1 <-  rma.mv(y2, V = V_matrix2,
-              mod = ~ Effect_type, 
-               random = list(~1|Species_Latin, 
-                             ~1|Study, 
-                             ~1|Effect_ID), 
-               data = dat, 
-               test = "t",
-               sparse = TRUE,
-               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-summary(mod_effa1)
-r2_ml(mod_effa1)
-
+mod_eff_sex <- mod_func(formula = ~ Effect_type_Sex-1)
+summary(mod_eff_sex)
+# contrast
+mod_eff_sex1 <- mod_func(formula = ~ Effect_type_Sex)
+summary(mod_eff_sex1)
+r2_ml(mod_eff_sex1)
 
 # orchard plot
-orchard_plot(mod_effa1, mod = "Effect_type", 
+p6.5 <- orchard_plot(mod_eff_sex1, mod = "Effect_type_Sex", 
              xlab = "log response ratio (lnRR)", 
              group = "Study",cb = F) +
-  scale_fill_manual(values = c("#D55E00", "#009E73")) +
-  scale_colour_manual(values = c("#D55E00", "#009E73")) 
+   scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+   scale_colour_manual(values = c("#D55E00", "#009E73","#DDCC77", "#117733")) 
+p6.5
 ```
 
 ## Matuarity (`Maturity_at_treatment_ordinal`)
@@ -3469,6 +3528,16 @@ orchard_plot(mod_all, xlab = "lnRR (all)", group = "species", g = FALSE)
 
 ```
 
+## Meta-regression: primates or not
+
+```{r}
+
+# create a variable which sort out primates or not (order)
+dat_all$primates_or_not <- 
+
+             
+```
+
 ## Meta-regression: sex 
 
 ```{r}
@@ -3500,6 +3569,41 @@ summary(mod_all1b)
 round(r2_ml(mod_all1), 5)
 
 orchard_plot(mod_all1, mod = "sex",
+             xlab = "lnRR (all)", group = "species", g = FALSE)
+```
+
+## Meta-regression: sex x primates or not
+
+
+```{r}
+mod_not_all1 <- rma.mv(yi, V = VCV2,
+                   mod = ~ sex,
+                  random = list(
+                    ~1|species,
+                    ~1|phylogeny,
+                    ~1|obs_id),
+                  R = list(phylogeny = cor_tree),
+                  data = dat_all_short,
+                  test = "t",
+                  sparse = TRUE)
+summary(mod_not_all1)
+
+
+mod_not_all1b <- rma.mv(yi, V = VCV2,
+                   mod = ~ sex - 1,
+                   random = list(
+                     ~1|species,
+                     ~1|phylogeny,
+                     ~1|obs_id),
+                   R = list(phylogeny = cor_tree),
+                   data = dat_all_short,
+                   test = "t",
+                   sparse = TRUE)
+summary(mod_not_all1b)
+
+round(r2_ml(mod_not_all1b), 5)
+
+orchard_plot(mod_not_all1b, mod = "sex",
              xlab = "lnRR (all)", group = "species", g = FALSE)
 ```
 
@@ -3564,7 +3668,6 @@ orchard_plot(mod_all3, mod = "sex_type",
 # result table
 all_models(mod_all3, mod = "sex_type")
 ```
-
 
 ::: 
 
