@@ -3533,8 +3533,24 @@ orchard_plot(mod_all, xlab = "lnRR (all)", group = "species", g = FALSE)
 ```{r}
 
 # create a variable which sort out primates or not (order)
-dat_all$primates_or_not <- 
+dat_all$primates_or_not <- ifelse(dat_all$order == "Primates", "primates", "not primates")
 
+mod_all0 <- rma.mv(yi, V = VCV,
+                   mod = ~ primates_or_not - 1,
+                   random = list(
+                     ~1|species,
+                     ~1|phylogeny,
+                     ~1|obs_id),
+                   R = list(phylogeny = cor_tree),
+                   data = dat_all,
+                   test = "t",
+                   sparse = TRUE)
+
+summary(mod_all0)
+round(r2_ml(mod_all0), 5)
+
+orchard_plot(mod_all0, mod = "primates_or_not",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
              
 ```
 
@@ -3576,35 +3592,25 @@ orchard_plot(mod_all1, mod = "sex",
 
 
 ```{r}
-mod_not_all1 <- rma.mv(yi, V = VCV2,
-                   mod = ~ sex,
+
+dat_all$sex_primates_or_not <- paste(dat_all$sex, dat_all$primates_or_not, sep = "_")
+
+mod_not_all1 <- rma.mv(yi, V = VCV,
+                   mod = ~ sex_primates_or_not - 1,
                   random = list(
                     ~1|species,
                     ~1|phylogeny,
                     ~1|obs_id),
                   R = list(phylogeny = cor_tree),
-                  data = dat_all_short,
+                  data = dat_all,
                   test = "t",
                   sparse = TRUE)
 summary(mod_not_all1)
+round(r2_ml(mod_not_all1), 5)
 
+orchard_plot(mod_not_all1, mod = "sex_primates_or_not",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 45)
 
-mod_not_all1b <- rma.mv(yi, V = VCV2,
-                   mod = ~ sex - 1,
-                   random = list(
-                     ~1|species,
-                     ~1|phylogeny,
-                     ~1|obs_id),
-                   R = list(phylogeny = cor_tree),
-                   data = dat_all_short,
-                   test = "t",
-                   sparse = TRUE)
-summary(mod_not_all1b)
-
-round(r2_ml(mod_not_all1b), 5)
-
-orchard_plot(mod_not_all1b, mod = "sex",
-             xlab = "lnRR (all)", group = "species", g = FALSE)
 ```
 
 ## Meta-regression: type
@@ -3636,6 +3642,37 @@ orchard_plot(mod_all2, mod = "type",
 
 # result table
 all_models(mod_all2, mod = "type")
+```
+
+
+## Meta-regression: type x primates or not
+
+```{r}
+
+dat_all$type_primates_or_not <- paste(dat_all$type, dat_all$primates_or_not, sep = "_")
+
+mod_not_all2 <- rma.mv(yi, V = VCV,
+                 mod = ~ type_primates_or_not -1,
+                 random = list(
+                   ~1|species,
+                   ~1|phylogeny,
+                   ~1|obs_id),
+                 R = list(phylogeny = cor_tree),
+                 data = dat_all,
+                  test = "t",
+                  sparse = TRUE)
+
+summary(mod_not_all2)
+
+# R^2 - hardly any
+round(r2_ml(mod_not_all2)*100, 5)
+
+orchard_plot(mod_not_all2, mod = "type_primates_or_not",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 45)
+
+
+# result table
+#all_models(mod_all2, mod = "type_primates_or_not")
 ```
 
 ## Meta-regression: sex_type
@@ -4324,7 +4361,7 @@ bubble_plot(mod_extra2, xlab = "log(Teste mass)", mod = "lntestemass", group = "
 
 :::
 
-# PART IV: ANALYSIS OF CAUSES OF DEATH ON ZOO DATA
+d# PART IV: ANALYSIS OF CAUSES OF DEATH ON ZOO DATA
 
 ## Loading data
 
