@@ -4361,7 +4361,7 @@ bubble_plot(mod_extra2, xlab = "log(Teste mass)", mod = "lntestemass", group = "
 
 :::
 
-d# PART IV: ANALYSIS OF CAUSES OF DEATH ON ZOO DATA
+# PART IV: ANALYSIS OF CAUSES OF DEATH ON ZOO DATA
 
 ## Loading data
 
