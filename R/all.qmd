@@ -3528,28 +3528,33 @@ orchard_plot(mod_all, xlab = "lnRR (all)", group = "species", g = FALSE)
 
 ```
 
-## Meta-regression: primates or not
+## Meta-regression: primates vs carnivora
 
 ```{r}
+# filter out anything other than primates and cornivores
+dat_pc <- dat_all %>% filter(order == "Primates" | order == "Carnivora")
 
-# create a variable which sort out primates or not (order)
-dat_all$primates_or_not <- ifelse(dat_all$order == "Primates", "primates", "not primates")
+VCVpc <- vcalc(vi = dat_pc$vi, 
+             cluster = dat_pc$species, 
+             obs = dat_pc$obs_id,
+             rho = 0.5, 
+             data = dat_pc)
 
-mod_all0 <- rma.mv(yi, V = VCV,
-                   mod = ~ primates_or_not - 1,
+mod_all0 <- rma.mv(yi, V = VCVpc,
+                   mod = ~ order - 1,
                    random = list(
                      ~1|species,
                      ~1|phylogeny,
                      ~1|obs_id),
                    R = list(phylogeny = cor_tree),
-                   data = dat_all,
+                   data = dat_pc,
                    test = "t",
                    sparse = TRUE)
 
 summary(mod_all0)
 round(r2_ml(mod_all0), 5)
 
-orchard_plot(mod_all0, mod = "primates_or_not",
+orchard_plot(mod_all0, mod = "order",
              xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
              
 ```
@@ -3588,27 +3593,27 @@ orchard_plot(mod_all1, mod = "sex",
              xlab = "lnRR (all)", group = "species", g = FALSE)
 ```
 
-## Meta-regression: sex x primates or not
 
+## Meta-regression: sex x primates vs carnivora 
 
 ```{r}
 
-dat_all$sex_primates_or_not <- paste(dat_all$sex, dat_all$primates_or_not, sep = "_")
+dat_pc$sex_order <- paste(dat_pc$sex, dat_pc$order, sep = "_")
 
-mod_not_all1 <- rma.mv(yi, V = VCV,
-                   mod = ~ sex_primates_or_not - 1,
+mod_not_pc <- rma.mv(yi, V = VCVpc,
+                   mod = ~ sex_order - 1,
                   random = list(
                     ~1|species,
                     ~1|phylogeny,
                     ~1|obs_id),
                   R = list(phylogeny = cor_tree),
-                  data = dat_all,
+                  data = dat_pc,
                   test = "t",
                   sparse = TRUE)
-summary(mod_not_all1)
-round(r2_ml(mod_not_all1), 5)
+summary(mod_not_pc)
+round(r2_ml(mod_not_pc), 5)
 
-orchard_plot(mod_not_all1, mod = "sex_primates_or_not",
+orchard_plot(mod_not_pc, mod = "sex_order",
              xlab = "lnRR (all)", group = "species", g = FALSE, angle = 45)
 
 ```
@@ -3645,20 +3650,20 @@ all_models(mod_all2, mod = "type")
 ```
 
 
-## Meta-regression: type x primates or not
+## Meta-regression: type x primates vs carnivora
 
 ```{r}
 
-dat_all$type_primates_or_not <- paste(dat_all$type, dat_all$primates_or_not, sep = "_")
+dat_pc$type_order <- paste(dat_pc$type, dat_pc$order, sep = "_")
 
-mod_not_all2 <- rma.mv(yi, V = VCV,
-                 mod = ~ type_primates_or_not -1,
+mod_not_all2 <- rma.mv(yi, V = VCVpc,
+                 mod = ~ type_order -1,
                  random = list(
                    ~1|species,
                    ~1|phylogeny,
                    ~1|obs_id),
                  R = list(phylogeny = cor_tree),
-                 data = dat_all,
+                 data = dat_pc,
                   test = "t",
                   sparse = TRUE)
 
@@ -3667,7 +3672,7 @@ summary(mod_not_all2)
 # R^2 - hardly any
 round(r2_ml(mod_not_all2)*100, 5)
 
-orchard_plot(mod_not_all2, mod = "type_primates_or_not",
+orchard_plot(mod_not_all2, mod = "type_order",
              xlab = "lnRR (all)", group = "species", g = FALSE, angle = 45)
 
 
@@ -5668,47 +5673,60 @@ rm(list = ls())
 
 # libraries
 
-if (!"devtools" %in% installed.packages())
+if (!"devtools" %in% installed.packages()){
   install.packages("devtools")
+}
 library(devtools)
 
-if (!"tidyverse" %in% installed.packages())
+if (!"tidyverse" %in% installed.packages()){
   install.packages("tidyverse")
+}
 library(tidyverse)
 
 # Plotting phylogenetic tree
-if (!"ggtree" %in% installed.packages())
+if (!"ggtree" %in% installed.packages()){
   install.packages("ggtree")
+}
 library(ggtree)
 
 # Aligning plots
-if (!"patchwork" %in% installed.packages())
+if (!"patchwork" %in% installed.packages()){
   install.packages("patchwork")
+}
 library(patchwork)
 
 # Aligning phylogenetic plots
-if (!"aplot" %in% installed.packages())
+if (!"aplot" %in% installed.packages()){
   install.packages("aplot")
+}
 library(aplot)
 
 # Manipulating trees
-if (!"ape" %in% installed.packages())
+if (!"ape" %in% installed.packages()){
   install.packages("ape")
+}
 library(ape)
 
 # Dependency of OrchaRd package
-if (!"metafor" %in% installed.packages())
+if (!"metafor" %in% installed.packages()){
   install.packages("metafor")
+}
 library(metafor)
 
 #  Orchard plots
-if (!"orchaRd" %in% installed.packages())
+if (!"orchaRd" %in% installed.packages()){
   devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
+}
 library(orchaRd)
 
-# Importing data
+# To make faceted plots with strip on top (only used in Fig S1)
+if (!"ggforce" %in% installed.packages()){
+  install.packages("ggforce")
+}
+library(ggforce)
 
-library(here)
+
+
 
 # Color palettes ----
 colpal_sex <- c("Female" = "#de2d26", "Male" = "#4292c6")
@@ -5768,6 +5786,13 @@ colpal_moderator <- c(
   "Others \n(e.g., lab, farm)" = "#5ab4ac"
 )
 
+colpal_sexdif <- c(
+  "Male sterlized/\nFemale normal" = "#ff6633",
+  "Male normal/\nFemale normal" = "#006699"
+)
+
+colpal_puberty <- c("Pre" = "#1b7837", 
+                    "Post" = "#762a83")
 
 # Ggplot themes ----
 
@@ -6034,15 +6059,24 @@ PlotLifeTab <- function(ltdat, title, ncol = 4) {
 # DATA ----
 
 # Phylogenetic maximum credibility tree
-load(here("data2", "maxCredTree.RData"))
+load("data/maxCredTree.RData")
 tree <- maxCred
 rm(maxCred)
 
 # Taxonomy table
-tax <- read.csv(here("data2", "FinalTranslTab.csv"))
+tax <- read.csv("data/FinalTranslTab.csv")
 
 # Zoo data
-dat0 <- read.csv(here("data2", "resultsBaSTApost2005oldFormatFeb2025.csv"))
+# dat0 <- read.csv("data/resultsBaSTApost2005oldFormatFeb2025.csv")
+# dat <- dat0 %>% left_join(tax, by = c("species" = "ZIMSspecies"))
+# dat <- dat %>%
+#   mutate(phylogeny = gsub(" ", "_", vertlifeSpecies))
+# 
+# # Fixing species name
+# dat$species[dat$species == "Aonyx cinereus"] <- "Aonyx cinerea"
+
+
+dat0 <- read.csv("data/LEdiffsCredInsts.csv")
 dat <- dat0 %>% left_join(tax, by = c("species" = "ZIMSspecies"))
 dat <- dat %>%
   mutate(phylogeny = gsub(" ", "_", vertlifeSpecies))
@@ -6051,54 +6085,77 @@ dat <- dat %>%
 dat$species[dat$species == "Aonyx cinereus"] <- "Aonyx cinerea"
 
 # Basta summary results post 05
-resTab_post05 <- read.csv(file = here("data2", "resultsBaSTApost05.csv"))
+resTab_post05 <- read.csv(file = "data/resultsBaSTApost05.csv")
 
 # Basta summary results pre 05
-resTab_pre05 <- read.csv(file = sprintf(here("data2", "resultsBaSTApre05.csv")))
+resTab_pre05 <- read.csv(file = sprintf("data/resultsBaSTApre05.csv"))
 
 # Basta summary results before and after maturity
-resTab_mat <- read.csv(here("data2", "resultsBaSTAbefAftMatur.csv"))
+resTab_mat <- read.csv("data/LEdiffsBefAftCredInsts.csv")
 
 # Data for Kaplan Meier plots males surgical post 05
-dat_males <- read.csv(here("data2", "km_males_surg_post05.csv"))
+dat_males <- read.csv("data/km_males_surg_post05.csv")
 
 # Data for Kaplen Meier plots females hormonal pre 05
-dat_fem_pre05 <- read.csv(here("data2", "km_females_horm_pre05.csv"))
+dat_fem_pre05 <- read.csv("data/km_females_horm_pre05.csv")
 
 # Data for Kaplen Meier plots females hormonal pre 05
-dat_fem_horm_post05 <- read.csv(here("data2", "km_females_horm_post05.csv"))
+dat_fem_horm_post05 <- read.csv("data/km_females_horm_post05.csv")
 
 # Data for Kaplen Meier plots females surgical post 05
-dat_fem_surg_post05 <- read.csv(here("data2", "km_females_surg_post05.csv"))
+dat_fem_surg_post05 <- read.csv("data/km_females_surg_post05.csv")
 
 
 # excel file with vet responses
-vetr <- readxl::read_excel(here("data2", "Species classification as castration or vasectomy_03 AF.xlsx"))
+vetr <- readxl::read_excel("data/Species classification as castration or vasectomy_03 AF.xlsx")
 
 # Load model outputs from zoo_rev2.qmp
 load("results/model_outputs/zoo/mod_all3.RData") # Fig 1b)
 
 # Load data generated by literature.qmd
 results <- readRDS("results/model_outputs/literature/results.rds") # Fig 3a)
-ddat <- readRDS("data2/ddat.rds") # Fig 3a)
-load(here("results", "model_outputs/literature/mod_sex1.RData")) # Fig 3b)
-load(here("results", "model_outputs/literature/mod_rem.RData")) # Fig 3c)
-load(here("results", "model_outputs/literature/mod_con1.RData")) # Fig 4a)
-load(here("results", "model_outputs/literature/mod_sham.RData")) # Fig 4b)
-load(here("results", "model_outputs/literature/mod_env1.RData")) # Fig 4c)
-load(here("results", "model_outputs/literature/mod_sex_mat.RData")) # Fig 5a)
+ddat <- readRDS("data/ddat.rds") # Fig 3a)
+load("results/model_outputs/literature/mod_sex1.RData") # Fig 3b)
+load("results/model_outputs/literature/mod_rem.RData") # Fig 3c)
+load("results/model_outputs/literature/mod_con1.RData") # Fig 4a)
+load("results/model_outputs/literature/mod_sham.RData") # Fig 4b)
+load("results/model_outputs/literature/mod_env1.RData") # Fig 4c)
+load("results/model_outputs/literature/mod_sex_mat.RData") # Fig 5a)
 mod_healthspan_sex <- readRDS("results/model_outputs/literature/mod_healthspan_sex.rds")
 
 # Load data on causes of death generated by all.qmd Fig 1c)
-res_lower_f <- readRDS(here("results", "model_outputs/zoo/res_lower_f.rds"))
-res_upper_f <- readRDS(here("results", "model_outputs/zoo/res_upper_f.rds"))
-res_lower_m <- readRDS(here("results", "model_outputs/zoo/res_lower_m.rds"))
-res_upper_m <- readRDS(here("results", "model_outputs/zoo/res_upper_m.rds"))
+res_lower_f <- readRDS("results/model_outputs/zoo/res_lower_f.rds")
+res_upper_f <- readRDS("results/model_outputs/zoo/res_upper_f.rds")
+res_lower_m <- readRDS("results/model_outputs/zoo/res_lower_m.rds")
+res_upper_m <- readRDS("results/model_outputs/zoo/res_upper_m.rds")
 
 # Fig 3b)
-res <- readRDS(here("data2", "res.rds"))
-kdat <- readRDS(here("data2", "kdat.rds"))
-ldat <- readRDS(here("data2", "ldat.rds"))
+res <- readRDS("data/res.rds")
+kdat <- readRDS("data/kdat.rds")
+ldat <- readRDS("data/ldat.rds")
+
+# Fig S1) 
+perc <- read.csv("data/SpecificCauses_Percentage.mortality.csv")
+
+# Fig S2) # i saved this one myself from all.qmd file
+res_puberty_zoo <- readRDS("data/res_puberty_zoo.rds")
+
+# Fig S4)
+res_sex_ma <- readRDS("data/res_sex_ma.rds")
+res_sex_ma_abs <- readRDS("data/res_sex_ma_abs.rds")
+
+# Fig S5)
+load("results/model_outputs/literature/mod_con_sex1.RData")
+#load("results/model_outputs/literature/mod_eff_sex1.RData")
+load("results/model_outputs/literature/mod_env_sex1.RData")
+load("results/model_outputs/literature/mod_sham_sex1.RData")
+
+# Zoo data
+res_sex_zοο <- readRDS("data/res_sex_zoo.rds")
+res_sex_zoo_abs <- readRDS("data/res_sex_zoo_abs.rds")
+
+
+
 
 # FIGURES ----
 
@@ -6106,50 +6163,15 @@ ldat <- readRDS(here("data2", "ldat.rds"))
 # Fig 1a) Phylo tree lifespans ----
 # Phylo tree zoos with lifespans
 
-# recalculated these rations with the new data - Please check if this is correct!
-pdat2 <- dat %>% mutate(
-  lrr_surgical_m = (Male_Surgical_Contra_Mean / Male_Surgical_NoContra_Mean - 1) * 100,
-  lrr_surgical_f = (
-    Female_Surgical_Contra_Mean / Female_Surgical_NoContra_Mean - 1
-  ) * 100,
-  lrr_hormonal_m = (Male_Hormonal_Contra_Mean / Male_Hormonal_NoContra_Mean - 1) * 100,
-  lrr_hormonal_f = (
-    Female_Hormonal_Contra_Mean / Female_Hormonal_NoContra_Mean - 1
-  ) * 100
-)
+pdat_long <- dat %>% pivot_longer(
+  cols = c(starts_with("Female"), starts_with("Male")),
+  names_to = c("Sex", "Type", ".value"),
+  names_sep = "_"
+) %>% filter(!(is.na(Mean)))
 
-# reformat data to long format
-pdat3 <- pdat2 %>% select(
-  species,
-  vertlifeSpecies,
-  order,
-  phylogeny,
-  lrr_surgical_m,
-  lrr_surgical_f,
-  lrr_hormonal_m,
-  lrr_hormonal_f
-)
-
-pdat_long <- pdat3 %>% pivot_longer(cols = c(
-  lrr_surgical_m,
-  lrr_surgical_f,
-  lrr_hormonal_m,
-  lrr_hormonal_f
-))
-
-pdat_long %>% mutate(sex = rep(c("male", "female"), nrow(pdat_long) / 2), type = rep(
-  c("surgical", "surgical", "hormonal", "hormonal"),
-  nrow(pdat_long) / 4
-)) -> pdat_long
-
-pdat_long %>% mutate(
-  min_value = ifelse(is.na(value) == TRUE, NA, ifelse(value < 0, value, 0)),
-  max_value = ifelse(is.na(value) == TRUE, NA, ifelse(value > 0, value, 0))
-) -> pdat_long
-
-pdat_long$type <- factor(
-  pdat_long$type,
-  levels = c("surgical", "hormonal"),
+pdat_long$Type <- factor(
+  pdat_long$Type,
+  levels = c("Surgical", "Hormonal"),
   labels = c("Surgical", "Hormonal")
 )
 
@@ -6157,7 +6179,7 @@ pdat_long$type <- factor(
 to_drop <-
   tree$tip.label[which(!(tree$tip.label %in% pdat_long$phylogeny))]
 
-to_drop # Why not in tree?
+to_drop 
 
 tree_subset <- drop.tip(tree, to_drop)
 
@@ -6206,38 +6228,46 @@ p <- ggtree(
                fill = dford$color,
                alpha = .2)
 p
-
-
-
 #  barplot showing male surgical and female hormonal
 p_bar <- pdat_long %>%
-  filter(!(type == "Surgical" &
-             sex == "female"),
-         !(type == "Hormonal" &
-             sex == "male")) %>%
   mutate(
-    sex = case_match(sex, "female" ~ "Female", "male" ~ "Male"),
-    sex = factor(sex, levels = c("Male", "Female")),
-    type = case_match(type, "Surgical" ~ "Male surgical", "Hormonal" ~ "Female hormonal"),
-    type = factor(type, levels = c("Male surgical", "Female hormonal"))
+    Sex = factor(Sex, levels = c("Male", "Female")),
+    Type = case_match(Type, "Surgical" ~ "Male surgical", "Hormonal" ~ "Female hormonal"),
+    Type = factor(Type, levels = c("Male surgical", "Female hormonal"))
   ) %>%
-  ggplot(aes(x = value, y = phylogeny, fill = sex)) +
-  geom_col() +
-  scale_fill_manual(values = colpal_sex, name = "Sex") +
-  geom_vline(
-    aes(xintercept = 0),
-    lty = 3,
-    color = "black",
-    linewidth = 0.3
+  ggplot(aes(x = Mean, y = phylogeny)) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "black") +
+  geom_errorbarh(
+    aes(
+      xmin = Lower,
+      xmax = Upper,
+      colour = Sex
+    ),
+    height = 0,
+    show.legend = TRUE,
+    linewidth = 1
   ) +
-  facet_wrap( ~ type,
-              ncol = 2,
-              labeller = label_wrap_gen(multi_line = T, width = 15)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
-  theme_phylotree() +
-  xlab("Ratio: Contracepted / Normal (%)") +
-  ylab("") +
-  theme(legend.position = "none")
+  geom_point(
+    aes(col = "black"),
+    fill = "white",
+    size = 0.9 ,
+    shape = 21, 
+    stroke = 0.5
+  ) +
+  facet_wrap(. ~ Type,
+             ncol = 2,
+             labeller = label_wrap_gen(multi_line = T, width = 15)) +
+  scale_color_manual(values = colpal_sex) +
+  labs(x = "Ratio: Contracepted / Normal (%)", y = "", colour = "Sex") +
+  theme_bar() +
+  theme(axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 8),
+        strip.text = element_text(size = 8),
+        # axis.ticks = element_text(size = 7), 
+        legend.position = "none")
+
 p_bar
 
 
@@ -6247,7 +6277,7 @@ p_tree_final <- p_bar %>% aplot::insert_left(p, width = c(0.8, 1))
 p_tree_final
 
 ggsave(
-  here("results", "plots", "Fig1a_phylotreeZIMS.pdf"),
+  "results/plots/Fig1a_phylotreeZIMS.pdf",
   width = 100,
   height = 125,
   units = "mm"
@@ -6282,7 +6312,7 @@ p_combo
 #ggsave("results/plots/Fig1b_orchardZIMS.pdf", width = 100, units = "mm")
 
 # Fig 1c) Causes of death ----
-
+## # version 1 ----
 p_lower_f <- orchard_plot(
   res_lower_f,
   mod = "sex_type",
@@ -6378,6 +6408,49 @@ ggsave(
   units = "mm"
 )
 
+## # version 2 ----
+# this version exludes the "Death at birth category" in females
+res_upper_f_mod <- res_upper_f$mod_table %>% filter(!name == "Death\nat birth")
+res_upper_f_dat <- res_upper_f$data %>% filter(! moderator == "Death\nat birth")
+
+res_upper_f <- list(mod_table = res_upper_f_mod, 
+                    data = res_upper_f_dat)
+
+class(res_upper_f) <- c("orchard", "data.frame")
+
+
+p_upper_f <- orchard_plot(
+  res_upper_f,
+  mod = "sex_type",
+  xlab = "Risk difference (Old adult)",
+  group = "Species",
+  angle = 0
+) + ylim(-0.85, 0.7) +
+  theme_orchard() +
+  scale_x_discrete(labels = rev(
+    c(
+      "Behaviour",
+      "Infectious disease",
+      "Non-infectious disease",
+      "Chronic disease",
+      "Other causes"
+    )
+  )) +
+  scale_colour_manual(values = colpal_cod) +
+  scale_fill_manual(values = colpal_cod) +
+  theme_orchard_updated
+p_upper_f
+
+p_combo +  p_upper_m + p_upper_f + plot_layout(ncol = 1)
+ggsave(
+  "results/plots/Fig1bc_SexType_CausesOfDeath_v2.pdf",
+  width = 170,
+  height = 330,
+  units = "mm"
+)
+
+
+
 
 # Fig 2 - Kaplan Meier survival  -----
 
@@ -6410,7 +6483,7 @@ dat_vasec$species <- factor(dat_vasec$species, levels = unique(dat_vasec$species
 # Plot
 PlotLifeTab(ltdat = dat_vasec, title = "Males - Vasectomy")
 
-ggsave(here("results", "plots", "Fig2a_Males_VasecPost05.pdf"))
+ggsave("results/plots/Fig2a_Males_VasecPost05.pdf")
 
 # Fig 2b) Castration ----
 
@@ -6434,7 +6507,7 @@ PlotLifeTab(ltdat = dat_castr,
             ncol = 5)
 
 # Save plot
-ggsave(here("results", "plots", "Fig2b_Males_Castrpost05.pdf"))
+ggsave("results/plots/Fig2b_Males_Castrpost05.pdf")
 
 
 # Fig 2c) Hormonal ----
@@ -6459,7 +6532,7 @@ dat_fem_horm_post05_sub <- dat_fem_horm_post05 %>% filter(species %in% sp_fhorm)
 PlotLifeTab(ltdat = dat_fem_horm_post05_sub,
             title = "Hormonal (females)",
             ncol = 5)
-ggsave(here("results", "plots", "Fig2c_Females_Hormonalpost05.pdf"))
+ggsave("results/plots/Fig2c_Females_Hormonalpost05.pdf")
 
 
 
@@ -6476,9 +6549,15 @@ flion_surg$method <- "Surgical"
 dat_flion <- rbind(flion_prog, flion_gnrh, flion_surg)
 dat_flion$method <- factor(dat_flion$method, levels = c("Progesterone", "GnRH", "Surgical"))
 levels(dat_flion$method)
+
+ordlion <- dat_flion %>%
+  group_by(species, order) %>%
+  tally() %>%
+  mutate(Ages = 1, ple = 1, type = NA)
+
 p_lion <- ggplot(dat_flion, aes(x = Ages, y = ple, color = type)) +
   geom_rect(
-    dat = ord,
+    dat = ordlion,
     aes(fill = order),
     xmin = -Inf,
     xmax = Inf,
@@ -6512,7 +6591,7 @@ p_lion <- ggplot(dat_flion, aes(x = Ages, y = ple, color = type)) +
   theme_km() +
   ggh4x::force_panelsizes(rows = unit(1.6, "cm"), cols = unit(1.6, "cm"))
 p_lion
-ggsave(here("results", "plots", "Fig2d_female_lions.pdf"))
+ggsave("results/plots/Fig2d_female_lions.pdf")
 
 
 
@@ -6653,7 +6732,7 @@ phy_sex <- ggplot(data = ddat, aes(x = yi, y = Species_Latin)) +
 
 phy_sex
 # adding icons
-filenames <- list.files(here("icons2", "literature"),
+filenames <- list.files("icons/literature",
                         pattern = ".png",
                         full.names = TRUE)
 ldf <- lapply(filenames, png::readPNG)
@@ -6860,8 +6939,8 @@ kdat$Sub.measure <- factor(kdat$Sub.measure,
                                "Non-tumor\npathology",
                                "Sensory function",
                                "Strength/balance",
-                               "Tumor mammory",
-                               "Tumor\nnon-mammory",
+                               "Tumor mammary",
+                               "Tumor\nnon-mammary",
                                "Voluntary activity",
                                "Overall"
                              )
@@ -6917,12 +6996,12 @@ mes_sex1
 
 mes_sex1 <- mes_sex1 + 
   annotation_custom(
-  grid::rasterGrob(ldf$Mus_musculus.png),
-  xmin = -1.5,
-  xmax = -0.7,
-  ymin = 12.5,
-  ymax = 15
-) +
+    grid::rasterGrob(ldf$Mus_musculus.png),
+    xmin = -1.5,
+    xmax = -0.7,
+    ymin = 12.5,
+    ymax = 15
+  ) +
   annotation_custom(
     grid::rasterGrob(ldf$Rattus_argentiventer.png),
     xmin = -1,
@@ -7107,7 +7186,6 @@ ggsave(
 
 # Fig 4 - Moderator effects ----
 # Fig 4a) Sex ----
-mod_sex1$data$Sex <- factor(mod_sex1$data$Sex, levels = rev(c("Male", "Female")))
 
 p_sex <- orchard_plot(
   mod_sex1,
@@ -7126,13 +7204,13 @@ p_sex
 
 
 # Fig 4b) Gonad removal ----
-mod_rem$data$Sex_Gonads <- factor(mod_rem$data$Sex_Gonads, levels = rev(
-  c(
-    "Gonads removed \n(male)",
-    "Gonads not removed \n(female)",
-    "Gonads removed \n(female)"
-  )
-))
+# mod_rem$data$Sex_Gonads <- factor(mod_rem$data$Sex_Gonads, levels = rev(
+#   c(
+#     "Gonads removed \n(male)",
+#     "Gonads not removed \n(female)",
+#     "Gonads removed \n(female)"
+#   )
+# ))
 
 p_gonad <- orchard_plot(
   mod_rem,
@@ -7207,11 +7285,8 @@ p_mod + p_sham + p_env + plot_layout(guides = "keep",
                                      ncol = 1,
                                      axes = "collect")
 
-
-
-
 ggsave(
- here("results", "plots", "Fig4_Moderator_plot.pdf"),
+  "results/plots/Fig4_Moderator_plot.pdf",
   width = 200,
   height = 170,
   units = "mm"
@@ -7239,7 +7314,7 @@ p_mat <- bubble_plot(
   theme(aspect.ratio = 0.7)
 p_mat
 ggsave(
-  here("results", "plots", "Fig5a_bubbleplot.pdf"),
+  "results/plots/Fig5a_bubbleplot.pdf",
   width = 100,
   height = 100,
   units = "mm"
@@ -7249,16 +7324,11 @@ ggsave(
 # Fig 5b) ----
 # Phylo tree before and after maturity
 
-tree <- maxCred
+#tree <- maxCred
 # rm(maxCred)
 
 # join tax to data
-resTab_mat <- resTab_mat %>% left_join(tax, by = c("Species" = "ZIMSspecies"))
-
-# Calculate life expectancy difference (before: contraception before age at mat / after: contraception after age at mat)
-resTab_mat$bef <- log(resTab_mat$LifeExpContraBef / resTab_mat$LifeExpNoContra)
-resTab_mat$aft <- log(resTab_mat$LifeExpContraAft / resTab_mat$LifeExpNoContra)
-
+resTab_mat <- resTab_mat %>% left_join(tax, by = c("species" = "ZIMSspecies"))
 resTab_mat$vertlifeSpecies <- gsub(" ", "_", resTab_mat$vertlifeSpecies)
 
 # Subset tree
@@ -7291,13 +7361,22 @@ dford <- colpal_order %>%
   rename(order = rowname, color = ".") %>%
   right_join(dford, by = c("order"))
 
-resTab_mat <- resTab_mat %>%
-  select(Species, vertlifeSpecies, order, bef, aft) %>%
-  pivot_longer(cols = c("bef", "aft"))
+
+resTab_mat_long <- resTab_mat %>% pivot_longer(
+  cols = c(starts_with("Before"), starts_with("After")),
+  names_to = c("Timing", ".value"),
+  names_sep = "_"
+) #%>% filter(!(is.na(Mean)))
+
+resTab_mat_long$Timing <- factor(
+  resTab_mat_long$Timing,
+  levels = c("Before", "After"),
+  labels = c("Before maturity", "After maturity")
+)
 
 # replace tree names with the ZIMS names
-sp <- unique(resTab_mat[order(match(resTab_mat$vertlifeSpecies, tree_subset$tip.label)), "Species"])
-tree_subset$tip.label <- sp$Species
+sp <- unique(resTab_mat[order(match(resTab_mat$vertlifeSpecies, tree_subset$tip.label)), "species"])
+tree_subset$tip.label <- sp
 
 # plot
 p_tree <- ggtree(
@@ -7315,147 +7394,315 @@ p_tree <- ggtree(
 p_tree
 
 # Plot of life expectancy differences
-p_bar <- resTab_mat %>%
-  mutate(
-    name = case_match(name, "bef" ~ "Before maturity", "aft" ~ "After maturity"),
-    name = factor(name, levels = c("Before maturity", "After maturity")),
-  ) %>%
-  ggplot(aes(x = value, y = Species)) +
-  geom_col(width = 0.6, fill = "grey40") +
-  xlab("Log ratio: Contraceptive / Normal") +
-  ylab("") +
-  facet_wrap(. ~ name) +
-  theme_bar()
+
+p_bar <- resTab_mat_long %>%
+  ggplot(aes(x = Mean, y = species)) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "black") +
+  geom_errorbarh(
+    aes(
+      xmin = Lower,
+      xmax = Upper
+    ),
+    height = 0,
+    show.legend = TRUE,
+    linewidth = 1.2, 
+    color = "grey40"
+  ) +
+  geom_point(
+    fill = "white",
+    size = 0.9 ,
+    shape = 21, 
+    stroke = 0.5
+  ) +
+  facet_wrap(. ~ Timing,
+             ncol = 2,
+             labeller = label_wrap_gen(multi_line = T, width = 15)) +
+  labs(x = "LnRR (Effect size)", y = "") +
+  theme_bar() +
+  theme(axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 8),
+        strip.text = element_text(size = 8),
+        # axis.ticks = element_text(size = 7), 
+        legend.position = "none")
 p_bar
+
 
 # Combine phylo tree and bar plot using aplot
 p_tree_mat <- p_bar %>% aplot::insert_left(p_tree, width = c(1, 1))
 p_tree_mat
 
 ggsave(
-  here("results", "plots", "Fig5b_Phyloplot_mat.pdf"),
+  "results/plots/Fig5b_Phyloplot_mat.pdf",
   width = 100,
   height = 120,
   units = "mm"
 )
 
-# Fig S1) - Supplemental Kaplan Meier ----
+# Fig S1) - Specific CoD (%) ----
+perc <- read.csv("data/SpecificCauses_Percentage.mortality.csv")
 
-# Fig S2 - Supplemental Measurement type Healthspan ----
+# relabel general causes
+table(perc$genCause)
+perc$genCause <- ifelse(perc$genCause %in% c("unknown", "other"),
+                        "Unknown/Other",
+                        perc$genCause)
+perc$genCause <- factor(
+  perc$genCause,
+  levels = c(
+    "trauma",
+    "infectDisease",
+    "nonInfectDisease",
+    "chronDisease",
+    "Unknown/Other"
+  ),
+  labels = c(
+    "Behaviour",
+    "Infectious disease",
+    "Non-infectious disease",
+    "Chronic disease",
+    "Unknown/Other"
+  )
+)
+
+# remove exoskeleton shed
+perc <- perc %>% filter(!specificCause %in% c("Exoskeleton Shed"))
+# reorder factors based on %
+perc <- perc %>% mutate(specificCause = fct_reorder2(specificCause, genCause, -None))
+
+# count sample sizes per sex
+levels(perc$genCause)
+n <- perc %>% group_by(genCause, Sex) %>% summarise(n = sum(None, na.rm = T))
 
 
-#gdat$S
+## version 1  ----
+# females
+# labels for strip text
+labsf <- c(
+  "Behaviour" = "Behaviour \n(n = 3856)",
+  "Infectious disease" = "Infectious disease \n(n = 2371)",
+  "Non-infectious disease" = "Non-infectious disease \n(n = 6062)",
+  "Chronic disease" = "Chronic disease \n(n = 2923)",
+  "Unknown/Other" = "Unknown/Other \n(n = 39203)"
+)
+pf = perc %>% filter(Sex == "Female") %>%
+  ggplot(aes(x = specificCause, y = Percentage.mortality, fill = Sex)) +
+  geom_col() +
+  theme_minimal() +
+  coord_flip() +
+  theme(
+    legend.position = "none",
+    # strip.text = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 11)
+  ) +
+  ylab("% of individuals") +
+  ggtitle("Female") +
+  xlab("") +
+  scale_fill_manual(values = colpal_sex)
+pf = pf + ggforce::facet_col(
+  ~ genCause,
+  space = "free",
+  scales = "free",
+  labeller = as_labeller(labsf)
+)
+# males
+labsm <- c(
+  "Behaviour" = "Behaviour \n(n = 3799)",
+  "Infectious disease" = "Infectious disease \n(n = 2128)",
+  "Non-infectious disease" = "Non-infectious disease \n(n = 4624)",
+  "Chronic disease" = "Chronic disease \n(n = 2530)",
+  "Unknown/Other" = "Unknown/Other \n(n = 37698)"
+)
+pm = perc %>% filter(Sex == "Male") %>%  ggplot(aes(x = specificCause, y = Percentage.mortality, fill = Sex)) +
+  geom_col() +
+  theme_minimal() +
+  ggtitle("Male") +
+  coord_flip() +
+  theme(
+    legend.position = "none",
+    #strip.text = element_text(face = "bold"),
+    plot.title =  element_text(face = "bold", hjust = 0.5, size = 11)
+  ) +
+  ylab("% of individuals") +
+  xlab("") +
+  scale_fill_manual(values = colpal_sex)
+
+pm = pm + ggforce::facet_col(
+  ~ genCause,
+  space = "free",
+  scales = "free",
+  labeller = as_labeller(labsm)
+)
+
+# combine plot with patchwork
+pf + pm + plot_layout(axes = "collect") 
+
+# Save plot
+#ggsave("results/plots/FigS1_specificCauses.pdf", width = 180, height = 215, units = "mm")
+
+## version 2  ----
+# dodged
+p2 = perc %>%  ggplot(aes(x = specificCause, y = Percentage.mortality, fill = Sex)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  theme_minimal() +
+  coord_flip() +
+  theme(legend.position = "bottom", 
+        strip.text = element_text(face = "bold")) +
+  ylab("% of individuals") +
+  xlab("") +
+  scale_fill_manual(values = colpal_sex)
+
+p2 + ggforce::facet_col(~genCause, space = "free", scales = "free")
+
+
+# Fig S3) - Healthspan ----
+
+ldat <- readRDS("data/ldat.rds")
+sum_data <- data.frame(
+  "x.diamond" = c(res$lowerCL, res$estimate , res$upperCL, res$estimate),
+  "y.diamond" = c(1, 1 + 0.25, 1, 1 - 0.25)
+)
+hs_levs <- c("Overall",
+             # Survival & Frailty
+             "Frailty score",
+             "Energy expenditure",
+             "voluntary activity assessment",
+             "voluntary wheel running",
+             "Total activity dark period",
+             
+             # Cardiac
+             "Ejection fraction",
+             "fractional shortening",
+             "cardiac fibrosis",
+             "Cardiac pathology",
+             "Cardiomyocyte size",
+             "E/A ratio",
+             "Heart size",
+             "Left Ventricular Isovolumic Relaxation Time",
+             "left ventricle size",
+             
+             # Cognitive & Behavioral
+             "Morris water maze",
+             "Barnes maze test",
+             "water radial arm maze test",
+             "Y maze testing",
+             "RAM memory test",
+             "novel object recognition",
+             "Autoshaping learning test",
+             "inhibitory avoidance test",
+             "T maze test",
+             "Open field test",
+             "balance on a dowel",
+             "rotarod",
+             "Treamill",
+             
+             # Muscle
+             "Grip strength",
+             "Skeletal muscle fiber size",
+             "Quadriceps size",
+             
+             # Metabolic
+             "Glucose tolerance",
+             "Insulin sensitivity",
+             
+             # Immune & Tumors
+             "T cell function test",
+             "nonthymic lymphosarcoma",
+             "Mammary pathology",
+             "pituitary tumors",
+             "Pulmonary adenoma",
+             "Reticulum cell sarcoma",
+             "Polyarteritis",
+             "Proportion with tumors ",
+             "Proportion with hypophyseal adenoma",
+             "Harderian adenoma",
+             "Adrenal-Cortical adenoma",
+             "thymic lymphomas",
+             "superficial skin and subcutaneous tumor not mammary",
+             "total non-neoplastic lesions",
+             
+             # Organ-specific
+             "Liver pathology",
+             "Kidney pathology",
+             
+             # Sensory
+             "vision presence of cataracts",
+             "Smell preference"
+)
+
+# Labels to be used
+hs_labs <- c("Overall",
+             # Survival & Frailty
+             "Frailty score",
+             "Energy expenditure",
+             "Voluntary activity assessment",
+             "Voluntary wheel running",
+             "Total activity dark period",
+             
+             # Cardiac
+             "Ejection fraction",
+             "Fractional shortening",
+             "Cardiac fibrosis",
+             "Cardiac pathology",
+             "Cardiomyocyte size",
+             "E/A ratio",
+             "Heart size",
+             "Left Ventricular Isovolumic Relaxation Time",
+             "Left ventricle size",
+             
+             # Cognitive & Behavioral
+             "Morris water maze",
+             "Barnes maze test",
+             "Water radial arm maze test",
+             "Y maze testing",
+             "RAM memory test",
+             "Novel object recognition",
+             "Autoshaping learning test",
+             "Inhibitory avoidance test",
+             "T maze test",
+             "Open field test",
+             "Balance on a dowel",
+             "Rotarod",
+             "Treamill",
+             
+             # Muscle
+             "Grip strength",
+             "Skeletal muscle fiber size",
+             "Quadriceps size",
+             
+             # Metabolic
+             "Glucose tolerance",
+             "Insulin sensitivity",
+             
+             # Immune & Tumors
+             "T cell function test",
+             "Nonthymic lymphosarcoma",
+             "Mammary pathology",
+             "Pituitary tumors",
+             "Pulmonary adenoma",
+             "Reticulum cell sarcoma",
+             "Polyarteritis",
+             "Proportion with tumors",
+             "Proportion with hypophyseal adenoma",
+             "Harderian adenoma",
+             "Adrenal-Cortical adenoma",
+             "Thymic lymphomas",
+             "Superfic. skin & subcut. tumor not mammary",
+             "Total non-neoplastic lesions",
+             
+             # Organ-specific
+             "Liver pathology",
+             "Kidney pathology",
+             
+             # Sensory
+             "Vision presence of cataracts",
+             "Smell preference"
+)
+
 ldat$Measurement.type <- factor(ldat$Measurement.type,
-                                levels = rev(
-                                  c(
-                                    "Adrenal-Cortical adenoma",
-                                    "Autoshaping learning test",
-                                    "balance on a dowel",
-                                    "Barnes maze test",
-                                    "cardiac fibrosis",
-                                    "Cardiac pathology",
-                                    "Cardiomyocyte size",
-                                    "E/A ratio",
-                                    "Ejection fraction",
-                                    "Energy expenditure",
-                                    "fractional shortening",
-                                    "Frailty score",
-                                    "Glucose tolerance",
-                                    "Grip strength",
-                                    "Harderian adenoma",
-                                    "Heart size",
-                                    "inhibitory avoidance test",
-                                    "Insulin sensitivity",
-                                    "Kidney pathology",
-                                    "left ventricle size",
-                                    "Left Ventricular Isovolumic Relaxation Time",
-                                    "Liver pathology",
-                                    "Mammary pathology",
-                                    "Morris water maze",
-                                    "nonthymic lymphosarcoma",
-                                    "novel object recognition",
-                                    "Open field test",
-                                    "pituitary tumors",
-                                    "Polyarteritis",
-                                    "Proportion with hypophyseal adenoma",
-                                    "Proportion with tumors ",
-                                    "Pulmonary adenoma",
-                                    "Quadriceps size",
-                                    "RAM memory test",
-                                    "Reticulum cell sarcoma",
-                                    "rotarod",
-                                    "Skeletal muscle fiber size",
-                                    "Smell preference",
-                                    "superficial skin and subcutaneous tumor not mammary",
-                                    "T cell function test",
-                                    "T maze test",
-                                    "thymic lymphomas",
-                                    "Total activity dark period",
-                                    "total non-neoplastic lesions",
-                                    "Treamill",
-                                    "vision presence of cataracts",
-                                    "voluntary activity assessment",
-                                    "voluntary wheel running",
-                                    "water radial arm maze test",
-                                    "Y maze testing",
-                                    "Overall"
-                                  )
-                                ),
-                                labels = rev(
-                                  c(
-                                    "Adrenal-cortical adenoma",
-                                    "Autoshaping learning test",
-                                    "Balance on a dowel",
-                                    "Barnes maze test",
-                                    "Cardiac fibrosis",
-                                    "Cardiac pathology",
-                                    "Cardiomyocyte size",
-                                    "E/A ratio",
-                                    "Ejection fraction",
-                                    "Energy expenditure",
-                                    "Fractional shortening",
-                                    "Frailty score",
-                                    "Glucose tolerance",
-                                    "Grip strength",
-                                    "Harderian adenoma",
-                                    "Heart size",
-                                    "Inhibitory avoidance test",
-                                    "Insulin sensitivity",
-                                    "Kidney pathology",
-                                    "Left ventricle size",
-                                    "Left ventricular IRT",
-                                    "Liver pathology",
-                                    "Mammary pathology",
-                                    "Morris water maze",
-                                    "Nonthymic lymphosarcoma",
-                                    "Novel object recognition",
-                                    "Open field test",
-                                    "Pituitary tumors",
-                                    "Polyarteritis",
-                                    "Prop. with hypophyseal adenoma",
-                                    "Proportion with tumors",
-                                    "Pulmonary adenoma",
-                                    "Quadriceps size",
-                                    "RAM memory test",
-                                    "Reticulum cell sarcoma",
-                                    "Rotarod",
-                                    "Skeletal muscle fiber size",
-                                    "Smell preference",
-                                    "Superfic. skin & subcut. tumor n.m.",
-                                    "T cell function test",
-                                    "T maze test",
-                                    "Thymic lymphomas",
-                                    "Total activity dark period",
-                                    "Total non-neoplastic lesions",
-                                    "Treadmill",
-                                    "Vision presence of cataracts",
-                                    "Voluntary activity assessment",
-                                    "Voluntary wheel running",
-                                    "Water radial arm maze test",
-                                    "Y maze testing",
-                                    "Overall"
-                                  )
-                                ))
+                                levels = hs_levs,
+                                labels = hs_labs)
 
 mestype_sex <- ggplot(data = ldat, aes(x = yi, y = Measurement.type)) +
   geom_vline(xintercept = 0,
@@ -7474,17 +7721,18 @@ mestype_sex <- ggplot(data = ldat, aes(x = yi, y = Measurement.type)) +
     ),
     height = 0,
     show.legend = TRUE,
-    linewidth = 2,
+    linewidth = 2.3,
     position = position_dodge(width = 0.75)
   ) +
   geom_point(
     aes(col = Sex),
     fill = "white",
-    size = 1.1,
+    size = 1.5,
     shape = 21,
     position = position_dodge2(width = 0.75)
   ) +
-  xlim(-3.5, 2) +
+  coord_cartesian(xlim = c(-2, 2)) +
+  #xlim(-3.5, 2) +
   #creating 95% prediction intervals
   geom_segment(data = res,
                ggplot2::aes(
@@ -7502,18 +7750,24 @@ mestype_sex <- ggplot(data = ldat, aes(x = yi, y = Measurement.type)) +
   scale_color_manual(values = colpal_sex) +
   labs(x = "LnRR (Effect size)", y = "", colour = "Sex") +
   theme_segment() +
-  theme(plot.margin = margin(
-    t = 2,
-    r = 6,
-    b = 6,
-    l = 1
-  ))
+  theme(axis.text.x = element_text(size = 12), 
+        axis.title = element_text(size = 12), 
+        plot.margin = margin(
+          t = 2,
+          r = 6,
+          b = 6,
+          l = 1, x
+          
+        ), 
+        legend.position = "bottom", 
+        legend.text = element_text(size = 11), 
+        legend.title = element_text(size = 11))
 
 mestype_sex
 
 # icons
 
-filenames <- list.files(here("icons2", "literature"),
+filenames <- list.files("icons/literature",
                         pattern = ".png",
                         full.names = TRUE)
 ldf <- lapply(filenames, png::readPNG)
@@ -7522,25 +7776,194 @@ names(ldf) <- substr(filenames, 18, 18 + 60)
 mestype_sex <- mestype_sex +
   annotation_custom(
     grid::rasterGrob(ldf$Mus_musculus.png),
-    xmin = -1.5 * 2.5,
-    xmax = -1 * 2.5,
+    xmin = -2.5,
+    xmax = -0.8,
     ymin = 13.5 * 3.5,
     ymax = 14.5 * 3.5
   ) +
   annotation_custom(
     grid::rasterGrob(ldf$Rattus_argentiventer.png),
-    xmin = -1 * 2.5,
-    xmax = -0.5 * 2.5,
+    xmin = -2,
+    xmax = 0,
     ymin = 13 * 3.5,
     ymax = 14 * 3.5
   )
 
 mestype_sex
 ggsave(
-  here("results", "plots", "FigS2_life_healthspan.pdf"),
-  width = 90,
+  "results/plots/FigS3_life_healthspan.pdf",
+  width = 160,
   units = "mm",
-  height = 165
+  height = 270
+)
+
+# Fig S2) - Puberty Zoo -----
+
+orchard_plot(res_puberty_zoo, mod = "pre_post", xlab = "lnRR (all)", group = "species", g = FALSE)  +  scale_fill_manual(values = colpal_puberty) +
+  scale_colour_manual(values = colpal_puberty) +
+  theme_orchard() 
+
+
+# Fig S4) - Sex differences ----
+
+## S4b) Meta analysis----
+p_zoo <- 
+  orchard_plot(
+    res_sex_zοο,
+    mod = "contraception",
+    xlab = "LnRR (Effect size)",
+    group = "species",
+    cb = T,
+    flip = FALSE
+  ) +  scale_fill_manual(values = colpal_sexdif) +
+  scale_colour_manual(values = colpal_sexdif) +
+  theme_orchard() +
+  theme(aspect.ratio = 1.1)
+p_zoo
+p_zoo_abs <- 
+  orchard_plot(
+    res_sex_zoo_abs,
+    mod = "contraception",
+    xlab = "LnRR (Effect size)",
+    group = "species",
+    cb = T,
+    flip = FALSE
+  ) +  scale_fill_manual(values = colpal_sexdif) +
+  scale_colour_manual(values = colpal_sexdif) +
+  theme_orchard() +
+  theme(aspect.ratio = 1.1)
+
+
+## S4c) Zoo analysis  ----
+
+p_ma <- orchard_plot(
+  res_sex_ma,
+  mod = "contraception",
+  xlab = "LnRR (Effect size)",
+  group = "species",
+  cb = T,
+  flip = FALSE
+)    +  scale_fill_manual(values = colpal_sexdif) +
+  scale_colour_manual(values = colpal_sexdif) +
+  theme_orchard() +
+  theme(aspect.ratio = 1.1)
+
+p_ma_abs <- orchard_plot(
+  res_sex_ma_abs,
+  mod = "contraception",
+  xlab = "LnRR (Effect size)",
+  group = "species",
+  cb = T,
+  flip = FALSE
+)  +  scale_fill_manual(values = colpal_sexdif) +
+  scale_colour_manual(values = colpal_sexdif) +
+  theme_orchard()  +
+  theme(aspect.ratio = 1.1)
+
+
+(p_zoo/p_zoo_abs) | (p_ma / p_ma_abs)
+
+# ggsave(
+#   "results/plots/FigS4_SexDiffs_plot.pdf",
+#   width = 180,
+#   height = 180,
+#   units = "mm"
+# )
+
+#   "results/plots/FigS4_SexDiffs_plot.pdf",
+#   width = 180,
+#   height = 180,
+#   units = "mm"
+# )
+
+
+
+# Fig S5) - Moderator effects x Sex ----
+## S5a) - Control ----
+
+p_consex <- orchard_plot(mod_con_sex1,
+                         mod = "Controlled_treatments_Sex",
+                         xlab = "LnRR (Effect size)",
+                         group = "Study") +
+  scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+  scale_colour_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733"))  +
+  theme_orchard() +
+  theme(legend.position = "right")
+
+p_consex
+
+## S5b) - Sham ----
+
+mod_sham_sex1$data$Shamtreatment_moderator_Sex <- factor(
+  mod_sham_sex1$data$Shamtreatment_moderator_Sex,
+  levels = rev(
+    c(
+      "Sham-controlled_Male",
+      "Sham-controlled_Female",
+      "No sham_Male",
+      "No sham_Female"
+    )
+  ),
+  labels = rev(
+    c(
+      "Sham-controlled male",
+      "Sham-controlled female",
+      "No sham male",
+      "No sham female"
+    )
+  )
+)
+
+p_shamsex <- orchard_plot(mod_sham_sex1,
+                          mod = "Shamtreatment_moderator_Sex",
+                          xlab = "LnRR (Effect size)",
+                          group = "Study") +
+  scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+  scale_colour_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733"))  +
+  theme_orchard() +
+  theme(legend.position = "right")
+p_shamsex
+
+## S5c) - Environment ----
+mod_env_sex1$data$Wild_or_semi_wild_Sex <- factor(
+  mod_sham_sex1$data$Wild_or_semi_wild_Sex,
+  levels =
+    c(
+      "Others \n(e.g., lab, farm)_Female",
+      "Others \n(e.g., lab, farm)_Male",
+      "Wild or \nSemi-wild_Female",
+      "Wild or \nSemi-wild_Male"
+    ),
+  labels =
+    c(
+      "Others \n(e.g., lab, farm) female",
+      "Others \n(e.g., lab, farm) male",
+      "Wild or \nsemi-wild female",
+      "Wild or \nsemi-wild male"
+    )
+)
+
+p_envsex <- orchard_plot(mod_env_sex1,
+                         mod = "Wild_or_semi_wild_Sex",
+                         xlab = "LnRR (Effect size)",
+                         group = "Study") +
+  scale_fill_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733")) +
+  scale_colour_manual(values = c("#D55E00", "#009E73", "#DDCC77", "#117733"))  +
+  theme_orchard() +
+  theme(legend.position = "right")
+p_envsex
+
+# Align and save Figure S5
+
+p_consex +  p_shamsex + p_envsex +  plot_layout(guides = "keep",
+                                                ncol = 1,
+                                                axes = "collect")
+
+ggsave(
+  "results/plots/FigS5_ModeratorSex_plot.pdf",
+  width = 200,
+  height = 170,
+  units = "mm"
 )
 ```
 
