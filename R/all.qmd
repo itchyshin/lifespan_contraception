@@ -3528,36 +3528,7 @@ orchard_plot(mod_all, xlab = "lnRR (all)", group = "species", g = FALSE)
 
 ```
 
-## Meta-regression: primates vs carnivora
 
-```{r}
-# filter out anything other than primates and cornivores
-dat_pc <- dat_all %>% filter(order == "Primates" | order == "Carnivora")
-
-VCVpc <- vcalc(vi = dat_pc$vi, 
-             cluster = dat_pc$species, 
-             obs = dat_pc$obs_id,
-             rho = 0.5, 
-             data = dat_pc)
-
-mod_all0 <- rma.mv(yi, V = VCVpc,
-                   mod = ~ order - 1,
-                   random = list(
-                     ~1|species,
-                     ~1|phylogeny,
-                     ~1|obs_id),
-                   R = list(phylogeny = cor_tree),
-                   data = dat_pc,
-                   test = "t",
-                   sparse = TRUE)
-
-summary(mod_all0)
-round(r2_ml(mod_all0), 5)
-
-orchard_plot(mod_all0, mod = "order",
-             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
-             
-```
 
 ## Meta-regression: sex 
 
@@ -3593,31 +3564,6 @@ orchard_plot(mod_all1, mod = "sex",
              xlab = "lnRR (all)", group = "species", g = FALSE)
 ```
 
-
-## Meta-regression: sex x primates vs carnivora 
-
-```{r}
-
-dat_pc$sex_order <- paste(dat_pc$sex, dat_pc$order, sep = "_")
-
-mod_not_pc <- rma.mv(yi, V = VCVpc,
-                   mod = ~ sex_order - 1,
-                  random = list(
-                    ~1|species,
-                    ~1|phylogeny,
-                    ~1|obs_id),
-                  R = list(phylogeny = cor_tree),
-                  data = dat_pc,
-                  test = "t",
-                  sparse = TRUE)
-summary(mod_not_pc)
-round(r2_ml(mod_not_pc), 5)
-
-orchard_plot(mod_not_pc, mod = "sex_order",
-             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 45)
-
-```
-
 ## Meta-regression: type
 
 ```{r}
@@ -3650,36 +3596,6 @@ all_models(mod_all2, mod = "type")
 ```
 
 
-## Meta-regression: type x primates vs carnivora
-
-```{r}
-
-dat_pc$type_order <- paste(dat_pc$type, dat_pc$order, sep = "_")
-
-mod_not_all2 <- rma.mv(yi, V = VCVpc,
-                 mod = ~ type_order -1,
-                 random = list(
-                   ~1|species,
-                   ~1|phylogeny,
-                   ~1|obs_id),
-                 R = list(phylogeny = cor_tree),
-                 data = dat_pc,
-                  test = "t",
-                  sparse = TRUE)
-
-summary(mod_not_all2)
-
-# R^2 - hardly any
-round(r2_ml(mod_not_all2)*100, 5)
-
-orchard_plot(mod_not_all2, mod = "type_order",
-             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 45)
-
-
-# result table
-#all_models(mod_all2, mod = "type_primates_or_not")
-```
-
 ## Meta-regression: sex_type
 
 ```{r}
@@ -3710,6 +3626,77 @@ orchard_plot(mod_all3, mod = "sex_type",
 # result table
 all_models(mod_all3, mod = "sex_type")
 ```
+
+
+
+## Meta-regression: female -- primates vs carnivora
+
+```{r}
+
+dat_female <- dat_all %>% filter(order == "Primates" | order == "Carnivora") %>% filter(sex == "female")
+
+VCVf <- vcalc(vi = dat_female$vi, 
+             cluster = dat_female$species, 
+             obs = dat_female$obs_id,
+             rho = 0.5, 
+             data = dat_female)
+
+mod_female <- rma.mv(yi, V = VCVf,
+                 mod = ~ order -1,
+                 random = list(
+                   ~1|species,
+                   ~1|phylogeny,
+                   ~1|obs_id),
+                 R = list(phylogeny = cor_tree),
+                 data = dat_female,
+                  test = "t",
+                  sparse = TRUE)
+
+summary(mod_female)
+
+# R^2 - hardly any
+round(r2_ml(mod_female)*100, 5)
+
+orchard_plot(mod_female, mod = "order",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
+
+
+```
+
+
+
+## Meta-regression: male -- primates vs artiodactyla
+
+```{r}
+# filter out anything other than primates and cornivores
+dat_male <- dat_all %>% filter(order == "Primates" | order == "Artiodactyla") %>% filter(sex == "male")
+
+VCVm <- vcalc(vi = dat_male$vi, 
+             cluster = dat_male$species, 
+             obs = dat_male$obs_id,
+             rho = 0.5, 
+             data = dat_male)
+
+mod_male <- rma.mv(yi, V = VCVm,
+                   mod = ~ order - 1,
+                   random = list(
+                     ~1|species,
+                     ~1|phylogeny,
+                     ~1|obs_id),
+                   R = list(phylogeny = cor_tree),
+                   data = dat_male,
+                   test = "t",
+                   sparse = TRUE)
+
+summary(mod_male)
+round(r2_ml(mod_male), 5)
+
+orchard_plot(mod_male, mod = "order",
+             xlab = "lnRR (all)", group = "species", g = FALSE, angle = 90)
+             
+```
+
+
 
 ::: 
 
