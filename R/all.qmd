@@ -3221,7 +3221,7 @@ dat_fm_ns <- dat %>% filter(is.na(Female_Surgical_NoContra_Mean) == FALSE,
          M_surgical_n = Male_Surgical_Contra_N,
          species = species,
          phylogeny = phylogeny,
-         category = "M normal/F surgical"
+         category = "F normal/M surgical"
          )
 
 dat_fm_ns <- escalc("ROM", 
@@ -3247,7 +3247,7 @@ dat_fm_hn <- dat %>% filter(is.na(Female_Hormonal_Contra_Mean) == FALSE,
          M_normal_n = Male_Hormonal_NoContra_N,
          species = species,
          phylogeny = phylogeny,
-         category = "M hormonal/F normal"
+         category = "F hormonal/M normal"
          )
 
 dat_fm_hn <- escalc("ROM", 
@@ -3274,7 +3274,7 @@ dat_fm_sn <- dat %>% filter(is.na(Female_Surgical_Contra_Mean) == FALSE,
          M_normal_n = Male_Surgical_NoContra_N,
          species = species,
          phylogeny = phylogeny,
-         category = "M hormonal/F normal"
+         category = "F surgical/M normal"
          )
 
 dat_fm_sn <- escalc("ROM", 
@@ -3300,7 +3300,7 @@ dat_fm_ss <- dat %>% filter(is.na(Female_Surgical_Contra_Mean) == FALSE,
                  M_surgical_n = Male_Surgical_Contra_N,
                  species = species,
                  phylogeny = phylogeny,
-                 category = "M surgical/F surgical"
+                 category = "F surgical/M surgical"
                  )
 
 dat_fm_ss <- escalc("ROM", 
@@ -3325,7 +3325,7 @@ dat_fm_nn1 <- dat %>% filter(is.na(Female_Hormonal_NoContra_Mean) == FALSE,
                  M_normal_n = Male_Hormonal_NoContra_N,
                  species = species,
                  phylogeny = phylogeny,
-                 category = "M normal/F normal"
+                 category = "F normal/M normal"
                  )
 
 dat_fm_nn1 <- escalc("ROM", 
@@ -3348,7 +3348,7 @@ dat_fm_nn2 <- dat %>% filter(is.na(Female_Surgical_NoContra_Mean) == FALSE,
                  M_normal_n = Male_Surgical_NoContra_N,
                  species = species,
                  phylogeny = phylogeny,
-                 category = "M normal/F normal"
+                 category = "F normal/M normal"
                  )
 
 dat_fm_nn2 <- escalc("ROM", 
@@ -3375,7 +3375,7 @@ dat_fm_nh <- dat %>% filter(is.na(Female_Hormonal_NoContra_Mean) == FALSE,
             M_hornomal_n = Male_Hormonal_Contra_N,
             species = species,
             phylogeny = phylogeny,
-            category = "M normal/F hornomal"
+            category = "F normal/M hornomal"
   )
 
 dat_fm_nh <- escalc("ROM", 
@@ -3401,7 +3401,7 @@ dat_fm_hh <- dat %>% filter(is.na(Female_Hormonal_Contra_Mean) == FALSE,
             M_hornomal_n = Male_Hormonal_Contra_N,
             species = species,
             phylogeny = phylogeny,
-            category = "M hornomal/F hornomal"
+            category = "F hornomal/M hornomal"
   )
      
 dat_fm_hh <- escalc("ROM", 
@@ -3432,21 +3432,21 @@ dat_comb$obs_id <- factor(1:nrow(dat_comb))
 
 # adding category
 dat_comb$contraception <- factor(dat_comb$category, levels = c(
-                                                           "M hornomal/F hornomal",
-                                                           "M surgical/F surgical",
-                                                           "M hormonal/F normal",  
-                                                           "M surgical/F normal",
-                                                           "M normal/F hormonal",
-                                                           "M normal/F surgical",
-                                                           "M normal/F normal"),
+                                                           "F hornomal/M hornomal",
+                                                           "F surgical/M surgical",
+                                                           "F hormonal/M normal",  
+                                                           "F surgical/M normal",
+                                                           "F normal/M hormonal",
+                                                           "F normal/M surgical",
+                                                           "F normal/M normal"),
                                                 labels = c(
-                                                           "Male sterlized/\nFemale sterlized",
-                                                           "Male sterlized/\nFemale sterlized",
-                                                           "Male sterlized/\nFemale normal",
-                                                           "Male sterlized/\nFemale normal",  
-                                                           "Male normal/\nFemale sterlized",
-                                                           "Male normal/\nFemale sterlized",
-                                                           "Male normal/\nFemale normal"),
+                                                           "Female sterlized/\nMale sterlized",
+                                                           "Female sterlized/\nMale sterlized",
+                                                           "Female sterlized/\nMale normal",
+                                                           "Female sterlized/\nMale normal",  
+                                                           "Female normal/\nMale sterlized",
+                                                           "Female normal/\nMale sterlized",
+                                                           "Female normal/\nMale normal"),
                              
 )
 
@@ -3760,7 +3760,7 @@ d01
 
 ```
 
-## Different types of sex differences: absolute valies
+## Different types of sex differences: absolute values
 
 ```{r}
 # variance-covariance matrix for sampling error assuming 0.5 correlation
@@ -3804,7 +3804,7 @@ res_sex_ab <- mod_results(mod_comb_a, mod = "contraception", group = "species")
 attr(res_sex_ab, "class") <- NULL
 
 res_sex_ab$mod_table <- res_sex_ab$mod_table[c(2, 4), ]
-res_sex_ab$data <- res_sex_ab$data %>% filter(moderator == "Male sterlized/\nFemale normal"| moderator ==  "Male normal/\nFemale normal") 
+res_sex_ab$data <- res_sex_ab$data %>% filter(moderator == "Female sterlized/\nMale normal"| moderator ==  "Female normal/\nMale normal") 
 
 res_sex_ab2 <- res_sex_ab
 
