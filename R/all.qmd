@@ -5420,7 +5420,160 @@ p_female /p_male + plot_layout(heights = c(6,5))
 ```
 
 
-# PART V: EXTRA FIGURE CODE
+# PART V: EXTRA CODE
+
+## An example of obtaining hazard rates for the cause of death analysis
+
+```{r}
+# ================================== CODE METADATA =============================
+# AUTHOR: Fernando Colchero
+# DATE CREATED: 2025-10-09
+# DATE MODIFIED: 
+# DESCRIPTION: Reproducibility code for survival and cause of death from zoo 
+#              data for Garratt et al. (2025)
+# NOTES: Uses packages:
+#           - paramDemo (parametric and non-parametric demographic functions)
+#           - BaSTA (Bayesian survival trajectory analysis)
+#           - snowfall (parallel computing)
+# ================================ CODE START ==================================
+# ==================== #
+# ==== LIBRARIES: ====
+# ==================== #
+# --------------------------- #
+# ---- Install packages: ----
+# --------------------------- #
+# Vector of installed packages:
+instPacks <- installed.packages()[, 1]
+
+# Install and load 'devtools':
+if (!"devtools" %in% instPacks) {
+  install.packages("devtools")
+}
+library(devtools)
+
+# Install and load latest version of 'BaSTA':
+if (!"BaSTA" %in% instPacks) {
+  install_git("https://github.com/fercol/basta2.0", subdir = "pkg/")
+}
+library(BaSTA)
+
+# snowfall for parallel computing:
+if (!"snowfall" %in% instPacks) {
+  install.packages("snowfall")
+}
+library(snowfall)
+
+# Install and load 'paramDemo':
+if (!"paramDemo" %in% instPacks) {
+  install.packages("paramDemo")
+}
+library(paramDemo)
+library(here)
+
+# Working directory:
+#setwd("Point to your directory")
+
+# =============================== #
+# ==== ADDITIONAL FUNCTIONS: ==== 
+# =============================== #
+# Non-parametric cumulative incidence function:
+CalcCumInc <- function(x, SxLevs = NULL) {
+  # Number of individuals:
+  n <- nrow(x)
+  
+  # Causes of death:
+  causes <- unique(x$Cause)
+  
+  # Number of causes:
+  nCause <- length(causes)
+  
+  # Ages:
+  ageLast <- x$Age
+  ageFirst <- rep(0, n)
+  
+  # General PLE:
+  PLEall <- CalcProductLimitEst(ageLast = ageLast, ageFirst = ageFirst, 
+                                departType = rep("D", n))
+  
+  # PLE per cause:
+  PLEcause <- list()
+  for (ic in 1:nCause) {
+    idc <- which(datTab$Cause == causes[ic])
+    depType <- rep("C", length(ageFirst))
+    depType[idc] <- "D"
+    PLEc <- CalcProductLimitEst(ageLast = ageLast, ageFirst = ageFirst, 
+                                departType = depType)
+    PLEcause[[causes[ic]]] <- PLEc
+  }
+  
+  # Cumulative incidence per cause:
+  cumInc <- data.frame(Age = PLEall$Ages, 
+                       sapply(causes, function(ic) {
+                         1 - PLEcause[[ic]]$ple
+                       }))
+  
+  # Cumulative incidence per level:
+  if (!is.null(SxLevs)) {
+    nLevs <- length(SxLevs)
+    CIlevs <- t(sapply(SxLevs, function(il) {
+      idl <- which(abs(PLEall$ple - il) == min(abs(PLEall$ple - il)))
+      cii <- sapply(causes, function(ic) {
+        cumInc[idl, ic]
+      })
+      return(c(Age = PLEall$Ages[idl], SxLev = il, cii))
+    }))
+  } else {
+    CIlevs <- NA
+  }
+  # Output list:
+  outList <- list(PLEall = PLEall, PLEcause = PLEcause, cumInc = cumInc,
+                  causes = causes, nCause = nCause, CIlevs = CIlevs)
+  return(outList)
+}
+
+# ============================ #
+# ==== SURVIVAL ANALYSIS: ====
+# ============================ #
+# Test data for BaSTA analysis:
+survDat <- read.csv(file = here("data", "zoo2", "indivSurvSample.csv"),
+                    header = TRUE, stringsAsFactors = FALSE)
+
+# Age at sexual maturity (minimum age):
+ageMat <- 8
+
+# Run BaSTA on survival data with proportional hazards effect of contraception:
+out <- basta(object = survDat, dataType = "census", model = "GO", 
+             shape = "bathtub", minAge = ageMat, 
+             covarsStruct = "prop.haz",
+             formulaMort = ~ contra - 1, parallel = TRUE,
+             ncpus = 6, nsim = 6)
+
+# Print output to the console:
+summary(out)
+
+# Plot goodness of fit plots:
+plot(out, plot.type = 'gof')
+
+# Print to the console life expectancy and other summary statistics:
+out$PS$contraNo$PS
+out$PS$contraYes$PS
+
+# ================================================== #
+# ==== CUMULATIVE INCIDENCE PER CAUSE OF DEATH: ====
+# ================================================== #
+# read in data:
+cdDat <- read.csv(here("data", "zoo2", "CauseDeathSample.csv"))
+
+# Calculate cumulative incidence:
+cdOut <- CalcCumInc(x = cdDat, SxLevs = c(0.75, 0.5, 0.25))
+
+# Print Cumulative incidence at the different ages from survival levels:
+cdOut$CIlevs
+
+
+```
+
+## Extra figure code
 
 ```{r}
 #| code-fold: true
