@@ -5422,7 +5422,7 @@ p_female /p_male + plot_layout(heights = c(6,5))
 
 # PART V: EXTRA CODE
 
-## An example of obtaining hazard rates for the cause of death analysis
+## Example of survival analysis on contraception and cause of death cumulative incidence
 
 ```{r}
 # ================================== CODE METADATA =============================
@@ -5498,7 +5498,7 @@ CalcCumInc <- function(x, SxLevs = NULL) {
   # PLE per cause:
   PLEcause <- list()
   for (ic in 1:nCause) {
-    idc <- which(datTab$Cause == causes[ic])
+    idc <- which(cdDat$Cause == causes[ic])
     depType <- rep("C", length(ageFirst))
     depType[idc] <- "D"
     PLEc <- CalcProductLimitEst(ageLast = ageLast, ageFirst = ageFirst, 
