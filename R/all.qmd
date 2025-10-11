@@ -732,7 +732,7 @@ Alluvial diagrams for key predictor variables (moderators) - two groups of 3 mod
 
 ## For Sex, Gonads_removed, & Maturity_at_treatment_ordinal
 
-0 in Mautraity class is NA
+0 in Maturity class is NA
 
 ```{r alluvial plots A, results = 'hide'}
 #use ggalluvial (https://cran.r-project.org/web/packages/ggalluvial/vignettes/ggalluvial.html)
