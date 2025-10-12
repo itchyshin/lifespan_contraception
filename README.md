@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/717578529.svg)](https://doi.org/10.5281/zenodo.17279374)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17333443.svg)](https://doi.org/10.5281/zenodo.17333443)
 
 # lifespan_contraception
 
