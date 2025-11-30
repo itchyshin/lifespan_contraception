@@ -2980,9 +2980,14 @@ dat$Study <- as.factor(dat$Study)
 LeaveOneOut_effectsize <- list()
 for(i in 1:length(levels(dat$Study))){
   dat1 <- dat[dat$Study != levels(dat$Study)[i], ]
+  VCV1 <- vcalc(vi = vi, 
+             cluster = Study, 
+             obs = Effect_ID, #subgroup = Measure,
+             data = dat1, 
+             rho = 0.5)
   
   LeaveOneOut_effectsize[[i]] <- rma.mv(yi = yi, 
-                 V = vi, 
+                 V = VCV1, 
                  random = list(~ 1|Strain, 
                                ~ 1|Study, 
                                ~ 1|Effect_ID), 
@@ -2992,8 +2997,7 @@ for(i in 1:length(levels(dat$Study))){
                  control=list(optimizer="optim", optmethod="BFGS")
   )
                  
-}
-
+}            
 
 # writing function for extracting est, ci.lb, and ci.ub from all models
 est.func <- function(mod){
