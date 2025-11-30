@@ -5139,6 +5139,7 @@ p_other2
 #| eval: false
 
 # note that directories may not match
+# also the code may not run if not matching to the section (we have 5 sections here)
 
 # mod_table
 res_other <- mod_results(mod_other_reg2,  mod = "sex_type", group = "Species")
