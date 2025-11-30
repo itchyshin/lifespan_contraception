@@ -2393,7 +2393,7 @@ p_forest
 ########################
 
 # meta-analytic mean
-
+# model from Part II
 res <- mod_results(mod, group = "Study", data = dat)[[1]]
 
 saveRDS(res, here("Rdata", "fig", "res.rds"))
