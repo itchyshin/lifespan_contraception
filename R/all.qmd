@@ -5138,6 +5138,8 @@ p_other2
 #| code-fold: true
 #| eval: false
 
+# note that directories may not match
+
 # mod_table
 res_other <- mod_results(mod_other_reg2,  mod = "sex_type", group = "Species")
 
@@ -5450,6 +5452,8 @@ p_female /p_male + plot_layout(heights = c(6,5))
 # ---- Install packages: ----
 # --------------------------- #
 # Vector of installed packages:
+# note that directories may not match
+
 instPacks <- installed.packages()[, 1]
 
 # Install and load 'devtools':
@@ -5586,6 +5590,7 @@ cdOut$CIlevs
 #| code-fold: true
 #| eval: false
 
+# note that directories may not match
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Project: Contraception paper
