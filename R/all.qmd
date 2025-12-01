@@ -6536,6 +6536,33 @@ ggsave("results/plots/Fig2d_female_lions.pdf")
 # Fig 3 Meta analysis -----
 # Fig 3a) Lifespan bar plot ----
 
+# creating mod_table- results from the model (Section I)
+# mod is from the literature lifespan meta-aanalysis
+
+# results <- mod_results(mod, group = "Study", data = dat)[[1]]
+# 
+# # create a new cluster
+# dat$Phylo_Sex <- paste(dat$Phylogeny, dat$Sex , sep = "_" )
+# 
+# # rho = 0.5 is as in Noble et al (Mol Ecol)
+# dat <- escalc(yi=yi, vi=vi, data = dat)
+# cdat <- aggregate(dat, cluster=Phylo_Sex, struct="CS", rho = 0.5)
+# 
+# dim(dat)
+# dim(cdat)
+# 
+# # CI
+# cdat$lower.ci <- cdat$yi - sqrt(cdat$vi) * qnorm(0.975) 
+# cdat$upper.ci <- cdat$yi + sqrt(cdat$vi) *  qnorm(0.975)
+# 
+# # adding more informaition
+# cdat %>% select(Species_Latin, yi, lower.ci, upper.ci, Sex) -> ddat
+# 
+# addition <- data.frame(Species_Latin = "Overall", yi =  NA,lower.ci = NA, upper.ci = NA, Sex = "Female")
+# 
+# ddat <- rbind(ddat, addition)
+
+
 sum_data <- data.frame(
   "x.diamond" = c(
     results$lowerCL,
